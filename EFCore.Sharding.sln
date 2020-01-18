@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29201.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8EA1A26-EA0A-4647-A69F-48204A7AA9A0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{16DEE8FC-5EDE-42DF-9386-528F579C166D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFCore.Sharding", "src\EFCore.Sharding\EFCore.Sharding.csproj", "{1981E3B3-8DC3-4AD9-98B2-938830B6E362}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1981E3B3-8DC3-4AD9-98B2-938830B6E362}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1981E3B3-8DC3-4AD9-98B2-938830B6E362}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1981E3B3-8DC3-4AD9-98B2-938830B6E362}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1981E3B3-8DC3-4AD9-98B2-938830B6E362}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1981E3B3-8DC3-4AD9-98B2-938830B6E362} = {A8EA1A26-EA0A-4647-A69F-48204A7AA9A0}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {777B6C86-08A0-4823-83C5-4DE00B557828}
+	EndGlobalSection
+EndGlobal
