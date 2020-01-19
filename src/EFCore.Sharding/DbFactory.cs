@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using EFCore.Sharding.Util;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -8,22 +9,19 @@ namespace EFCore.Sharding
     /// <summary>
     /// 数据库工厂
     /// </summary>
-    public class DbFactory
+    public static class DbFactory
     {
         #region 外部接口
 
         /// <summary>
         /// 根据配置文件获取数据库类型，并返回对应的工厂接口
         /// </summary>
-        /// <param name="conString">链接字符串,默认为GlobalSwitch.DefaultDbConName</param>
-        /// <param name="dbType">数据库类型,默认为GlobalSwitch.DatabaseType</param>
+        /// <param name="conString">完整数据库链接字符串</param>
+        /// <param name="dbType">数据库类型</param>
         /// <returns></returns>
-        public static IRepository GetRepository(string conString = null, DatabaseType? dbType = null)
+        public static IRepository GetRepository(string conString, DatabaseType dbType)
         {
-            conString = conString.IsNullOrEmpty() ? GlobalSwitch.DefaultDbConName : conString;
-            conString = DbProviderFactoryHelper.GetFullConString(conString);
-            dbType = dbType.IsNullOrEmpty() ? GlobalSwitch.DatabaseType : dbType;
-            Type dbRepositoryType = Type.GetType("EFCore.Sharding." + DbProviderFactoryHelper.DbTypeToDbTypeStr(dbType.Value) + "Repository");
+            Type dbRepositoryType = Type.GetType("EFCore.Sharding." + DbProviderFactoryHelper.DbTypeToDbTypeStr(dbType) + "Repository");
 
             var repository = Activator.CreateInstance(dbRepositoryType, new object[] { conString }) as IRepository;
 
@@ -36,7 +34,9 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static IShardingRepository GetShardingRepository()
         {
-            return new ShardingRepository(GetRepository());
+            string defaultConString = "Data Source=.;Initial Catalog=Colder.Admin.AntdVue;Integrated Security=True;Pooling=true;";
+
+            return new ShardingRepository(GetRepository(defaultConString, DatabaseType.SqlServer));
         }
 
         /// <summary>

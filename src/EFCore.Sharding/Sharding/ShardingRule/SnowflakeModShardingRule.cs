@@ -1,4 +1,5 @@
 ﻿using Coldairarrow.Util;
+using EFCore.Sharding.Util;
 using System;
 
 namespace EFCore.Sharding

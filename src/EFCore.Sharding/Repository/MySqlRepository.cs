@@ -1,4 +1,4 @@
-﻿using Coldairarrow.Util;
+﻿using EFCore.Sharding.Util;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -60,7 +60,7 @@ namespace EFCore.Sharding
                     tableName = typeof(T).Name;
 
                 int insertCount = 0;
-                string tmpPath = Path.Combine(Path.GetTempPath(), DateTime.Now.ToCstTime().Ticks.ToString() + "_" + Guid.NewGuid().ToString() + ".tmp");
+                string tmpPath = Path.Combine(Path.GetTempPath(), DateTime.Now.Ticks.ToString() + "_" + Guid.NewGuid().ToString() + ".tmp");
                 string csv = dt.ToCsvStr();
                 File.WriteAllText(tmpPath, csv, Encoding.UTF8);
 
