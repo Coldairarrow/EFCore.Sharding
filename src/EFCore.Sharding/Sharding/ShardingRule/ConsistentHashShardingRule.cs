@@ -1,4 +1,4 @@
-﻿using Coldairarrow.Util;
+﻿using EFCore.Sharding.Util;
 using System.Collections.Generic;
 
 namespace EFCore.Sharding

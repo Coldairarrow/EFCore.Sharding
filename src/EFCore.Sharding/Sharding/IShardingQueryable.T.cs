@@ -1,5 +1,4 @@
-﻿using Coldairarrow.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -21,8 +20,6 @@ namespace EFCore.Sharding
         Task<List<T>> ToListAsync();
         T FirstOrDefault();
         Task<T> FirstOrDefaultAsync();
-        List<T> GetPagination(Pagination pagination);
-        Task<List<T>> GetPaginationAsync(Pagination pagination);
         bool Any(Expression<Func<T, bool>> predicate);
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
         TResult Max<TResult>(Expression<Func<T, TResult>> selector);

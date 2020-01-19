@@ -1,4 +1,4 @@
-﻿using Coldairarrow.Util;
+﻿using EFCore.Sharding.Util;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -201,17 +201,6 @@ namespace EFCore.Sharding
             });
             list.RemoveAll(x => x == null);
             return list.FirstOrDefault();
-        }
-        public List<T> GetPagination(Pagination pagination)
-        {
-            return AsyncHelper.RunSync(() => GetPaginationAsync(pagination));
-        }
-        public async Task<List<T>> GetPaginationAsync(Pagination pagination)
-        {
-            pagination.Total = Count();
-            _source = _source.OrderBy($"{pagination.SortField} {pagination.SortType}");
-
-            return await Skip((pagination.PageIndex - 1) * pagination.PageRows).Take(pagination.PageRows).ToListAsync();
         }
         public TResult Max<TResult>(Expression<Func<T, TResult>> selector)
         {

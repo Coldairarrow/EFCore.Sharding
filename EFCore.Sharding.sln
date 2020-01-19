@@ -7,7 +7,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8EA1A26-EA0
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{16DEE8FC-5EDE-42DF-9386-528F579C166D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFCore.Sharding", "src\EFCore.Sharding\EFCore.Sharding.csproj", "{1981E3B3-8DC3-4AD9-98B2-938830B6E362}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding", "src\EFCore.Sharding\EFCore.Sharding.csproj", "{1981E3B3-8DC3-4AD9-98B2-938830B6E362}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFCore.Sharding.Tests", "src\EFCore.Sharding.Tests\EFCore.Sharding.Tests.csproj", "{CDD89658-166D-4653-A38B-07FA093C8D34}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,6 +21,10 @@ Global
 		{1981E3B3-8DC3-4AD9-98B2-938830B6E362}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1981E3B3-8DC3-4AD9-98B2-938830B6E362}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1981E3B3-8DC3-4AD9-98B2-938830B6E362}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDD89658-166D-4653-A38B-07FA093C8D34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDD89658-166D-4653-A38B-07FA093C8D34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDD89658-166D-4653-A38B-07FA093C8D34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDD89658-166D-4653-A38B-07FA093C8D34}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

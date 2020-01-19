@@ -1,4 +1,4 @@
-﻿using Coldairarrow.Util;
+﻿using EFCore.Sharding.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
