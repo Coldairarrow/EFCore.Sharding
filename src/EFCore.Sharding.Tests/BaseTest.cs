@@ -5,35 +5,23 @@ using System.Collections.Generic;
 
 namespace EFCore.Sharding.Tests
 {
-    public class BaseTest
+    public abstract class BaseTest
     {
-        public BaseTest()
+        static BaseTest()
         {
+            InitId();
             for (int i = 1; i <= 100; i++)
             {
                 Base_UnitTest newData = new Base_UnitTest
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = IdHelper.GetId(),
                     Age = i,
                     UserId = "Admin" + i,
                     UserName = "超级管理员" + i
                 };
                 _dataList.Add(newData);
             }
-
-            Clear();
         }
-        static BaseTest()
-        {
-            InitId();
-        }
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            string tmp = string.Empty;
-        }
-
         private static void InitId()
         {
             new IdHelperBootstrapper()
@@ -43,16 +31,8 @@ namespace EFCore.Sharding.Tests
                 //.UseZookeeper("127.0.0.1:2181", 200, GlobalSwitch.ProjectName)
                 .Boot();
         }
-
-        protected Base_UnitTest _newData { get; } = new Base_UnitTest
-        {
-            Id = Guid.NewGuid().ToString(),
-            UserId = "Admin",
-            UserName = "超级管理员",
-            Age = 22
-        };
-
-        protected List<Base_UnitTest> _insertList { get; } = new List<Base_UnitTest>
+        protected static List<Base_UnitTest> _insertList { get; } 
+            = new List<Base_UnitTest>
         {
             new Base_UnitTest
             {
@@ -69,12 +49,23 @@ namespace EFCore.Sharding.Tests
                 Age = 22
             }
         };
+        protected static List<Base_UnitTest> _dataList { get; }
+            = new List<Base_UnitTest>();
 
-        protected List<Base_UnitTest> _dataList { get; } = new List<Base_UnitTest>();
-
-        protected virtual void Clear()
+        [TestInitialize]
+        public void TestInitialize()
         {
-            throw new NotImplementedException();
+            Clear();
         }
+
+        protected static Base_UnitTest _newData { get; } = new Base_UnitTest
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserId = "Admin",
+            UserName = "超级管理员",
+            Age = 22
+        };
+
+        protected abstract void Clear();
     }
 }

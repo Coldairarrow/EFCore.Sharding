@@ -109,8 +109,8 @@ namespace EFCore.Sharding
                 case DatabaseType.MySql: conventionSet = MySqlConventionSetBuilder.Build(); break;
                 case DatabaseType.PostgreSql: conventionSet = NpgsqlConventionSetBuilder.Build(); break;
                 case DatabaseType.Oracle: conventionSet = OracleConventionSetBuilder.Build(); break;
+                case DatabaseType.SQLite: conventionSet = SqliteConventionSetBuilder.Build(); break;
                 case DatabaseType.Memory: conventionSet = InMemoryConventionSetBuilder.Build(); break;
-
                 default: throw new Exception("暂不支持该数据库!");
             }
             ModelBuilder modelBuilder = new ModelBuilder(conventionSet);

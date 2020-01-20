@@ -17,4 +17,10 @@
     <ProjectReference Include="..\EFCore.Sharding\EFCore.Sharding.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="db.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

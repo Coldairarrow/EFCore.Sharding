@@ -1,4 +1,5 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Microsoft.Data.Sqlite;
+using MySql.Data.MySqlClient;
 using Npgsql;
 using Oracle.ManagedDataAccess.Client;
 using System;
@@ -28,7 +29,7 @@ namespace EFCore.Sharding.Util
                 case DatabaseType.MySql: factory = MySqlClientFactory.Instance; break;
                 case DatabaseType.PostgreSql: factory = NpgsqlFactory.Instance; break;
                 case DatabaseType.Oracle: factory = OracleClientFactory.Instance; break;
-
+                case DatabaseType.SQLite: factory = SqliteFactory.Instance; break;
                 default: throw new Exception("请传入有效的数据库！");
             }
 
@@ -94,6 +95,7 @@ namespace EFCore.Sharding.Util
                     case "mysql": return DatabaseType.MySql;
                     case "oracle": return DatabaseType.Oracle;
                     case "postgresql": return DatabaseType.PostgreSql;
+                    case "sqlite": return DatabaseType.SQLite;
                     case "memory": return DatabaseType.Memory;
                     default: throw new Exception("请输入合法的数据库类型字符串！");
                 }
@@ -116,6 +118,7 @@ namespace EFCore.Sharding.Util
                     case DatabaseType.MySql: return "MySql";
                     case DatabaseType.Oracle: return "Oracle";
                     case DatabaseType.PostgreSql: return "PostgreSql";
+                    case DatabaseType.SQLite: return "SQLite";
                     case DatabaseType.Memory: return "Memory";
                     default: throw new Exception("请输入合法的数据库类型！");
                 }

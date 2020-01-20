@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace EFCore.Sharding.Util
 {
@@ -9,18 +8,27 @@ namespace EFCore.Sharding.Util
     {
         static GlobalData()
         {
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-               //.Select(Assembly.Load)
-               .SelectMany(x => x.DefinedTypes)
-               .Select(x => x as Type)
-               .ToList();
-            var theType = types.Where(x => x.Name == "Base_UnitTest").ToList();
-            FxAllTypes = types;
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
+            assemblies.RemoveAll(x =>
+                x.FullName.Contains("System")
+                || x.FullName.Contains("Microsoft")
+                || x.IsDynamic);
+            assemblies.ForEach(aAssembly =>
+            {
+                try
+                {
+                    FxAllTypes.AddRange(aAssembly.GetTypes());
+                }
+                catch
+                {
+
+                }
+            });
         }
 
         /// <summary>
         /// 框架所有自定义类
         /// </summary>
-        public static readonly List<Type> FxAllTypes;
+        public static readonly List<Type> FxAllTypes = new List<Type>();
     }
 }
