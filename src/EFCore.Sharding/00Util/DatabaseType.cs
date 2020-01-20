@@ -23,6 +23,11 @@
         /// <summary>
         /// PostgreSql数据库
         /// </summary>
-        PostgreSql
+        PostgreSql,
+
+        /// <summary>
+        /// 内存数据库
+        /// </summary>
+        Memory
     }
 }

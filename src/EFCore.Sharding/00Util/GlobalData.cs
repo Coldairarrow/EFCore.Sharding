@@ -9,24 +9,13 @@ namespace EFCore.Sharding.Util
     {
         static GlobalData()
         {
-            //var assemblys = AppDomain.CurrentDomain.GetAssemblies().ToList();
-            //assemblys.RemoveAll(x => x.IsDynamic);
-            //List<Type> allTypes = new List<Type>();
-            //assemblys.ForEach(aAssembly =>
-            //{
-            //    Assembly.Load(aAssembly.FullName);
-            //    allTypes.AddRange(aAssembly.GetTypes());
-            //});
-
-            //FxAllTypes = allTypes;
-
-            FxAllTypes = Assembly
-               .GetEntryAssembly()
-               .GetReferencedAssemblies()
-               .Select(Assembly.Load)
+            var types = AppDomain.CurrentDomain.GetAssemblies()
+               //.Select(Assembly.Load)
                .SelectMany(x => x.DefinedTypes)
                .Select(x => x as Type)
                .ToList();
+            var theType = types.Where(x => x.Name == "Base_UnitTest").ToList();
+            FxAllTypes = types;
         }
 
         /// <summary>

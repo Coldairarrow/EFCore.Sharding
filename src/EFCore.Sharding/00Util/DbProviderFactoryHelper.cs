@@ -94,6 +94,7 @@ namespace EFCore.Sharding.Util
                     case "mysql": return DatabaseType.MySql;
                     case "oracle": return DatabaseType.Oracle;
                     case "postgresql": return DatabaseType.PostgreSql;
+                    case "memory": return DatabaseType.Memory;
                     default: throw new Exception("请输入合法的数据库类型字符串！");
                 }
             }
@@ -115,6 +116,7 @@ namespace EFCore.Sharding.Util
                     case DatabaseType.MySql: return "MySql";
                     case DatabaseType.Oracle: return "Oracle";
                     case DatabaseType.PostgreSql: return "PostgreSql";
+                    case DatabaseType.Memory: return "Memory";
                     default: throw new Exception("请输入合法的数据库类型！");
                 }
             }
