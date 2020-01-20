@@ -1,7 +1,9 @@
 ﻿using EFCore.Sharding.Tests.Util;
 using EFCore.Sharding.Util;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EFCore.Sharding.Tests
 {
@@ -15,7 +17,8 @@ namespace EFCore.Sharding.Tests
 
         #region 私有成员
 
-        IRepository _db { get; } = DbFactory.GetRepository("BaseDb", DatabaseType.Memory);
+        IRepository _db { get; } =
+            DbFactory.GetRepository("DataSource=db.db", DatabaseType.SQLite);
 
         #endregion
 
@@ -25,6 +28,30 @@ namespace EFCore.Sharding.Tests
             _db.Insert(_newData);
             var theData = _db.GetIQueryable<Base_UnitTest>().FirstOrDefault();
             Assert.AreEqual(_newData.ToJson(), theData.ToJson());
+        }
+
+        [TestMethod]
+        public async Task Insert_single_async()
+        {
+            await _db.InsertAsync(_newData);
+            var theData = await _db.GetIQueryable<Base_UnitTest>().FirstOrDefaultAsync();
+            Assert.AreEqual(_newData.ToJson(), theData.ToJson());
+        }
+
+        [TestMethod]
+        public void Insert_multiple()
+        {
+            _db.Insert(_insertList);
+            var theList = _db.GetList<Base_UnitTest>();
+            Assert.AreEqual(_insertList.OrderBy(X => X.Id).ToJson(), theList.OrderBy(X => X.Id).ToJson());
+        }
+
+        [TestMethod]
+        public async Task Insert_multiple_async()
+        {
+            await _db.InsertAsync(_insertList);
+            var theList = await _db.GetListAsync<Base_UnitTest>();
+            Assert.AreEqual(_insertList.OrderBy(X => X.Id).ToJson(), theList.OrderBy(X => X.Id).ToJson());
         }
 
         //#region 测试用例
