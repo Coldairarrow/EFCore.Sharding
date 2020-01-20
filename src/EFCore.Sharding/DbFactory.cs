@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Data.Common;
 
 namespace EFCore.Sharding
 {
@@ -49,7 +50,10 @@ namespace EFCore.Sharding
         {
             if (conString.IsNullOrEmpty())
                 throw new Exception("conString能为空");
-            var dbConnection = DbProviderFactoryHelper.GetDbConnection(conString, dbType);
+
+            DbConnection dbConnection = null;
+            if (dbType != DatabaseType.Memory)
+                dbConnection = DbProviderFactoryHelper.GetDbConnection(conString, dbType);
             var model = DbModelFactory.GetDbCompiledModel(conString, dbType);
             DbContextOptionsBuilder builder = new DbContextOptionsBuilder();
 
@@ -59,6 +63,7 @@ namespace EFCore.Sharding
                 case DatabaseType.MySql: builder.UseMySql(dbConnection); break;
                 case DatabaseType.PostgreSql: builder.UseNpgsql(dbConnection); break;
                 case DatabaseType.Oracle: builder.UseOracle(dbConnection, x => x.UseOracleSQLCompatibility("11")); break;
+                case DatabaseType.Memory: builder.UseInMemoryDatabase(conString); break;
                 default: throw new Exception("暂不支持该数据库！");
             }
             builder.EnableSensitiveDataLogging();
