@@ -8,22 +8,21 @@ namespace EFCore.Sharding.Util
     {
         static GlobalData()
         {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
-            assemblies.RemoveAll(x =>
-                x.FullName.Contains("System")
-                || x.FullName.Contains("Microsoft")
-                || x.IsDynamic);
-            assemblies.ForEach(aAssembly =>
-            {
-                try
+            AppDomain.CurrentDomain.GetAssemblies().Where(x =>
+                !x.FullName.Contains("System")
+                && !x.FullName.Contains("Microsoft")
+                && !x.IsDynamic)
+                .ForEach(aAssembly =>
                 {
-                    FxAllTypes.AddRange(aAssembly.GetTypes());
-                }
-                catch
-                {
+                    try
+                    {
+                        FxAllTypes.AddRange(aAssembly.GetTypes());
+                    }
+                    catch
+                    {
 
-                }
-            });
+                    }
+                });
         }
 
         /// <summary>

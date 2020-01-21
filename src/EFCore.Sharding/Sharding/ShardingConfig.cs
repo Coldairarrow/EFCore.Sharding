@@ -37,6 +37,7 @@ namespace EFCore.Sharding
         /// </summary>
         public static void Init()
         {
+
         }
 
         /// <summary>
