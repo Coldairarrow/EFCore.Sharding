@@ -35,9 +35,9 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static IShardingRepository GetShardingRepository()
         {
-            string defaultConString = "Data Source=.;Initial Catalog=Colder.Admin.AntdVue;Integrated Security=True;Pooling=true;";
+            ShardingConfig.CheckInit();
 
-            return new ShardingRepository(GetRepository(defaultConString, DatabaseType.SqlServer));
+            return new ShardingRepository(GetRepository("DataSource=db.db", DatabaseType.SQLite));
         }
 
         /// <summary>

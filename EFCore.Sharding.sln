@@ -9,7 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{16
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding", "src\EFCore.Sharding\EFCore.Sharding.csproj", "{1981E3B3-8DC3-4AD9-98B2-938830B6E362}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFCore.Sharding.Tests", "src\EFCore.Sharding.Tests\EFCore.Sharding.Tests.csproj", "{CDD89658-166D-4653-A38B-07FA093C8D34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding.Tests", "src\EFCore.Sharding.Tests\EFCore.Sharding.Tests.csproj", "{CDD89658-166D-4653-A38B-07FA093C8D34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo", "examples\Demo\Demo.csproj", "{CE84C024-B26C-4A97-A020-3F64B0160DF7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +27,10 @@ Global
 		{CDD89658-166D-4653-A38B-07FA093C8D34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDD89658-166D-4653-A38B-07FA093C8D34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDD89658-166D-4653-A38B-07FA093C8D34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE84C024-B26C-4A97-A020-3F64B0160DF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE84C024-B26C-4A97-A020-3F64B0160DF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE84C024-B26C-4A97-A020-3F64B0160DF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE84C024-B26C-4A97-A020-3F64B0160DF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,6 +38,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{1981E3B3-8DC3-4AD9-98B2-938830B6E362} = {A8EA1A26-EA0A-4647-A69F-48204A7AA9A0}
 		{CDD89658-166D-4653-A38B-07FA093C8D34} = {A8EA1A26-EA0A-4647-A69F-48204A7AA9A0}
+		{CE84C024-B26C-4A97-A020-3F64B0160DF7} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {777B6C86-08A0-4823-83C5-4DE00B557828}

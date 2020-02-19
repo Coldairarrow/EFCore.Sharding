@@ -34,12 +34,12 @@ namespace EFCore.Sharding
         }
         private List<(object targetObj, IRepository targetDb)> GetMapConfigs<T>(List<T> entities)
         {
-            var configs = entities.Select(x => ShardingConfig.Instance.GetTheWriteTable(typeof(T).Name, x)).ToList();
+            var configs = entities.Select(x => ShardingConfig.ConfigProvider.GetTheWriteTable(typeof(T).Name, x)).ToList();
             var targetDbs = GetTargetDb(configs);
             List<(object targetObj, IRepository targetDb)> resList = new List<(object targetObj, IRepository targetDb)>();
             entities.ForEach(aEntity =>
             {
-                (string tableName, string conString, DatabaseType dbType) = ShardingConfig.Instance.GetTheWriteTable(typeof(T).Name, aEntity);
+                (string tableName, string conString, DatabaseType dbType) = ShardingConfig.ConfigProvider.GetTheWriteTable(typeof(T).Name, aEntity);
                 var targetDb = _repositories[GetDbId(conString, dbType)];
                 var targetObj = aEntity.ChangeType(MapTable(tableName));
                 resList.Add((targetObj, targetDb));
@@ -170,7 +170,7 @@ namespace EFCore.Sharding
         }
         public int DeleteAll<T>() where T : class, new()
         {
-            var configs = ShardingConfig.Instance.GetAllWriteTables(typeof(T).Name);
+            var configs = ShardingConfig.ConfigProvider.GetAllWriteTables(typeof(T).Name);
             var targetDbs = GetTargetDb(configs);
             return PackAccessData(() =>
             {
@@ -186,7 +186,7 @@ namespace EFCore.Sharding
         }
         public async Task<int> DeleteAllAsync<T>() where T : class, new()
         {
-            var configs = ShardingConfig.Instance.GetAllWriteTables(typeof(T).Name);
+            var configs = ShardingConfig.ConfigProvider.GetAllWriteTables(typeof(T).Name);
             var targetDbs = GetTargetDb(configs);
             return await PackAccessDataAsync(async () =>
             {
