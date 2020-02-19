@@ -15,6 +15,8 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static IShardingQueryable<T> ToSharding<T>(this IQueryable<T> source) where T : class, new()
         {
+            ShardingConfig.CheckInit();
+
             return new ShardingQueryable<T>(source);
         }
 
@@ -25,6 +27,8 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static IShardingRepository ToSharding(this IRepository db)
         {
+            ShardingConfig.CheckInit();
+
             return new ShardingRepository(db);
         }
     }
