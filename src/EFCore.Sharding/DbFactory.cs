@@ -32,12 +32,13 @@ namespace EFCore.Sharding
         /// <summary>
         /// 获取ShardingRepository
         /// </summary>
-        /// <returns></returns>
-        public static IShardingRepository GetShardingRepository()
+        /// <param name="absDbName">抽象数据库</param>
+        /// <returns>ShardingRepository</returns>
+        public static IShardingRepository GetShardingRepository(string absDbName = ShardingConfig.DefaultAbsDbName)
         {
             ShardingConfig.CheckInit();
 
-            return new ShardingRepository(GetRepository("DataSource=db.db", DatabaseType.SQLite));
+            return new ShardingRepository(GetRepository("DataSource=db.db", DatabaseType.SQLite), absDbName);
         }
 
         /// <summary>

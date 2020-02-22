@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Demo
+namespace Demo.Performance
 {
     class Base_UnitTestShardingRule : ModShardingRule<Base_UnitTest>
     {

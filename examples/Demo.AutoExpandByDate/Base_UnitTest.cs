@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Demo
+namespace Demo.AutoExpandByDate
 {
     /// <summary>
     /// 单元测试表

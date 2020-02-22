@@ -313,23 +313,5 @@ namespace EFCore.Sharding.Tests
             //    Assert.AreEqual(updateData.ToJson(), db1Data_3.ToJson());
             //})();
         }
-
-        [TestMethod]
-        public void InertTest1()
-        {
-            List<Base_UnitTest> insertList = new List<Base_UnitTest>();
-            for (int i = 0; i < 300000; i++)
-            {
-                insertList.Add(new Base_UnitTest
-                {
-                    Id = IdHelper.GetId(),
-                    Age = i,
-                    UserId = IdHelper.GetId(),
-                    UserName = IdHelper.GetId()
-                });
-            }
-
-            _db.Insert(insertList);
-        }
     }
 }

@@ -13,18 +13,20 @@ namespace EFCore.Sharding
     {
         #region 构造函数
 
-        public ShardingQueryable(IQueryable<T> source, DistributedTransaction transaction = null)
+        public ShardingQueryable(IQueryable<T> source, string absDbName, DistributedTransaction transaction = null)
         {
             _source = source;
             _absTableType = source.ElementType;
             _absTableName = _absTableType.Name;
             _transaction = transaction;
+            _absDbName = absDbName;
         }
 
         #endregion
 
         #region 私有成员
 
+        private string _absDbName { get; }
         private DistributedTransaction _transaction { get; }
         private bool _openTransaction { get => _transaction?.OpenTransaction == true; }
         private Type _absTableType { get; }
@@ -37,7 +39,7 @@ namespace EFCore.Sharding
         private async Task<List<TResult>> GetStatisDataAsync<TResult>(Func<IQueryable, Task<TResult>> access, IQueryable newSource = null)
         {
             newSource = newSource ?? _source;
-            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName);
+            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName, _absDbName);
             List<Task<TResult>> tasks = new List<Task<TResult>>();
             SynchronizedCollection<IRepository> dbs = new SynchronizedCollection<IRepository>();
             tasks = tables.Select(aTable =>
@@ -157,7 +159,7 @@ namespace EFCore.Sharding
                 noPaginSource = noPaginSource.Take(take.Value + skip.Value);
 
             //从各个分表获取数据
-            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName);
+            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName, _absDbName);
             SynchronizedCollection<IRepository> dbs = new SynchronizedCollection<IRepository>();
             List<Task<List<T>>> tasks = tables.Select(aTable =>
             {

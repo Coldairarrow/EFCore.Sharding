@@ -10,17 +10,17 @@ namespace EFCore.Sharding
     {
         #region 外部接口
 
-        public List<(string tableName, string conString, DatabaseType dbType)> GetReadTables(string absTableName, string absDbName = "BaseDb")
+        public List<(string tableName, string conString, DatabaseType dbType)> GetReadTables(string absTableName, string absDbName)
         {
             return GetTargetTables(absTableName, ReadWriteType.Read, absDbName);
         }
 
-        public (string tableName, string conString, DatabaseType dbType) GetTheWriteTable(string absTableName, object obj, string absDbName = "BaseDb")
+        public (string tableName, string conString, DatabaseType dbType) GetTheWriteTable(string absTableName, object obj, string absDbName)
         {
             return GetTargetTables(absTableName, ReadWriteType.Write, absDbName, obj).Single();
         }
 
-        public List<(string tableName, string conString, DatabaseType dbType)> GetAllWriteTables(string absTableName, string absDbName = null)
+        public List<(string tableName, string conString, DatabaseType dbType)> GetAllWriteTables(string absTableName, string absDbName)
         {
             return GetTargetTables(absTableName, ReadWriteType.Write, absDbName, null);
         }
@@ -88,6 +88,7 @@ namespace EFCore.Sharding
         }
 
         public IConfigInit AutoExpandByDate<T>(
+            DateTime startTime,
             ExpandByDateMode expandByDateMode,
             Func<DateTime, string> formatTableName,
             Func<string, string> createTableSqlBuilder,
@@ -103,7 +104,18 @@ namespace EFCore.Sharding
                    ExpandByDateMode.PerYear => ("0 0 0 L 12 ? *", TimeSpan.FromDays(1)),
                    _ => throw new Exception("expandByDateMode参数无效")
                };
+            var theTime = startTime;
+            while (true)
+            {
+                if (theTime > DateTime.Now)
+                    break;
+                string tableName = formatTableName(theTime);
+                AddPhysicTable<T>(tableName, groupName);
 
+                var key = expandByDateMode.ToString().Replace("Per", "");
+                var method = theTime.GetType().GetMethod($"Add{key}s");
+                theTime = (DateTime)method.Invoke(theTime, new object[] { 1 });
+            }
             JobHelper.SetCronJob(() =>
             {
                 DateTime trueDate = DateTime.Now + paramter.leadTime;
@@ -125,9 +137,9 @@ namespace EFCore.Sharding
                     var repository = DbFactory.GetRepository(aDb.ConString, aDb.DbType);
                     repository.ExecuteSql(sql);
                 });
-                //添加表对应实体模型
-                var physicEntityType = ShardingHelper.MapTable(typeof(T), tableName);
-                DbModelFactory.AddEntityType(tableName, physicEntityType);
+
+                //添加物理表
+                AddPhysicTable<T>(tableName, groupName);
             }, paramter.conExpression);
 
             return this;

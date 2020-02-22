@@ -13,12 +13,27 @@ namespace EFCore.Sharding.Util
     {
         #region 私有成员
 
-        static JobHelper()
+        private static IScheduler __scheduler;
+        private static object _lock = new object();
+        private static IScheduler _scheduler
         {
-            _scheduler = AsyncHelper.RunSync(() => StdSchedulerFactory.GetDefaultScheduler());
-            AsyncHelper.RunSync(() => _scheduler.Start());
+            get
+            {
+                if (__scheduler == null)
+                {
+                    lock (_lock)
+                    {
+                        if (__scheduler == null)
+                        {
+                            __scheduler = AsyncHelper.RunSync(() => StdSchedulerFactory.GetDefaultScheduler());
+                            AsyncHelper.RunSync(() => __scheduler.Start());
+                        }
+                    }
+                }
+
+                return __scheduler;
+            }
         }
-        private static readonly IScheduler _scheduler;
         static ConcurrentDictionary<string, Action> _jobs { get; }
             = new ConcurrentDictionary<string, Action>();
 
