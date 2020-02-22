@@ -12,24 +12,13 @@ namespace EFCore.Sharding
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="source">数据源</param>
-        /// <returns></returns>
-        public static IShardingQueryable<T> ToSharding<T>(this IQueryable<T> source) where T : class, new()
+        /// <param name="absDbName">抽象数据库</param>
+        /// <returns>IShardingQueryable</returns>
+        public static IShardingQueryable<T> ToSharding<T>(this IQueryable<T> source, string absDbName = ShardingConfig.DefaultAbsDbName) where T : class, new()
         {
             ShardingConfig.CheckInit();
 
-            return new ShardingQueryable<T>(source);
-        }
-
-        /// <summary>
-        /// 转为Sharding
-        /// </summary>
-        /// <param name="db">数据源</param>
-        /// <returns></returns>
-        public static IShardingRepository ToSharding(this IRepository db)
-        {
-            ShardingConfig.CheckInit();
-
-            return new ShardingRepository(db);
+            return new ShardingQueryable<T>(source, absDbName);
         }
     }
 }
