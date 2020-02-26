@@ -31,7 +31,7 @@ namespace EFCore.Sharding.Tests
         }
 
         [TestMethod]
-        public async Task Insert_single_async()
+        public async Task InsertAsync_single()
         {
             await _db.InsertAsync(_newData);
             var theData = await _db.GetIQueryable<Base_UnitTest>().FirstOrDefaultAsync();
@@ -47,11 +47,231 @@ namespace EFCore.Sharding.Tests
         }
 
         [TestMethod]
-        public async Task Insert_multiple_async()
+        public async Task InsertAsync_multiple()
         {
             await _db.InsertAsync(_insertList);
             var theList = await _db.GetListAsync<Base_UnitTest>();
             Assert.AreEqual(_insertList.OrderBy(X => X.Id).ToJson(), theList.OrderBy(X => X.Id).ToJson());
+        }
+
+        [TestMethod]
+        public void DeleteAll_generic()
+        {
+            _db.Insert(_insertList);
+            _db.DeleteAll<Base_UnitTest>();
+            int count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public async Task DeleteAllAsync_generic()
+        {
+            _db.Insert(_insertList);
+            await _db.DeleteAllAsync<Base_UnitTest>();
+            int count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public void DeleteAll_nogeneric()
+        {
+            _db.Insert(_insertList);
+            _db.DeleteAll(typeof(Base_UnitTest));
+            int count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public async Task DeleteAllAsync__nogeneric()
+        {
+            _db.Insert(_insertList);
+            await _db.DeleteAllAsync(typeof(Base_UnitTest));
+            int count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public void Delete_single()
+        {
+            _db.Insert(_newData);
+            _db.Delete(_newData);
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public async Task DeleteAsync_single()
+        {
+            _db.Insert(_newData);
+            await _db.DeleteAsync(_newData);
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public void Delete_multiple()
+        {
+            _db.Insert(_insertList);
+            _db.Delete(_insertList);
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public async Task DeleteAsync_multiple()
+        {
+            _db.Insert(_insertList);
+            await _db.DeleteAsync(_insertList);
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public void Delete_where()
+        {
+            _db.Insert(_insertList);
+            _db.Delete<Base_UnitTest>(x => x.UserId == "Admin2");
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(1, count);
+        }
+
+        [TestMethod]
+        public async Task DeleteAsync_where()
+        {
+            _db.Insert(_insertList);
+            await _db.DeleteAsync<Base_UnitTest>(x => x.UserId == "Admin2");
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(1, count);
+        }
+
+        [TestMethod]
+        public void Delete_key_generic()
+        {
+            _db.Insert(_newData);
+            _db.Delete<Base_UnitTest>(_newData.Id);
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public async Task DeleteAsync_key_generic()
+        {
+            _db.Insert(_newData);
+            await _db.DeleteAsync<Base_UnitTest>(_newData.Id);
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public void Delete_keys_generic()
+        {
+            _db.Insert(_insertList);
+            _db.Delete<Base_UnitTest>(_insertList.Select(x => x.Id).ToList());
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public async Task DeleteAsync_keys_generic()
+        {
+            _db.Insert(_insertList);
+            await _db.DeleteAsync<Base_UnitTest>(_insertList.Select(x => x.Id).ToList());
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public void Delete_key_nogeneric()
+        {
+            _db.Insert(_newData);
+            _db.Delete(typeof(Base_UnitTest), _newData.Id);
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public async Task DeleteAsync_key_nogeneric()
+        {
+            _db.Insert(_newData);
+            await _db.DeleteAsync(typeof(Base_UnitTest), _newData.Id);
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public void Delete_keys_nogeneric()
+        {
+            _db.Insert(_insertList);
+            _db.Delete(typeof(Base_UnitTest), _insertList.Select(x => x.Id).ToList());
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public async Task DeleteAsync_keys_nogeneric()
+        {
+            _db.Insert(_insertList);
+            await _db.DeleteAsync(typeof(Base_UnitTest), _insertList.Select(x => x.Id).ToList());
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
+
+        [TestMethod]
+        public void Delete_Sql_generic()
+        {
+            _db.Insert(_insertList);
+            _db.Delete_Sql<Base_UnitTest>(x => x.UserId == "Admin2");
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(1, count);
+        }
+
+        [TestMethod]
+        public async Task Delete_SqlAsync_generic()
+        {
+            _db.Insert(_insertList);
+            await _db.Delete_SqlAsync<Base_UnitTest>(x => x.UserId == "Admin2");
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(1, count);
+        }
+
+        [TestMethod]
+        public void Delete_Sql_nogeneric()
+        {
+            _db.Insert(_insertList);
+            _db.Delete_Sql(typeof(Base_UnitTest), "UserId==@0", "Admin2");
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(1, count);
+        }
+
+        [TestMethod]
+        public async Task Delete_SqlAsync_nogeneric()
+        {
+            _db.Insert(_insertList);
+            await _db.Delete_SqlAsync(typeof(Base_UnitTest), "UserId==@0", "Admin2");
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(1, count);
+        }
+
+        [TestMethod]
+        public void Update_single()
+        {
+            _db.Insert(_newData);
+            var updateData = _newData.DeepClone();
+            updateData.UserId = "Admin_Update";
+            _db.Update(updateData);
+            var dbUpdateData = _db.GetIQueryable<Base_UnitTest>().FirstOrDefault();
+            Assert.AreEqual(updateData.ToJson(), dbUpdateData.ToJson());
+        }
+
+        [TestMethod]
+        public async Task UpdateAsync_single()
+        {
+            _db.Insert(_newData);
+            var updateData = _newData.DeepClone();
+            updateData.UserId = "Admin_Update";
+            await _db.UpdateAsync(updateData);
+            var dbUpdateData = _db.GetIQueryable<Base_UnitTest>().FirstOrDefault();
+            Assert.AreEqual(updateData.ToJson(), dbUpdateData.ToJson());
         }
 
         //#region 测试用例
