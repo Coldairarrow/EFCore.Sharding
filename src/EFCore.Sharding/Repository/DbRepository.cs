@@ -11,6 +11,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -571,9 +572,43 @@ namespace EFCore.Sharding
                     if (parameters != null && parameters.Count() > 0)
                         cmd.Parameters.AddRange(CreateDbParamters(parameters.ToList()).ToArray());
 
+
+                    //var dataAdapter = dbProviderFactory.CreateDataAdapter();
+                    //dataAdapter.SelectCommand = cmd;
+
                     DataTable table = new DataTable();
+                    //dataAdapter.Fill(table);
                     var reader = cmd.ExecuteReader();
+
+                    DataSet dataSet = new DataSet();
+                    dataSet.Tables.Add(table);
+                    dataSet.EnforceConstraints = false;
                     table.Load(reader);
+                    //try
+                    //{
+                    //    table.Load(reader);
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    //remove datatable errors  
+                    //    DataRow[] rowsInError;
+                    //    if (table.HasErrors)
+                    //    {
+                    //        // Get an array of all rows with errors. 
+                    //        rowsInError = table.GetErrors();
+                    //        // Print the error of each column in each row. 
+                    //        StringBuilder sbError = new StringBuilder();
+                    //        for (int i = 0; i < rowsInError.Length; i++)
+                    //        {
+                    //            foreach (DataColumn myCol in table.Columns)
+                    //            {
+                    //                sbError.Append(myCol.ColumnName + " " + rowsInError[i].GetColumnError(myCol));
+                    //            }
+                    //            // Clear the row errors 
+                    //            rowsInError[i].ClearErrors(); //设置断点，然后运行时观察其中错误 
+                    //        }
+                    //    }
+                    //}
 
                     return table;
                 }
@@ -601,7 +636,31 @@ namespace EFCore.Sharding
 
                     DataTable table = new DataTable();
                     var reader = await cmd.ExecuteReaderAsync();
-                    table.Load(reader);
+                    try
+                    {
+                        table.Load(reader);
+                    }
+                    catch (Exception)
+                    {
+                        //remove datatable errors  
+                        DataRow[] rowsInError;
+                        if (table.HasErrors)
+                        {
+                            // Get an array of all rows with errors. 
+                            rowsInError = table.GetErrors();
+                            // Print the error of each column in each row. 
+                            StringBuilder sbError = new StringBuilder();
+                            for (int i = 0; i < rowsInError.Length; i++)
+                            {
+                                foreach (DataColumn myCol in table.Columns)
+                                {
+                                    sbError.Append(myCol.ColumnName + " " + rowsInError[i].GetColumnError(myCol));
+                                }
+                                // Clear the row errors 
+                                rowsInError[i].ClearErrors(); //设置断点，然后运行时观察其中错误 
+                            }
+                        }
+                    }
 
                     return table;
                 }
