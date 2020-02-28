@@ -1,7 +1,10 @@
-﻿using EFCore.Sharding.Tests.Util;
+﻿using Coldairarrow.Util;
+using EFCore.Sharding.Tests.Util;
 using EFCore.Sharding.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -274,378 +277,456 @@ namespace EFCore.Sharding.Tests
             Assert.AreEqual(updateData.ToJson(), dbUpdateData.ToJson());
         }
 
-        //#region 测试用例
+        [TestMethod]
+        public void Update_multiple()
+        {
+            _db.Insert(_insertList);
+            var updateList = _insertList.DeepClone();
+            updateList[0].UserId = "Admin3";
+            updateList[1].UserId = "Admin4";
+            _db.Update(updateList);
+            int count = _db.GetIQueryable<Base_UnitTest>().Where(x => x.UserId == "Admin3" || x.UserId == "Admin4").Count();
+            Assert.AreEqual(2, count);
+        }
 
-        ///// <summary>
-        ///// 插入数据测试
-        ///// </summary>
-        //[TestMethod]
-        //public void InsertTest()
-        //{
-        //    //单条数据
-        //    _db.Insert(_newData);
-        //    var theData = _db.GetIQueryable().FirstOrDefault();
-        //    Assert.AreEqual(_newData.ToJson(), theData.ToJson());
+        [TestMethod]
+        public async Task UpdateAsync_multiple()
+        {
+            _db.Insert(_insertList);
+            var updateList = _insertList.DeepClone();
+            updateList[0].UserId = "Admin3";
+            updateList[1].UserId = "Admin4";
+            await _db.UpdateAsync(updateList);
+            int count = _db.GetIQueryable<Base_UnitTest>().Where(x => x.UserId == "Admin3" || x.UserId == "Admin4").Count();
+            Assert.AreEqual(2, count);
+        }
 
-        //    //多条数据
-        //    _db.DeleteAll();
-        //    _db.Insert(_insertList);
-        //    var theList = _db.GetList();
-        //    Assert.AreEqual(_insertList.OrderBy(X => X.Id).ToJson(), theList.OrderBy(X => X.Id).ToJson());
-        //}
+        [TestMethod]
+        public void UpdateAny_single()
+        {
+            _db.Insert(_newData);
+            var newUpdateData = _newData.DeepClone();
+            newUpdateData.UserName = "普通管理员";
+            newUpdateData.UserId = "xiaoming";
+            newUpdateData.Age = 100;
+            _db.UpdateAny(newUpdateData, new List<string> { "UserName", "Age" });
+            var dbSingleData = _db.GetIQueryable<Base_UnitTest>().FirstOrDefault();
+            newUpdateData.UserId = "Admin";
+            Assert.AreEqual(newUpdateData.ToJson(), dbSingleData.ToJson());
+        }
 
-        ///// <summary>
-        ///// 删除数据测试
-        ///// </summary>
-        //[TestMethod]
-        //public void DeleteTest()
-        //{
-        //    _db.DeleteAll();
-        //    //删除表所有数据
-        //    _db.Insert(_insertList);
-        //    _db.DeleteAll();
-        //    int count = _db.GetIQueryable().Count();
-        //    Assert.AreEqual(0, count);
+        [TestMethod]
+        public async Task UpdateAnyAsync_single()
+        {
+            _db.Insert(_newData);
+            var newUpdateData = _newData.DeepClone();
+            newUpdateData.UserName = "普通管理员";
+            newUpdateData.UserId = "xiaoming";
+            newUpdateData.Age = 100;
+            await _db.UpdateAnyAsync(newUpdateData, new List<string> { "UserName", "Age" });
+            var dbSingleData = _db.GetIQueryable<Base_UnitTest>().FirstOrDefault();
+            newUpdateData.UserId = "Admin";
+            Assert.AreEqual(newUpdateData.ToJson(), dbSingleData.ToJson());
+        }
 
-        //    //删除单条数据,对象形式
-        //    _db.DeleteAll();
-        //    _db.Insert(_newData);
-        //    _db.Delete(_newData);
-        //    count = _db.GetIQueryable().Count();
-        //    Assert.AreEqual(0, count);
+        [TestMethod]
+        public void UpdateAny_multiple()
+        {
+            _db.Insert(_insertList);
+            var newList1 = _insertList.DeepClone();
+            var newList2 = _insertList.DeepClone();
+            newList1.ForEach(aData =>
+            {
+                aData.Age = 100;
+                aData.UserId = "Test";
+                aData.UserName = "测试";
+            });
+            newList2.ForEach(aData =>
+            {
+                aData.Age = 100;
+                aData.UserName = "测试";
+            });
 
-        //    //删除单条数据,主键形式
-        //    _db.DeleteAll();
-        //    _db.Insert(_newData);
-        //    _db.Delete(_newData.Id);
-        //    count = _db.GetIQueryable().Count();
-        //    Assert.AreEqual(0, count);
+            _db.UpdateAny(newList1, new List<string> { "UserName", "Age" });
+            var dbData = _db.GetList<Base_UnitTest>();
+            Assert.AreEqual(newList2.OrderBy(x => x.Id).ToJson(), dbData.OrderBy(x => x.Id).ToJson());
+        }
 
-        //    //删除多条数据
-        //    _db.DeleteAll();
-        //    _db.Insert(_insertList);
-        //    _db.Delete(_insertList);
-        //    count = _db.GetIQueryable().Count();
-        //    Assert.AreEqual(0, count);
+        [TestMethod]
+        public async Task UpdateAnyAsync_multiple()
+        {
+            _db.Insert(_insertList);
+            var newList1 = _insertList.DeepClone();
+            var newList2 = _insertList.DeepClone();
+            newList1.ForEach(aData =>
+            {
+                aData.Age = 100;
+                aData.UserId = "Test";
+                aData.UserName = "测试";
+            });
+            newList2.ForEach(aData =>
+            {
+                aData.Age = 100;
+                aData.UserName = "测试";
+            });
 
-        //    //删除多条数据,主键形式
-        //    _db.DeleteAll();
-        //    _db.Insert(_insertList);
-        //    _db.Delete(_insertList.Select(x => x.Id).ToList());
-        //    count = _db.GetIQueryable().Count();
-        //    Assert.AreEqual(0, count);
+            await _db.UpdateAnyAsync(newList1, new List<string> { "UserName", "Age" });
+            var dbData = _db.GetList<Base_UnitTest>();
+            Assert.AreEqual(newList2.OrderBy(x => x.Id).ToJson(), dbData.OrderBy(x => x.Id).ToJson());
+        }
 
-        //    //删除指定数据
-        //    _db.DeleteAll();
-        //    _db.Insert(_insertList);
-        //    _db.Delete(x => x.UserId == "Admin2");
-        //    count = _db.GetIQueryable().Count();
-        //    Assert.AreEqual(1, count);
-        //}
+        [TestMethod]
+        public void UpdateWhere()
+        {
+            _db.Insert(_newData);
+            _db.UpdateWhere<Base_UnitTest>(x => x.UserId == "Admin", x =>
+            {
+                x.UserId = "Admin2";
+            });
 
-        ///// <summary>
-        ///// 更新数据测试
-        ///// </summary>
-        //[TestMethod]
-        //public void UpdateTest()
-        //{
-        //    //更新单条数据
-        //    _db.DeleteAll();
-        //    _db.Insert(_newData);
-        //    var updateData = _newData.DeepClone();
-        //    updateData.UserId = "Admin_Update";
-        //    _db.Update(updateData);
-        //    var dbUpdateData = _db.GetIQueryable().FirstOrDefault();
-        //    Assert.AreEqual(updateData.ToJson(), dbUpdateData.ToJson());
+            Assert.IsTrue(_db.GetIQueryable<Base_UnitTest>().Any(x => x.UserId == "Admin2"));
+        }
 
-        //    //更新多条数据
-        //    _db.DeleteAll();
-        //    _db.Insert(_insertList);
-        //    var updateList = _insertList.DeepClone();
-        //    updateList[0].UserId = "Admin3";
-        //    updateList[1].UserId = "Admin4";
-        //    _db.Update(updateList);
-        //    int count = _db.GetIQueryable().Where(x => x.UserId == "Admin3" || x.UserId == "Admin4").Count();
-        //    Assert.AreEqual(2, count);
+        [TestMethod]
+        public async Task UpdateWhereAsync()
+        {
+            _db.Insert(_newData);
+            await _db.UpdateWhereAsync<Base_UnitTest>(x => x.UserId == "Admin", x =>
+            {
+                x.UserId = "Admin2";
+            });
 
-        //    //更新单条数据指定属性
-        //    //_baseBus.DeleteAll();
-        //    //_baseBus.Insert(_newData);
-        //    //var newUpdateData = _newData.DeepClone();
-        //    //newUpdateData.UserName = "普通管理员";
-        //    //newUpdateData.UserId = "xiaoming";
-        //    //newUpdateData.Age = 100;
-        //    //_baseBus.UpdateAny(newUpdateData, new List<string> { "UserName", "Age" });
-        //    //var dbSingleData = _baseBus.GetIQueryable().FirstOrDefault();
-        //    //newUpdateData.UserId = "Admin";
-        //    //Assert.AreEqual(newUpdateData.ToJson(), dbSingleData.ToJson());
+            Assert.IsTrue(_db.GetIQueryable<Base_UnitTest>().Any(x => x.UserId == "Admin2"));
+        }
 
-        //    //更新多条数据指定属性
-        //    //_baseBus.DeleteAll();
-        //    //_baseBus.Insert(_insertList);
-        //    //var newList1 = _insertList.DeepClone();
-        //    //var newList2 = _insertList.DeepClone();
-        //    //newList1.ForEach(aData =>
-        //    //{
-        //    //    aData.Age = 100;
-        //    //    aData.UserId = "Test";
-        //    //    aData.UserName = "测试";
-        //    //});
-        //    //newList2.ForEach(aData =>
-        //    //{
-        //    //    aData.Age = 100;
-        //    //    aData.UserName = "测试";
-        //    //});
+        [TestMethod]
+        public void UpdateWhere_Sql()
+        {
+            _db.Insert(_newData);
+            _db.UpdateWhere_Sql<Base_UnitTest>(x => x.UserId == "Admin", ("UserId", UpdateType.Equal, "Admin2"));
 
-        //    //_baseBus.UpdateAny(newList1, new List<string> { "UserName", "Age" });
-        //    //var dbData = _baseBus.GetList();
-        //    //Assert.AreEqual(newList2.OrderBy(x => x.Id).ToJson(), dbData.OrderBy(x => x.Id).ToJson());
+            Assert.IsTrue(_db.GetIQueryable<Base_UnitTest>().Any(x => x.UserId == "Admin2"));
+        }
 
-        //    //更新指定条件数据
-        //    _db.DeleteAll();
-        //    _db.Insert(_newData);
-        //    _db.UpdateWhere(x => x.UserId == "Admin", x =>
-        //    {
-        //        x.UserId = "Admin2";
-        //    });
+        [TestMethod]
+        public async Task UpdateWhere_SqlAsync()
+        {
+            _db.Insert(_newData);
+            await _db.UpdateWhere_SqlAsync<Base_UnitTest>(x => x.UserId == "Admin", ("UserId", UpdateType.Equal, "Admin2"));
 
-        //    Assert.IsTrue(_db.GetIQueryable().Any(x => x.UserId == "Admin2"));
-        //}
+            Assert.IsTrue(_db.GetIQueryable<Base_UnitTest>().Any(x => x.UserId == "Admin2"));
+        }
 
-        ///// <summary>
-        ///// 查找数据测试
-        ///// </summary>
-        //[TestMethod]
-        //public void SearchTest()
-        //{
-        //    //GetEntity获取实体
-        //    _db.DeleteAll();
-        //    _db.Insert(_newData);
-        //    var theData = _db.GetEntity(_newData.Id);
-        //    Assert.AreEqual(_newData.ToJson(), theData.ToJson());
+        [TestMethod]
+        public void UpdateWhere_Sql_type()
+        {
+            _db.Insert(_newData);
+            _db.UpdateWhere_Sql(typeof(Base_UnitTest), "UserId = @0", new object[] { "Admin" }, ("UserId", UpdateType.Equal, "Admin2"));
 
-        //    //GetList获取表的所有数据
-        //    _db.DeleteAll();
-        //    _db.Insert(_insertList);
-        //    var dbList = _db.GetList();
-        //    Assert.AreEqual(_insertList.OrderBy(x => x.Id).ToJson(), dbList.OrderBy(x => x.Id).ToJson());
+            Assert.IsTrue(_db.GetIQueryable<Base_UnitTest>().Any(x => x.UserId == "Admin2"));
+        }
 
-        //    //GetIQueryable获取实体对应的表，延迟加载，主要用于支持Linq查询操作
-        //    int count = _db.GetIQueryable().Where(x => x.UserId == "Admin1").Count();
-        //    Assert.AreEqual(1, count);
+        [TestMethod]
+        public async Task UpdateWhere_SqlAsync_type()
+        {
+            _db.Insert(_newData);
+            await _db.UpdateWhere_SqlAsync(typeof(Base_UnitTest), "UserId = @0", new object[] { "Admin" }, ("UserId", UpdateType.Equal, "Admin2"));
 
-        //    //GetIQPagination获取分页后的数据
-        //    _db.DeleteAll();
-        //    _db.Insert(_dataList);
-        //    Pagination pagination = new Pagination
-        //    {
-        //        SortField = "Age",
-        //        SortType = "asc",
-        //        PageIndex = 2,
-        //        PageRows = 20
-        //    };
-        //    dbList = _db.GetPagination(_db.GetIQueryable(), pagination);
-        //    var dataList = _dataList.GetPagination(pagination);
-        //    Assert.AreEqual(dbList.ToJson(), dataList.ToJson());
+            Assert.IsTrue(_db.GetIQueryable<Base_UnitTest>().Any(x => x.UserId == "Admin2"));
+        }
 
-        //    //GetIQPagination获取分页后的数据
-        //    int pages = 0;
-        //    dbList = _db.GetPagination(_db.GetIQueryable(), pagination.PageIndex, pagination.PageRows, pagination.SortField, pagination.SortType, ref count, ref pages);
-        //    Assert.AreEqual(dbList.ToJson(), dataList.ToJson());
+        [TestMethod]
+        public void GetEntity()
+        {
+            _db.Insert(_newData);
+            var theData = _db.GetEntity<Base_UnitTest>(_newData.Id);
+            Assert.AreEqual(_newData.ToJson(), theData.ToJson());
+        }
 
-        //    //GetDataTableWithSql通过Sql查询返回DataTable
-        //    //_baseBus.DeleteAll();
-        //    //_baseBus.Insert(_insertList);
-        //    //var table = _baseBus.GetDataTableWithSql("select * from Base_UnitTest order by Id asc");
-        //    //Assert.AreEqual(_insertList.OrderBy(x => x.Id).ToJson(), table.ToList<Base_UnitTest>().OrderBy(x => x.Id).ToJson());
+        [TestMethod]
+        public async Task GetEntityAsync()
+        {
+            _db.Insert(_newData);
+            var theData = await _db.GetEntityAsync<Base_UnitTest>(_newData.Id);
+            Assert.AreEqual(_newData.ToJson(), theData.ToJson());
+        }
 
-        //    //GetDataTableWithSql通过Sql查询返回DataTable
-        //    //_baseBus.DeleteAll();
-        //    //_baseBus.Insert(_insertList);
+        [TestMethod]
+        public void GetList()
+        {
+            _db.Insert(_insertList);
+            var dbList = _db.GetList<Base_UnitTest>();
+            Assert.AreEqual(_insertList.OrderBy(x => x.Id).ToJson(), dbList.OrderBy(x => x.Id).ToJson());
+        }
 
-        //    //List<DbParameter> paramters = new List<DbParameter>()
-        //    //{
-        //    //    new SqlParameter("@userId","Admin1")
-        //    //};
-        //    //table = _baseBus.GetDataTableWithSql("select * from Base_UnitTest where UserId = @userId", paramters);
-        //    //Assert.AreEqual(_insertList.Where(x => x.UserId == "Admin1").OrderBy(x => x.Id).ToJson(), table.ToList<Base_UnitTest>().OrderBy(x => x.Id).ToJson());
+        [TestMethod]
+        public async Task GetListAsync()
+        {
+            _db.Insert(_insertList);
+            var dbList = await _db.GetListAsync<Base_UnitTest>();
+            Assert.AreEqual(_insertList.OrderBy(x => x.Id).ToJson(), dbList.OrderBy(x => x.Id).ToJson());
+        }
 
-        //    //GetListBySql通过sql返回List
-        //    //_baseBus.DeleteAll();
-        //    //_baseBus.Insert(_insertList);
-        //    //var list = _baseBus.GetListBySql<Base_UnitTest>("select * from Base_UnitTest order by Id asc");
-        //    //Assert.AreEqual(_insertList.OrderBy(x => x.Id).ToJson(), list.OrderBy(x => x.Id).ToJson());
+        [TestMethod]
+        public void GetIQueryable()
+        {
+            _db.Insert(_newData);
+            int count = _db.GetIQueryable<Base_UnitTest>().Where(x => x.UserId == "Admin1").Count();
+            Assert.AreEqual(1, count);
+        }
 
-        //    //GetListBySql通过sql返回List
-        //    //_baseBus.DeleteAll();
-        //    //_baseBus.Insert(_insertList);
+        [TestMethod]
+        public void GetDataTableWithSql()
+        {
+            _db.Insert(_insertList);
+            var table = _db.GetDataTableWithSql("select * from Base_UnitTest order by Id asc");
+            Assert.AreEqual(_insertList.OrderBy(x => x.Id).ToJson(), table.ToList<Base_UnitTest>().OrderBy(x => x.Id).ToJson());
+        }
 
-        //    //paramters = new List<DbParameter>()
-        //    //{
-        //    //    new SqlParameter("@userId","Admin1")
-        //    //};
-        //    //list = _baseBus.GetListBySql<Base_UnitTest>("select * from Base_UnitTest where UserId = @userId", paramters);
-        //    //Assert.AreEqual(_insertList.Where(x => x.UserId == "Admin1").OrderBy(x => x.Id).ToJson(), list.OrderBy(x => x.Id).ToJson());
-        //}
+        [TestMethod]
+        public async Task GetDataTableWithSqlAsync()
+        {
+            _db.Insert(_insertList);
+            var table = await _db.GetDataTableWithSqlAsync("select * from Base_UnitTest order by Id asc");
+            Assert.AreEqual(_insertList.OrderBy(x => x.Id).ToJson(), table.ToList<Base_UnitTest>().OrderBy(x => x.Id).ToJson());
+        }
 
-        ///// <summary>
-        ///// 执行SQL语句测试
-        ///// </summary>
-        //[TestMethod]
-        //public void ExcuteSqlTest()
-        //{
-        //    //ExcuteBySql执行Sql语句
-        //    //_baseBus.DeleteAll();
-        //    //_baseBus.Insert(_newData);
-        //    //string sql = "delete from Base_UnitTest";
-        //    //_baseBus.ExecuteSql(sql);
-        //    //int count = _baseBus.GetIQueryable().Count();
-        //    //Assert.AreEqual(0, count);
+        [TestMethod]
+        public void GetDataTableWithSql_paramter()
+        {
+            _db.Insert(_insertList);
+            var table = _db.GetDataTableWithSql("select * from Base_UnitTest where UserId = @userId", ("@userId", "Admin1"));
+            Assert.AreEqual(_insertList.Where(x => x.UserId == "Admin1").OrderBy(x => x.Id).ToJson(), table.ToList<Base_UnitTest>().OrderBy(x => x.Id).ToJson());
+        }
 
-        //    //ExcuteBySql通过参数执行Sql语句
-        //    _db.DeleteAll();
-        //    _db.Insert(_newData);
-        //    //sql = "delete from Base_UnitTest where UserName like '%'+@name+'%'";
-        //    //SqlParameter parameter = new SqlParameter("@name", "管理员");
-        //    //_baseBus.ExecuteSql(sql, new List<DbParameter> { parameter });
-        //    //count = _baseBus.GetIQueryable().Count();
-        //    //Assert.AreEqual(0, count);
-        //}
+        [TestMethod]
+        public async Task GetDataTableWithSqlAsync_paramter()
+        {
+            _db.Insert(_insertList);
+            var table = await _db.GetDataTableWithSqlAsync("select * from Base_UnitTest where UserId = @userId", ("@userId", "Admin1"));
+            Assert.AreEqual(_insertList.Where(x => x.UserId == "Admin1").OrderBy(x => x.Id).ToJson(), table.ToList<Base_UnitTest>().OrderBy(x => x.Id).ToJson());
+        }
 
-        ///// <summary>
-        ///// 事务提交测试（单库）
-        ///// </summary>
-        //[TestMethod]
-        //public void TransactionTest()
-        //{
-        //    //失败事务,默认级别
-        //    new Action(() =>
-        //    {
-        //        bool succcess = _db.RunTransaction(() =>
-        //        {
-        //            _db.Insert(_newData);
-        //            var newData2 = _newData.DeepClone();
-        //            _db.Insert(newData2);
-        //        }).Success;
-        //        Assert.AreEqual(succcess, false);
-        //    })();
+        [TestMethod]
+        public void GetListBySql()
+        {
+            _db.Insert(_insertList);
+            var list = _db.GetListBySql<Base_UnitTest>("select * from Base_UnitTest order by Id asc");
+            Assert.AreEqual(_insertList.OrderBy(x => x.Id).ToJson(), list.OrderBy(x => x.Id).ToJson());
+        }
 
-        //    //成功事务,默认级别
-        //    new Action(() =>
-        //    {
-        //        Clear();
+        [TestMethod]
+        public async Task GetListBySqlAsync()
+        {
+            _db.Insert(_insertList);
+            var list = await _db.GetListBySqlAsync<Base_UnitTest>("select * from Base_UnitTest order by Id asc");
+            Assert.AreEqual(_insertList.OrderBy(x => x.Id).ToJson(), list.OrderBy(x => x.Id).ToJson());
+        }
 
-        //        bool succcess = _db.RunTransaction(() =>
-        //        {
-        //            var newData = _newData.DeepClone();
-        //            newData.Id = Guid.NewGuid().ToString();
-        //            newData.UserId = IdHelper.GetId();
-        //            newData.UserName = IdHelper.GetId();
-        //            _db.Insert(_newData);
-        //            _db.Insert(newData);
-        //        }).Success;
-        //        int count = _db.GetIQueryable().Count();
-        //        Assert.AreEqual(succcess, true);
-        //        Assert.AreEqual(count, 2);
-        //    })();
+        [TestMethod]
+        public void GetListBySql_paramter()
+        {
+            _db.Insert(_insertList);
+            var list = _db.GetListBySql<Base_UnitTest>("select * from Base_UnitTest where UserId = @userId", ("@userId", "Admin1"));
+            Assert.AreEqual(_insertList.Where(x => x.UserId == "Admin1").OrderBy(x => x.Id).ToJson(), list.OrderBy(x => x.Id).ToJson());
+        }
 
-        //    //隔离级别:RepeatableRead
-        //    new Action(() =>
-        //    {
-        //        Clear();
-        //        var db1 = DbFactory.GetRepository();
-        //        var db2 = DbFactory.GetRepository();
-        //        db1.Insert(_newData);
+        [TestMethod]
+        public async Task GetListBySqlAsync_paramter()
+        {
+            _db.Insert(_insertList);
+            var list = await _db.GetListBySqlAsync<Base_UnitTest>("select * from Base_UnitTest where UserId = @userId", ("@userId", "Admin1"));
+            Assert.AreEqual(_insertList.Where(x => x.UserId == "Admin1").OrderBy(x => x.Id).ToJson(), list.OrderBy(x => x.Id).ToJson());
+        }
 
-        //        var updateData = _newData.DeepClone();
-        //        Task db2Task = new Task(() =>
-        //        {
-        //            updateData.UserName = IdHelper.GetId();
-        //            db2.Update(updateData);
-        //        });
+        [TestMethod]
+        public void ExcuteSql()
+        {
+            _db.Insert(_newData);
+            string sql = "delete from Base_UnitTest";
+            _db.ExecuteSql(sql);
+            int count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
 
-        //        var res = db1.RunTransaction(() =>
-        //        {
-        //            //db1读=>db2写(阻塞)=>db1读=>db1提交
-        //            var db1Data_1 = db1.GetIQueryable<Base_UnitTest>().Where(x => x.Id == _newData.Id).FirstOrDefault();
+        [TestMethod]
+        public async Task ExcuteSqlAsync()
+        {
+            _db.Insert(_newData);
+            string sql = "delete from Base_UnitTest";
+            await _db.ExecuteSqlAsync(sql);
+            int count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(0, count);
+        }
 
-        //            db2Task.Start();
+        [TestMethod]
+        public void ExcuteSql_paramter()
+        {
+            _db.Insert(_newData);
+            var sql = "delete from Base_UnitTest where UserName like '%'+@name+'%'";
+            _db.ExecuteSql(sql, ("@name", "管理员"));
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(1, count);
+        }
 
-        //            var db1Data_2 = db1.GetIQueryable<Base_UnitTest>().Where(x => x.Id == _newData.Id).FirstOrDefault();
-        //            Assert.AreEqual(db1Data_1.ToJson(), db1Data_2.ToJson());
-        //        });
-        //        db2Task.Wait();
-        //        var db1Data_3 = db1.GetIQueryable<Base_UnitTest>().Where(x => x.Id == _newData.Id).FirstOrDefault();
-        //        Assert.AreEqual(updateData.ToJson(), db1Data_3.ToJson());
-        //    })();
-        //}
+        [TestMethod]
+        public async Task ExcuteSqlAsync_paramter()
+        {
+            _db.Insert(_newData);
+            var sql = "delete from Base_UnitTest where UserName like '%'+@name+'%'";
+            await _db.ExecuteSqlAsync(sql, ("@name", "管理员"));
+            var count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(1, count);
+        }
 
-        ///// <summary>
-        ///// 分布式事务提交测试（跨库）
-        ///// </summary>
-        //[TestMethod]
-        //public void DistributedTransactionTest()
-        //{
-        //    //失败事务
-        //    IRepository _bus1 = DbFactory.GetRepository();
-        //    IRepository _bus2 = DbFactory.GetRepository("BaseDb_Test");
-        //    _bus1.DeleteAll<Base_UnitTest>();
-        //    _bus2.DeleteAll<Base_UnitTest>();
-        //    Base_UnitTest data1 = new Base_UnitTest
-        //    {
-        //        Id = Guid.NewGuid().ToString(),
-        //        UserId = "1",
-        //        UserName = Guid.NewGuid().ToString()
-        //    };
-        //    Base_UnitTest data2 = new Base_UnitTest
-        //    {
-        //        Id = data1.Id,
-        //        UserId = "1",
-        //        UserName = Guid.NewGuid().ToString()
-        //    };
-        //    Base_UnitTest data3 = new Base_UnitTest
-        //    {
-        //        Id = Guid.NewGuid().ToString(),
-        //        UserId = "2",
-        //        UserName = Guid.NewGuid().ToString()
-        //    };
+        [TestMethod]
+        public void RunTransaction_fail()
+        {
+            bool succcess = _db.RunTransaction(() =>
+            {
+                _db.Insert(_newData);
+                var newData2 = _newData.DeepClone();
+                _db.Insert(newData2);
+            }).Success;
+            Assert.AreEqual(succcess, false);
+        }
 
-        //    new Action(() =>
-        //    {
-        //        var succcess = DistributedTransactionFactory.GetDistributedTransaction(_bus1, _bus2)
-        //            .RunTransaction(() =>
-        //            {
-        //                _bus1.ExecuteSql("insert into Base_UnitTest(Id) values('10') ");
-        //                _bus1.Insert(data1);
-        //                _bus1.Insert(data2);
-        //                _bus2.Insert(data1);
-        //                _bus2.Insert(data3);
-        //            });
-        //        Assert.AreEqual(succcess.Success, false);
-        //        Assert.AreEqual(_bus1.GetIQueryable<Base_UnitTest>().Count(), 0);
-        //        Assert.AreEqual(_bus2.GetIQueryable<Base_UnitTest>().Count(), 0);
-        //    })();
+        [TestMethod]
+        public async Task RunTransactionAsync_fail()
+        {
+            bool succcess = (await _db.RunTransactionAsync(async () =>
+            {
+                await _db.InsertAsync(_newData);
+                var newData2 = _newData.DeepClone();
+                await _db.InsertAsync(newData2);
+            })).Success;
+            Assert.AreEqual(succcess, false);
+        }
 
-        //    //成功事务
-        //    new Action(() =>
-        //    {
-        //        var succcess = DistributedTransactionFactory.GetDistributedTransaction(_bus1, _bus2)
-        //            .RunTransaction(() =>
-        //            {
-        //                _bus1.ExecuteSql("insert into Base_UnitTest(Id) values('10') ");
-        //                _bus1.Insert(data1);
-        //                _bus1.Insert(data3);
-        //                _bus2.Insert(data1);
-        //                _bus2.Insert(data3);
-        //            });
-        //        int count1 = _bus1.GetIQueryable<Base_UnitTest>().Count();
-        //        int count2 = _bus2.GetIQueryable<Base_UnitTest>().Count();
-        //        Assert.AreEqual(succcess.Success, true);
-        //        Assert.AreEqual(count1, 3);
-        //        Assert.AreEqual(count2, 2);
-        //    })();
-        //}
+        [TestMethod]
+        public void RunTransaction_success()
+        {
+            bool succcess = _db.RunTransaction(() =>
+            {
+                var newData = _newData.DeepClone();
+                newData.Id = Guid.NewGuid().ToString();
+                newData.UserId = IdHelper.GetId();
+                newData.UserName = IdHelper.GetId();
+                _db.Insert(_newData);
+                _db.Insert(newData);
+            }).Success;
+            int count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(succcess, true);
+            Assert.AreEqual(count, 2);
+        }
 
-        //#endregion
+        [TestMethod]
+        public async Task RunTransactionAsync_success()
+        {
+            bool succcess = (await _db.RunTransactionAsync(async () =>
+            {
+                var newData = _newData.DeepClone();
+                newData.Id = Guid.NewGuid().ToString();
+                newData.UserId = IdHelper.GetId();
+                newData.UserName = IdHelper.GetId();
+                await _db.InsertAsync(_newData);
+                await _db.InsertAsync(newData);
+            })).Success;
+            int count = _db.GetIQueryable<Base_UnitTest>().Count();
+            Assert.AreEqual(succcess, true);
+            Assert.AreEqual(count, 2);
+        }
+
+        [TestMethod]
+        public void RunTransaction_isolationLevel()
+        {
+            var db1 = DbFactory.GetRepository("DataSource=db.db", DatabaseType.SQLite);
+            var db2 = DbFactory.GetRepository("DataSource=db.db", DatabaseType.SQLite);
+            db1.Insert(_newData);
+
+            var updateData = _newData.DeepClone();
+            Task db2Task = new Task(() =>
+            {
+                updateData.UserName = IdHelper.GetId();
+                db2.Update(updateData);
+            });
+
+            var res = db1.RunTransaction(() =>
+            {
+                //db1读=>db2写(阻塞)=>db1读=>db1提交
+                var db1Data_1 = db1.GetIQueryable<Base_UnitTest>().Where(x => x.Id == _newData.Id).FirstOrDefault();
+
+                db2Task.Start();
+
+                var db1Data_2 = db1.GetIQueryable<Base_UnitTest>().Where(x => x.Id == _newData.Id).FirstOrDefault();
+                Assert.AreEqual(db1Data_1.ToJson(), db1Data_2.ToJson());
+            });
+            db2Task.Wait();
+            var db1Data_3 = db1.GetIQueryable<Base_UnitTest>().Where(x => x.Id == _newData.Id).FirstOrDefault();
+            Assert.AreEqual(updateData.ToJson(), db1Data_3.ToJson());
+        }
+
+        [TestMethod]
+        public void DistributedTransaction()
+        {
+            //失败事务
+            IRepository _db1 = DbFactory.GetRepository("DataSource=db.db", DatabaseType.SQLite);
+            IRepository _db2 = DbFactory.GetRepository("DataSource=db2.db", DatabaseType.SQLite);
+            _db1.DeleteAll<Base_UnitTest>();
+            _db2.DeleteAll<Base_UnitTest>();
+            Base_UnitTest data1 = new Base_UnitTest
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = "1",
+                UserName = Guid.NewGuid().ToString()
+            };
+            Base_UnitTest data2 = new Base_UnitTest
+            {
+                Id = data1.Id,
+                UserId = "1",
+                UserName = Guid.NewGuid().ToString()
+            };
+            Base_UnitTest data3 = new Base_UnitTest
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = "2",
+                UserName = Guid.NewGuid().ToString()
+            };
+
+            new Action(() =>
+            {
+                var succcess = DistributedTransactionFactory.GetDistributedTransaction(_db1, _db2)
+                    .RunTransaction(() =>
+                    {
+                        _db1.ExecuteSql("insert into Base_UnitTest(Id) values('10') ");
+                        _db1.Insert(data1);
+                        _db1.Insert(data2);
+                        _db2.Insert(data1);
+                        _db2.Insert(data3);
+                    });
+                Assert.AreEqual(succcess.Success, false);
+                Assert.AreEqual(_db1.GetIQueryable<Base_UnitTest>().Count(), 0);
+                Assert.AreEqual(_db2.GetIQueryable<Base_UnitTest>().Count(), 0);
+            })();
+
+            //成功事务
+            new Action(() =>
+            {
+                var succcess = DistributedTransactionFactory.GetDistributedTransaction(_db1, _db2)
+                    .RunTransaction(() =>
+                    {
+                        _db1.ExecuteSql("insert into Base_UnitTest(Id) values('10') ");
+                        _db1.Insert(data1);
+                        _db1.Insert(data3);
+                        _db2.Insert(data1);
+                        _db2.Insert(data3);
+                    });
+                int count1 = _db1.GetIQueryable<Base_UnitTest>().Count();
+                int count2 = _db2.GetIQueryable<Base_UnitTest>().Count();
+                Assert.AreEqual(succcess.Success, true);
+                Assert.AreEqual(count1, 3);
+                Assert.AreEqual(count2, 2);
+            })();
+        }
     }
 }

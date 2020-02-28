@@ -18,6 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="db2.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="db.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

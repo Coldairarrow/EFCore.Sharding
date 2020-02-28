@@ -31,7 +31,7 @@ namespace EFCore.Sharding.Tests
                 //.UseZookeeper("127.0.0.1:2181", 200, GlobalSwitch.ProjectName)
                 .Boot();
         }
-        protected static List<Base_UnitTest> _insertList { get; } 
+        protected static List<Base_UnitTest> _insertList { get; }
             = new List<Base_UnitTest>
         {
             new Base_UnitTest
