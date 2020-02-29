@@ -13,22 +13,21 @@ namespace EFCore.Sharding
     {
         #region 构造函数
 
-        public ShardingQueryable(IQueryable<T> source, string absDbName, DistributedTransaction transaction = null)
+        public ShardingQueryable(IQueryable<T> source, ShardingRepository repository, string absDbName)
         {
             _source = source;
             _absTableType = source.ElementType;
             _absTableName = _absTableType.Name;
-            _transaction = transaction;
             _absDbName = absDbName;
+            _repository = repository;
         }
 
         #endregion
 
         #region 私有成员
 
+        ShardingRepository _repository { get; }
         private string _absDbName { get; }
-        private DistributedTransaction _transaction { get; }
-        private bool _openTransaction { get => _transaction?.OpenTransaction == true; }
         private Type _absTableType { get; }
         private string _absTableName { get; }
         private IQueryable<T> _source { get; set; }
@@ -44,19 +43,23 @@ namespace EFCore.Sharding
             SynchronizedCollection<IRepository> dbs = new SynchronizedCollection<IRepository>();
             tasks = tables.Select(aTable =>
             {
+                IRepository db;
+                if (_repository.OpenedTransaction)
+                    db = _repository.GetMapRepository(aTable.conString, aTable.dbType);
+                else
+                    db = DbFactory.GetRepository(aTable.conString, aTable.dbType);
+
+                dbs.Add(db);
                 var targetTable = MapTable(aTable.tableName);
-                var db = DbFactory.GetRepository(aTable.conString, aTable.dbType);
                 var targetIQ = db.GetIQueryable(targetTable);
                 var newQ = newSource.ChangeSource(targetIQ);
-                if (_openTransaction)
-                    _transaction.AddRepository(db);
-                else
-                    dbs.Add(db);
 
                 return access(newQ);
             }).ToList();
             var res = (await Task.WhenAll(tasks)).ToList();
-            dbs.ForEach(x => x.Dispose());
+
+            if (!_repository.OpenedTransaction)
+                dbs.ForEach(x => x.Dispose());
 
             return res;
         }
@@ -164,12 +167,14 @@ namespace EFCore.Sharding
             List<Task<List<T>>> tasks = tables.Select(aTable =>
             {
                 var targetTable = MapTable(aTable.tableName);
-                var targetDb = DbFactory.GetRepository(aTable.conString, aTable.dbType);
-                if (_openTransaction)
-                    _transaction.AddRepository(targetDb);
+                IRepository db;
+                if (_repository.OpenedTransaction)
+                    db = _repository.GetMapRepository(aTable.conString, aTable.dbType);
                 else
-                    dbs.Add(targetDb);
-                var targetIQ = targetDb.GetIQueryable(targetTable);
+                    db = DbFactory.GetRepository(aTable.conString, aTable.dbType);
+                dbs.Add(db);
+
+                var targetIQ = db.GetIQueryable(targetTable);
                 var newQ = noPaginSource.ChangeSource(targetIQ);
                 return newQ
                     .Cast<object>()
@@ -178,7 +183,9 @@ namespace EFCore.Sharding
             }).ToList();
             List<T> all = new List<T>();
             (await Task.WhenAll(tasks.ToArray())).ToList().ForEach(x => all.AddRange(x));
-            dbs.ForEach(x => x.Dispose());
+
+            if (!_repository.OpenedTransaction)
+                dbs.ForEach(x => x.Dispose());
             //合并数据
             var resList = all;
             if (!sortColumn.IsNullOrEmpty() && !sortType.IsNullOrEmpty())
@@ -202,7 +209,12 @@ namespace EFCore.Sharding
                 return (data as object)?.ChangeType<T>();
             });
             list.RemoveAll(x => x == null);
-            return list.FirstOrDefault();
+            var q = list.AsQueryable();
+            var (sortColumn, sortType) = _source.GetOrderBy();
+            if (!sortColumn.IsNullOrEmpty())
+                q = q.OrderBy($"{sortColumn} {sortType}");
+
+            return q.FirstOrDefault();
         }
         public TResult Max<TResult>(Expression<Func<T, TResult>> selector)
         {

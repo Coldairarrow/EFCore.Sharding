@@ -471,7 +471,7 @@ namespace EFCore.Sharding.Tests
         public void GetIQueryable()
         {
             _db.Insert(_newData);
-            int count = _db.GetIQueryable<Base_UnitTest>().Where(x => x.UserId == "Admin1").Count();
+            int count = _db.GetIQueryable<Base_UnitTest>().Where(x => x.UserId == "Admin").Count();
             Assert.AreEqual(1, count);
         }
 
@@ -588,7 +588,7 @@ namespace EFCore.Sharding.Tests
                 var newData2 = _newData.DeepClone();
                 _db.Insert(newData2);
             }).Success;
-            Assert.AreEqual(succcess, false);
+            Assert.IsFalse(succcess);
         }
 
         [TestMethod]
@@ -600,7 +600,7 @@ namespace EFCore.Sharding.Tests
                 var newData2 = _newData.DeepClone();
                 await _db.InsertAsync(newData2);
             })).Success;
-            Assert.AreEqual(succcess, false);
+            Assert.IsFalse(succcess);
         }
 
         [TestMethod]
@@ -616,8 +616,8 @@ namespace EFCore.Sharding.Tests
                 _db.Insert(newData);
             }).Success;
             int count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(succcess, true);
-            Assert.AreEqual(count, 2);
+            Assert.IsTrue(succcess);
+            Assert.AreEqual(2, count);
         }
 
         [TestMethod]
@@ -633,8 +633,8 @@ namespace EFCore.Sharding.Tests
                 await _db.InsertAsync(newData);
             })).Success;
             int count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(succcess, true);
-            Assert.AreEqual(count, 2);
+            Assert.IsTrue(succcess);
+            Assert.AreEqual(2, count);
         }
 
         [TestMethod]
@@ -704,9 +704,9 @@ namespace EFCore.Sharding.Tests
                         _db2.Insert(data1);
                         _db2.Insert(data3);
                     });
-                Assert.AreEqual(succcess.Success, false);
-                Assert.AreEqual(_db1.GetIQueryable<Base_UnitTest>().Count(), 0);
-                Assert.AreEqual(_db2.GetIQueryable<Base_UnitTest>().Count(), 0);
+                Assert.IsFalse(succcess.Success);
+                Assert.AreEqual(0, _db1.GetIQueryable<Base_UnitTest>().Count());
+                Assert.AreEqual(0, _db2.GetIQueryable<Base_UnitTest>().Count());
             })();
 
             //成功事务
@@ -723,9 +723,9 @@ namespace EFCore.Sharding.Tests
                     });
                 int count1 = _db1.GetIQueryable<Base_UnitTest>().Count();
                 int count2 = _db2.GetIQueryable<Base_UnitTest>().Count();
-                Assert.AreEqual(succcess.Success, true);
-                Assert.AreEqual(count1, 3);
-                Assert.AreEqual(count2, 2);
+                Assert.IsTrue(succcess.Success);
+                Assert.AreEqual(3, count1);
+                Assert.AreEqual(2, count2);
             })();
         }
     }

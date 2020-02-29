@@ -1,15 +1,19 @@
 ﻿using Coldairarrow.Util;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 
 namespace EFCore.Sharding.Tests
 {
+    class Base_UnitTestShardingRule : ModShardingRule<Base_UnitTest>
+    {
+        protected override string KeyField => "Id";
+        protected override int Mod => 3;
+    }
+
     public abstract class BaseTest
     {
         static BaseTest()
         {
-            InitId();
             for (int i = 1; i <= 100; i++)
             {
                 Base_UnitTest newData = new Base_UnitTest
@@ -22,14 +26,9 @@ namespace EFCore.Sharding.Tests
                 _dataList.Add(newData);
             }
         }
-        private static void InitId()
+        public BaseTest()
         {
-            new IdHelperBootstrapper()
-                //设置WorkerId
-                .SetWorkderId(1)
-                //使用Zookeeper
-                //.UseZookeeper("127.0.0.1:2181", 200, GlobalSwitch.ProjectName)
-                .Boot();
+            Clear();
         }
         protected static List<Base_UnitTest> _insertList { get; }
             = new List<Base_UnitTest>
@@ -51,13 +50,6 @@ namespace EFCore.Sharding.Tests
         };
         protected static List<Base_UnitTest> _dataList { get; }
             = new List<Base_UnitTest>();
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            Clear();
-        }
-
         protected static Base_UnitTest _newData { get; } = new Base_UnitTest
         {
             Id = Guid.NewGuid().ToString(),
@@ -65,7 +57,6 @@ namespace EFCore.Sharding.Tests
             UserName = "超级管理员",
             Age = 22
         };
-
         protected abstract void Clear();
     }
 }
