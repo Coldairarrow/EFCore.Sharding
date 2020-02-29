@@ -18,7 +18,7 @@ namespace EFCore.Sharding
         {
             ShardingConfig.CheckInit();
 
-            return new ShardingQueryable<T>(source, absDbName);
+            return new ShardingQueryable<T>(source, DbFactory.GetShardingRepository(absDbName) as ShardingRepository, absDbName);
         }
     }
 }

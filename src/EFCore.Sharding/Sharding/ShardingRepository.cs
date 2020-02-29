@@ -31,8 +31,11 @@ namespace EFCore.Sharding
         }
         private List<(string targetTableName, IRepository targetDb)> GetTargetDb(List<(string tableName, string conString, DatabaseType dbType)> configs)
         {
-            SetRepositories(configs.Select(x => (x.conString, x.dbType)).ToList());
-            return configs.Select(x => (x.tableName, _repositories[GetDbId(x.conString, x.dbType)])).ToList();
+            var resList = configs
+                .Select(x => (x.tableName, GetMapRepository(x.conString, x.dbType)))
+                .ToList();
+
+            return resList;
         }
         private List<(object targetObj, IRepository targetDb)> GetMapConfigs<T>(List<T> entities)
         {
@@ -53,20 +56,11 @@ namespace EFCore.Sharding
         {
             return $"{conString}{dbType.ToString()}";
         }
-        private void SetRepositories(List<(string conString, DatabaseType dbType)> physicDbs)
-        {
-            physicDbs.ForEach(aConfig =>
-            {
-                var dbId = GetDbId(aConfig.conString, aConfig.dbType);
-                if (!_repositories.ContainsKey(dbId))
-                    _repositories[dbId] = DbFactory.GetRepository(aConfig.conString, aConfig.dbType);
-            });
-        }
         private int PackAccessData(Func<int> access)
         {
             var dbs = _repositories.Values.ToArray();
             int count = 0;
-            if (!_openedTransaction)
+            if (!OpenedTransaction)
             {
                 using (var transaction = DistributedTransactionFactory.GetDistributedTransaction(dbs))
                 {
@@ -93,11 +87,11 @@ namespace EFCore.Sharding
             var dbs = _repositories.Values.ToArray();
 
             int count = 0;
-            if (!_openedTransaction)
+            if (!OpenedTransaction)
             {
                 using (var transaction = DistributedTransactionFactory.GetDistributedTransaction(dbs))
                 {
-                    var (Success, ex) = transaction.RunTransaction(async () =>
+                    var (Success, ex) = await transaction.RunTransactionAsync(async () =>
                     {
                         count = await access();
                     });
@@ -141,7 +135,6 @@ namespace EFCore.Sharding
                 return (await Task.WhenAll(tasks.ToArray())).Sum();
             });
         }
-        private bool _openedTransaction { get; set; } = false;
         private DistributedTransaction _transaction { get; set; }
         private ConcurrentDictionary<string, IRepository> _repositories { get; }
             = new ConcurrentDictionary<string, IRepository>();
@@ -154,6 +147,22 @@ namespace EFCore.Sharding
         #endregion
 
         #region 外部接口
+
+        public bool OpenedTransaction { get; set; } = false;
+
+        public IRepository GetMapRepository(string conString, DatabaseType dbType)
+        {
+            var dbId = GetDbId(conString, dbType);
+            if (!_repositories.ContainsKey(dbId))
+                _repositories[dbId] = DbFactory.GetRepository(conString, dbType);
+
+            var db = _repositories[dbId];
+            if (OpenedTransaction)
+                _transaction.AddRepository(db);
+
+            return _repositories[dbId];
+        }
+
         public int Insert<T>(T entity) where T : class, new()
         {
             return Insert(new List<T> { entity });
@@ -270,7 +279,7 @@ namespace EFCore.Sharding
         }
         public IShardingQueryable<T> GetIShardingQueryable<T>() where T : class, new()
         {
-            return new ShardingQueryable<T>(_db.GetIQueryable<T>(), _absDbName, _transaction);
+            return new ShardingQueryable<T>(_db.GetIQueryable<T>(), this, _absDbName);
         }
         public List<T> GetList<T>() where T : class, new()
         {
@@ -337,13 +346,13 @@ namespace EFCore.Sharding
         }
         public void BeginTransaction(IsolationLevel isolationLevel)
         {
-            _openedTransaction = true;
+            OpenedTransaction = true;
             _transaction = new DistributedTransaction();
             _transaction.BeginTransaction(isolationLevel);
         }
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel)
         {
-            _openedTransaction = true;
+            OpenedTransaction = true;
             _transaction = new DistributedTransaction();
             await _transaction.BeginTransactionAsync(isolationLevel);
         }
@@ -357,7 +366,7 @@ namespace EFCore.Sharding
         }
         public void DisposeTransaction()
         {
-            _openedTransaction = false;
+            OpenedTransaction = false;
             _transaction.DisposeTransaction();
             ClearRepositories();
         }

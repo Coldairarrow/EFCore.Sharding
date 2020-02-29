@@ -11,7 +11,6 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -457,7 +456,15 @@ namespace EFCore.Sharding
         }
         public async Task<int> UpdateAnyAsync<T>(List<T> entities, List<string> properties) where T : class, new()
         {
-            return await UpdateAnyAsync(entities, properties);
+            entities.ForEach(aEntity =>
+            {
+                properties.ForEach(aProperty =>
+                {
+                    _db.Entry(aEntity).Property(aProperty).IsModified = true;
+                });
+            });
+
+            return await _db.SaveChangesAsync();
         }
         public int UpdateWhere<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class, new()
         {
@@ -572,45 +579,17 @@ namespace EFCore.Sharding
                     if (parameters != null && parameters.Count() > 0)
                         cmd.Parameters.AddRange(CreateDbParamters(parameters.ToList()).ToArray());
 
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        DataTable table = new DataTable();
 
-                    //var dataAdapter = dbProviderFactory.CreateDataAdapter();
-                    //dataAdapter.SelectCommand = cmd;
+                        DataSet dataSet = new DataSet();
+                        dataSet.Tables.Add(table);
+                        dataSet.EnforceConstraints = false;
+                        table.Load(reader);
 
-                    DataTable table = new DataTable();
-                    //dataAdapter.Fill(table);
-                    var reader = cmd.ExecuteReader();
-
-                    DataSet dataSet = new DataSet();
-                    dataSet.Tables.Add(table);
-                    dataSet.EnforceConstraints = false;
-                    table.Load(reader);
-                    //try
-                    //{
-                    //    table.Load(reader);
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    //remove datatable errors  
-                    //    DataRow[] rowsInError;
-                    //    if (table.HasErrors)
-                    //    {
-                    //        // Get an array of all rows with errors. 
-                    //        rowsInError = table.GetErrors();
-                    //        // Print the error of each column in each row. 
-                    //        StringBuilder sbError = new StringBuilder();
-                    //        for (int i = 0; i < rowsInError.Length; i++)
-                    //        {
-                    //            foreach (DataColumn myCol in table.Columns)
-                    //            {
-                    //                sbError.Append(myCol.ColumnName + " " + rowsInError[i].GetColumnError(myCol));
-                    //            }
-                    //            // Clear the row errors 
-                    //            rowsInError[i].ClearErrors(); //设置断点，然后运行时观察其中错误 
-                    //        }
-                    //    }
-                    //}
-
-                    return table;
+                        return table;
+                    }
                 }
             }
         }
@@ -622,7 +601,7 @@ namespace EFCore.Sharding
                 conn.ConnectionString = ConnectionString;
                 if (conn.State != ConnectionState.Open)
                 {
-                    conn.Open();
+                    await conn.OpenAsync();
                 }
 
                 using (DbCommand cmd = conn.CreateCommand())
@@ -634,35 +613,17 @@ namespace EFCore.Sharding
                     if (parameters != null && parameters.Count() > 0)
                         cmd.Parameters.AddRange(CreateDbParamters(parameters.ToList()).ToArray());
 
-                    DataTable table = new DataTable();
-                    var reader = await cmd.ExecuteReaderAsync();
-                    try
+                    using (var reader = await cmd.ExecuteReaderAsync())
                     {
-                        table.Load(reader);
-                    }
-                    catch (Exception)
-                    {
-                        //remove datatable errors  
-                        DataRow[] rowsInError;
-                        if (table.HasErrors)
-                        {
-                            // Get an array of all rows with errors. 
-                            rowsInError = table.GetErrors();
-                            // Print the error of each column in each row. 
-                            StringBuilder sbError = new StringBuilder();
-                            for (int i = 0; i < rowsInError.Length; i++)
-                            {
-                                foreach (DataColumn myCol in table.Columns)
-                                {
-                                    sbError.Append(myCol.ColumnName + " " + rowsInError[i].GetColumnError(myCol));
-                                }
-                                // Clear the row errors 
-                                rowsInError[i].ClearErrors(); //设置断点，然后运行时观察其中错误 
-                            }
-                        }
-                    }
+                        DataTable table = new DataTable();
 
-                    return table;
+                        DataSet dataSet = new DataSet();
+                        dataSet.Tables.Add(table);
+                        dataSet.EnforceConstraints = false;
+                        table.Load(reader);
+
+                        return table;
+                    }
                 }
             }
         }
