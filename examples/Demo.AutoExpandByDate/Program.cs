@@ -6,13 +6,13 @@ using System.Threading;
 
 namespace Demo.AutoExpandByDate
 {
-    class Base_UnitTestShardingRule : IShardingRule<Base_UnitTest>
+    class Base_UnitTestShardingRule : AbsShardingRule<Base_UnitTest>
     {
-        public string FindTable(Base_UnitTest obj)
+        public override string BuildTableSuffix(Base_UnitTest obj)
         {
             var time = new SnowflakeId(Convert.ToInt64(obj.Id)).Time;
 
-            return $"{typeof(Base_UnitTest).Name}_{time.ToString("yyyyMMddHHmm")}";
+            return time.ToString("yyyyMMddHHmm");
         }
     }
 

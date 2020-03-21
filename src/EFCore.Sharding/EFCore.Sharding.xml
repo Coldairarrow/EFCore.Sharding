@@ -7,11 +7,23 @@
         <member name="T:EFCore.Sharding.Util.AsyncHelper">
             <summary>
             异步转同步,防止ASP.NET中死锁
-            https://stackoverflow.com/questions/36348763/how-do-i-call-an-async-method-from-a-non-async-method
+            https://cpratt.co/async-tips-tricks/
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:EFCore.Sharding.Util.AsyncHelper.RunSync(System.Func{System.Threading.Tasks.Task})" -->
-        <!-- Badly formed XML comment ignored for member "M:EFCore.Sharding.Util.AsyncHelper.RunSync``1(System.Func{System.Threading.Tasks.Task{``0}})" -->
+        <member name="M:EFCore.Sharding.Util.AsyncHelper.RunSync(System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            同步执行
+            </summary>
+            <param name="func">任务</param>
+        </member>
+        <member name="M:EFCore.Sharding.Util.AsyncHelper.RunSync``1(System.Func{System.Threading.Tasks.Task{``0}})">
+            <summary>
+            同步执行
+            </summary>
+            <typeparam name="TResult">返回类型</typeparam>
+            <param name="func">任务</param>
+            <returns></returns>
+        </member>
         <member name="T:EFCore.Sharding.Util.ConsistentHash`1">
             <summary>
             一致性HASH,解决传统HASH的扩容难的问题
@@ -1762,29 +1774,28 @@
             <summary>
             添加物理数据表
             </summary>
-            <typeparam name="T">对应抽象表类型</typeparam>
+            <typeparam name="TEntity">对应抽象表类型</typeparam>
             <param name="physicTableName">物理表明</param>
             <param name="groupName">数据库组名</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.IConfigInit.SetShardingRule``1(EFCore.Sharding.IShardingRule{``0},System.String)">
+        <member name="M:EFCore.Sharding.IConfigInit.SetShardingRule``1(EFCore.Sharding.AbsShardingRule{``0},System.String)">
             <summary>
             设置分表规则
             </summary>
-            <typeparam name="T">对应抽象表类型</typeparam>
+            <typeparam name="TEntity">对应抽象表类型</typeparam>
             <param name="shardingRule">具体分表规则</param>
             <param name="absDbName">抽象数据库名</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.IConfigInit.AutoExpandByDate``1(System.DateTime,EFCore.Sharding.ExpandByDateMode,System.Func{System.DateTime,System.String},System.Func{System.String,System.String},System.String)">
+        <member name="M:EFCore.Sharding.IConfigInit.AutoExpandByDate``1(System.DateTime,EFCore.Sharding.ExpandByDateMode,System.Func{System.String,System.String},System.String)">
             <summary>
             通过日期自动扩容
-            注：即自动定时按照建表,无需数据迁移
+            优点:即自动定时按照建表,无需数据迁移
             </summary>
-            <typeparam name="T">对应抽象表类型</typeparam>
+            <typeparam name="TEntity">对应抽象表类型</typeparam>
             <param name="startTime">开始时间</param>
             <param name="expandByDateMode">扩容模式</param>
-            <param name="formatTableName">格式化表名方法,传入特定时间,返回需要生成的表名</param>
             <param name="createTableSqlBuilder">生产创建表的SQL语句,传入具体表名,返回完成SQL语句</param>
             <param name="groupName">数据库组名</param>
             <returns></returns>
@@ -1887,38 +1898,69 @@
             <param name="targetTableName">目标物理表名</param>
             <returns></returns>
         </member>
-        <member name="T:EFCore.Sharding.ConsistentHashShardingRule">
+        <member name="T:EFCore.Sharding.AbsShardingRule`1">
+            <summary>
+            分表规则基类
+            注:具体分表规则只需要实现BuildTableSuffix,BuildTableName与BuildDate其中之一即可
+            </summary>
+            <typeparam name="TEntity">逻辑表泛型</typeparam>
+        </member>
+        <member name="M:EFCore.Sharding.AbsShardingRule`1.BuildTableSuffix(`0)">
+            <summary>
+            生成表名后缀
+            注:若逻辑表为Base_UnitTest,生成的后缀为1,则最终确定的表名为Base_UnitTest_1
+            </summary>
+            <param name="obj">实体对象</param>
+            <returns>表名后缀</returns>
+        </member>
+        <member name="M:EFCore.Sharding.AbsShardingRule`1.BuildTableName(`0)">
+            <summary>
+            生成完整表名
+            </summary>
+            <param name="obj">实体对象</param>
+            <returns>完整表名</returns>
+        </member>
+        <member name="M:EFCore.Sharding.AbsShardingRule`1.BuildDate(`0)">
+            <summary>
+            生成日期
+            注:仅用在AutoExpandByDate中
+            </summary>
+            <param name="obj">实体对象</param>
+            <returns>日期</returns>
+        </member>
+        <member name="T:EFCore.Sharding.ConsistentHashShardingRule`1">
             <summary>
             一致性HASH分片规则
             优点:数据扩容时数据迁移量较小,表越多扩容效果越明显
             缺点:扩容时需要进行数据迁移,比较复杂
             建议:若雪花分片不满足则采用本方案,此方案为分片规则中的"核弹"
             </summary>
-            <seealso cref="T:EFCore.Sharding.IShardingRule" />
         </member>
-        <member name="T:EFCore.Sharding.IShardingRule">
+        <member name="M:EFCore.Sharding.ConsistentHashShardingRule`1.#ctor(System.Collections.Generic.List{System.String})">
             <summary>
-            分片规则接口
+            构造函数
+            </summary>
+            <param name="tables">所有分表名集合</param>
+        </member>
+        <member name="P:EFCore.Sharding.ConsistentHashShardingRule`1._tables">
+            <summary>
+            所有分表名集合
             </summary>
         </member>
-        <member name="M:EFCore.Sharding.IShardingRule.FindTable(System.Object)">
+        <member name="P:EFCore.Sharding.ConsistentHashShardingRule`1._consistentHash">
             <summary>
-            找表方法
+            一致性哈希
+            </summary>
+        </member>
+        <member name="M:EFCore.Sharding.ConsistentHashShardingRule`1.BuildTableName(`0)">
+            <summary>
+            生成完整表名
+            注:BuildTableSuffix与BuildTableName实现二选一
             </summary>
             <param name="obj">实体对象</param>
-            <returns>具体表名</returns>
-        </member>
-        <member name="T:EFCore.Sharding.IShardingRule`1">
-            <summary>
-            分片规则接口
-            </summary>
-        </member>
-        <member name="M:EFCore.Sharding.IShardingRule`1.FindTable(`0)">
-            <summary>
-            找表方法
-            </summary>
-            <param name="obj">实体对象</param>
-            <returns>具体表名</returns>
+            <returns>
+            完整表名
+            </returns>
         </member>
         <member name="T:EFCore.Sharding.ModShardingRule`1">
             <summary>
@@ -1928,14 +1970,45 @@
             警告:使用简单,但是扩容后需要大量数据迁移,不推荐使用
             </summary>
         </member>
-        <member name="T:EFCore.Sharding.SnowflakeModShardingRule">
+        <member name="P:EFCore.Sharding.ModShardingRule`1.KeyField">
+            <summary>
+            用来mod的字段
+            </summary>
+        </member>
+        <member name="P:EFCore.Sharding.ModShardingRule`1.Mod">
+            <summary>
+            mod值
+            </summary>
+        </member>
+        <member name="M:EFCore.Sharding.ModShardingRule`1.BuildTableSuffix(`0)">
+            <summary>
+            生成表名后缀(推荐实现此方法)
+            注:若逻辑表为Base_UnitTest,生成的后缀为1,则最终确定的表名为Base_UnitTest_1
+            注:BuildTableSuffix与BuildTableName实现二选一
+            </summary>
+            <param name="obj">实体对象</param>
+            <returns>
+            表名后缀
+            </returns>
+        </member>
+        <member name="T:EFCore.Sharding.SnowflakeModShardingRule`1">
             <summary>
             基于雪花Id的mod分片,具体的规则请参考此本写法
             优点:数据扩容无需数据迁移,以时间轴进行扩容
             缺点:可能会存在数据热点问题
             建议:推荐使用此分片规则,易于使用
             </summary>
-            <seealso cref="T:EFCore.Sharding.IShardingRule" />
+        </member>
+        <member name="M:EFCore.Sharding.SnowflakeModShardingRule`1.BuildTableSuffix(`0)">
+            <summary>
+            生成表名后缀(推荐实现此方法)
+            注:若逻辑表为Base_UnitTest,生成的后缀为1,则最终确定的表名为Base_UnitTest_1
+            注:BuildTableSuffix与BuildTableName实现二选一
+            </summary>
+            <param name="obj">实体对象</param>
+            <returns>
+            表名后缀
+            </returns>
         </member>
         <member name="T:EFCore.Sharding.DistributedTransaction">
             <summary>
