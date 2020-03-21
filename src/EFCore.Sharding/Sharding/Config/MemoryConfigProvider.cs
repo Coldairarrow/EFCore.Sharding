@@ -59,9 +59,9 @@ namespace EFCore.Sharding
             return this;
         }
 
-        public IConfigInit AddPhysicTable<T>(string physicTableName, string groupName = "BaseDbGroup")
+        public IConfigInit AddPhysicTable<TEntity>(string physicTableName, string groupName = "BaseDbGroup")
         {
-            var absEntityType = typeof(T);
+            var absEntityType = typeof(TEntity);
 
             _physicTables.Add(new PhysicTable
             {
@@ -76,24 +76,53 @@ namespace EFCore.Sharding
             return this;
         }
 
-        public IConfigInit SetShardingRule<T>(IShardingRule<T> shardingRule, string absDbName = "BaseDb")
+        public IConfigInit SetShardingRule<TEntity>(AbsShardingRule<TEntity> shardingRule, string absDbName = "BaseDb")
         {
-            string key = $"{absDbName}.{typeof(T).Name}";
+            string absTableName = typeof(TEntity).Name;
+            string key = $"{absDbName}.{absTableName}";
             _shardingRules[key] = obj =>
             {
-                return shardingRule.FindTable(obj.ChangeType<T>());
+                var targetObj = obj.ChangeType<TEntity>();
+                var tableName = absTableName;
+
+                string suffix = string.Empty;
+                //日期
+                var date = shardingRule.BuildDate(targetObj);
+                if (date != DateTime.MinValue)
+                {
+                    string tableKey = GetTableKey(absDbName, absTableName);
+                    var expandMode = _expandByDateMode[tableKey];
+                    suffix = date.ToString(GetDateFormat(expandMode));
+
+                    return $"{absTableName}_{suffix}";
+                }
+
+                //后缀
+                suffix = shardingRule.BuildTableSuffix(targetObj);
+                if (!suffix.IsNullOrEmpty())
+                    return $"{absTableName}_{suffix}";
+                tableName = $"{absTableName}_{suffix}";
+                //全名
+                tableName = shardingRule.BuildTableName(obj.ChangeType<TEntity>());
+
+                return tableName;
             };
 
             return this;
         }
 
-        public IConfigInit AutoExpandByDate<T>(
+        public IConfigInit AutoExpandByDate<TEntity>(
             DateTime startTime,
             ExpandByDateMode expandByDateMode,
-            Func<DateTime, string> formatTableName,
             Func<string, string> createTableSqlBuilder,
             string groupName = ShardingConfig.DefaultDbGourpName)
         {
+            string absTableName = typeof(TEntity).Name;
+            string absDbName = _physicDbGroups.Where(x => x.GroupName == groupName).FirstOrDefault()?.AbsDbName;
+            if (absDbName.IsNullOrEmpty())
+                throw new Exception("缺少抽象数据库与物理数据库组信息");
+            _expandByDateMode[GetTableKey(absDbName, absTableName)] = expandByDateMode;
+
             (string conExpression, TimeSpan leadTime) paramter =
                expandByDateMode switch
                {
@@ -105,12 +134,13 @@ namespace EFCore.Sharding
                    _ => throw new Exception("expandByDateMode参数无效")
                };
             var theTime = startTime;
+
             while (true)
             {
                 if (theTime > DateTime.Now)
                     break;
-                string tableName = formatTableName(theTime);
-                AddPhysicTable<T>(tableName, groupName);
+                string tableName = BuildTableName(theTime);
+                AddPhysicTable<TEntity>(tableName, groupName);
 
                 var key = expandByDateMode.ToString().Replace("Per", "");
                 var method = theTime.GetType().GetMethod($"Add{key}s");
@@ -119,7 +149,7 @@ namespace EFCore.Sharding
             JobHelper.SetCronJob(() =>
             {
                 DateTime trueDate = DateTime.Now + paramter.leadTime;
-                string tableName = formatTableName(trueDate);
+                string tableName = BuildTableName(trueDate);
                 string sql = createTableSqlBuilder(tableName);
                 var q = from a in _physicDbs
                         join b in _physicDbGroups on a.GroupName equals b.GroupName
@@ -139,10 +169,15 @@ namespace EFCore.Sharding
                 });
 
                 //添加物理表
-                AddPhysicTable<T>(tableName, groupName);
+                AddPhysicTable<TEntity>(tableName, groupName);
             }, paramter.conExpression);
 
             return this;
+
+            string BuildTableName(DateTime dateTime)
+            {
+                return $"{absTableName}_{dateTime.ToString(GetDateFormat(expandByDateMode))}";
+            }
         }
 
         #endregion
@@ -157,8 +192,26 @@ namespace EFCore.Sharding
             = new SynchronizedCollection<PhysicDb>();
         private SynchronizedCollection<PhysicTable> _physicTables { get; }
             = new SynchronizedCollection<PhysicTable>();
-        private ConcurrentDictionary<string, Func<object, string>> _shardingRules
+        private ConcurrentDictionary<string, Func<object, string>> _shardingRules { get; }
             = new ConcurrentDictionary<string, Func<object, string>>();
+        private ConcurrentDictionary<string, ExpandByDateMode> _expandByDateMode { get; }
+            = new ConcurrentDictionary<string, ExpandByDateMode>();
+        private string GetTableKey(string absDbName, string absTableName)
+        {
+            return $"{absDbName}.{absTableName}";
+        }
+        private string GetDateFormat(ExpandByDateMode expandByDateMode)
+        {
+            return expandByDateMode switch
+            {
+                ExpandByDateMode.PerMinute => "yyyyMMddHHmm",
+                ExpandByDateMode.PerHour => "yyyyMMddHH",
+                ExpandByDateMode.PerDay => "yyyyMMdd",
+                ExpandByDateMode.PerMonth => "yyyyMM",
+                ExpandByDateMode.PerYear => "yyyy",
+                _ => throw new Exception("ExpandByDateMode无效")
+            };
+        }
         private List<(string tableName, string conString, DatabaseType dbType)>
             GetTargetTables(string absTableName, ReadWriteType opType, string absDbName, object obj = null)
         {
