@@ -1,8 +1,12 @@
 ﻿using EFCore.Sharding.Util;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 
 namespace EFCore.Sharding
@@ -41,13 +45,16 @@ namespace EFCore.Sharding
             return new ShardingRepository(GetRepository("DataSource=db.db", DatabaseType.SQLite), absDbName);
         }
 
-        /// <summary>
-        /// 获取
-        /// </summary>
-        /// <param name="conString"></param>
-        /// <param name="dbType"></param>
-        /// <returns></returns>
-        internal static BaseDbContext GetDbContext([NotNull] string conString, DatabaseType dbType)
+        internal static void CreateTable(string conString, DatabaseType dbType, Type tableEntityType)
+        {
+            DbContext dbContext = GetDbContext(conString, dbType, new List<Type> { tableEntityType });
+            var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
+            databaseCreator.CreateTables();
+            //if (!dbContext.Database.EnsureCreated())
+            //    dbContext.Database.Migrate();
+        }
+
+        internal static BaseDbContext GetDbContext([NotNull] string conString, DatabaseType dbType, List<Type> entityTypes = null)
         {
             if (conString.IsNullOrEmpty())
                 throw new Exception("conString能为空");
@@ -55,7 +62,11 @@ namespace EFCore.Sharding
             DbConnection dbConnection = null;
             if (dbType != DatabaseType.Memory)
                 dbConnection = DbProviderFactoryHelper.GetDbConnection(conString, dbType);
-            var model = DbModelFactory.GetDbCompiledModel(conString, dbType);
+            IModel model;
+            if (entityTypes?.Count > 0)
+                model = DbModelFactory.BuildDbCompiledModel(dbType, entityTypes);
+            else
+                model = DbModelFactory.GetDbCompiledModel(conString, dbType);
             DbContextOptionsBuilder builder = new DbContextOptionsBuilder();
 
             switch (dbType)

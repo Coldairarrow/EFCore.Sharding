@@ -10,25 +10,27 @@ namespace Demo.Performance
     [Table("Base_UnitTest")]
     public class Base_UnitTest
     {
-
         /// <summary>
         /// 代理主键
         /// </summary>
         [Key]
+        [StringLength(50)]
         public String Id { get; set; }
 
         /// <summary>
-        /// UserId
+        /// 用户Id
         /// </summary>
+        [StringLength(255)]
         public String UserId { get; set; }
 
         /// <summary>
-        /// UserName
+        /// 用户名
         /// </summary>
+        [StringLength(255)]
         public String UserName { get; set; }
 
         /// <summary>
-        /// Age
+        /// 年龄
         /// </summary>
         public Int32? Age { get; set; }
 

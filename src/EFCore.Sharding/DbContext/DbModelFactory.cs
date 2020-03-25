@@ -14,7 +14,7 @@ using System.Reflection;
 
 namespace EFCore.Sharding
 {
-    public static class DbModelFactory
+    internal static class DbModelFactory
     {
         #region 构造函数
 
@@ -81,6 +81,29 @@ namespace EFCore.Sharding
             _dbCompiledModel.Clear();
         }
 
+        public static IModel BuildDbCompiledModel(DatabaseType dbType, List<Type> entityTypes = null)
+        {
+            ConventionSet conventionSet = null;
+            switch (dbType)
+            {
+                case DatabaseType.SqlServer: conventionSet = SqlServerConventionSetBuilder.Build(); break;
+                case DatabaseType.MySql: conventionSet = MySqlConventionSetBuilder.Build(); break;
+                case DatabaseType.PostgreSql: conventionSet = NpgsqlConventionSetBuilder.Build(); break;
+                case DatabaseType.Oracle: conventionSet = OracleConventionSetBuilder.Build(); break;
+                case DatabaseType.SQLite: conventionSet = SqliteConventionSetBuilder.Build(); break;
+                case DatabaseType.Memory: conventionSet = InMemoryConventionSetBuilder.Build(); break;
+                default: throw new Exception("暂不支持该数据库!");
+            }
+            ModelBuilder modelBuilder = new ModelBuilder(conventionSet);
+            List<Type> needTypes = entityTypes?.Count > 0 ? entityTypes : _entityTypeMap.Values.ToList();
+            needTypes.ForEach(x =>
+            {
+                modelBuilder.Model.AddEntityType(x);
+            });
+
+            return modelBuilder.FinalizeModel();
+        }
+
         #endregion
 
         #region 私有成员
@@ -100,27 +123,6 @@ namespace EFCore.Sharding
             new ConcurrentDictionary<string, Type>();
         private static ConcurrentDictionary<string, IModel> _dbCompiledModel { get; }
             = new ConcurrentDictionary<string, IModel>();
-        private static IModel BuildDbCompiledModel(DatabaseType dbType)
-        {
-            ConventionSet conventionSet = null;
-            switch (dbType)
-            {
-                case DatabaseType.SqlServer: conventionSet = SqlServerConventionSetBuilder.Build(); break;
-                case DatabaseType.MySql: conventionSet = MySqlConventionSetBuilder.Build(); break;
-                case DatabaseType.PostgreSql: conventionSet = NpgsqlConventionSetBuilder.Build(); break;
-                case DatabaseType.Oracle: conventionSet = OracleConventionSetBuilder.Build(); break;
-                case DatabaseType.SQLite: conventionSet = SqliteConventionSetBuilder.Build(); break;
-                case DatabaseType.Memory: conventionSet = InMemoryConventionSetBuilder.Build(); break;
-                default: throw new Exception("暂不支持该数据库!");
-            }
-            ModelBuilder modelBuilder = new ModelBuilder(conventionSet);
-            _entityTypeMap.Values.ForEach(x =>
-            {
-                modelBuilder.Model.AddEntityType(x);
-            });
-
-            return modelBuilder.FinalizeModel();
-        }
         private static string GetCompiledModelIdentity(string conStr, DatabaseType dbType)
         {
             return $"{dbType.ToString()}{conStr}";

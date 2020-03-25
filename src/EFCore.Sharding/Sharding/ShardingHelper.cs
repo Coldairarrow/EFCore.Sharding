@@ -16,10 +16,9 @@ namespace EFCore.Sharding
         {
             var config = TypeBuilderHelper.GetConfig(absTable);
 
-            //实体必须放到Entity层中,不然会出现莫名调试BUG,原因未知
-            config.AssemblyName = "Coldairarrow.Entity";
+            config.AssemblyName = "EFCore.Sharding";
             config.Attributes.RemoveAll(x => x.Attribute == typeof(TableAttribute));
-            config.FullName = $"Coldairarrow.Entity.{targetTableName}";
+            config.FullName = $"EFCore.Sharding.{targetTableName}";
 
             return TypeBuilderHelper.BuildType(config);
         }
