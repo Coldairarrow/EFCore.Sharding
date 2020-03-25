@@ -1187,14 +1187,6 @@
             <param name="absDbName">抽象数据库</param>
             <returns>ShardingRepository</returns>
         </member>
-        <member name="M:EFCore.Sharding.DbFactory.GetDbContext(System.String,EFCore.Sharding.DatabaseType)">
-            <summary>
-            获取
-            </summary>
-            <param name="conString"></param>
-            <param name="dbType"></param>
-            <returns></returns>
-        </member>
         <member name="T:EFCore.Sharding.IBaseRepository">
             <summary>
             基数据仓储
