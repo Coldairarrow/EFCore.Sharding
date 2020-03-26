@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
+    /// <summary>
+    /// 操作接口
+    /// </summary>
     public interface IRepository : IBaseRepository, ITransaction
     {
         #region 数据库相关
@@ -195,8 +198,9 @@ namespace EFCore.Sharding
         /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name","小明"))
         /// 注：生成的SQL类似于UPDATE [TABLE] SET [Name] = 'xxx' WHERE [Id] = 'Admin'
         /// </summary>
-        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="entityType">实体类型</param>
         /// <param name="where">筛选条件</param>
+        /// <param name="paramters">参数</param>
         /// <param name="values">字段值设置</param>
         /// <returns>影响条数</returns>
         int UpdateWhere_Sql(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values);
@@ -206,8 +210,9 @@ namespace EFCore.Sharding
         /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name","小明"))
         /// 注：生成的SQL类似于UPDATE [TABLE] SET [Name] = 'xxx' WHERE [Id] = 'Admin'
         /// </summary>
-        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="entityType">实体类型</param>
         /// <param name="where">筛选条件</param>
+        /// <param name="paramters">参数</param>
         /// <param name="values">字段值设置</param>
         /// <returns>影响条数</returns>
         Task<int> UpdateWhere_SqlAsync(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values);
@@ -324,15 +329,15 @@ namespace EFCore.Sharding
         /// 执行SQL语句
         /// </summary>
         /// <param name="sql">SQL语句</param>
-        /// <param name="parameters">SQL参数</param>
-        int ExecuteSql(string sql, params (string paramterName, object paramterValue)[] paramters);
+        /// <param name="parameters">参数</param>
+        int ExecuteSql(string sql, params (string paramterName, object paramterValue)[] parameters);
 
         /// <summary>
         /// 执行SQL语句
         /// </summary>
         /// <param name="sql">SQL语句</param>
         /// <param name="parameters">SQL参数</param>
-        Task<int> ExecuteSqlAsync(string sql, params (string paramterName, object paramterValue)[] paramters);
+        Task<int> ExecuteSqlAsync(string sql, params (string paramterName, object paramterValue)[] parameters);
 
         #endregion
     }

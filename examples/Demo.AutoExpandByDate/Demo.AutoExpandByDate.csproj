@@ -13,10 +13,4 @@
     <ProjectReference Include="..\..\src\EFCore.Sharding\EFCore.Sharding.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Base_UnitTest.sql">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

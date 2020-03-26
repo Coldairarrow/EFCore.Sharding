@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
+    /// <summary>
+    /// 食物操作接口
+    /// </summary>
     public interface ITransaction : IDisposable
     {
         /// <summary>
