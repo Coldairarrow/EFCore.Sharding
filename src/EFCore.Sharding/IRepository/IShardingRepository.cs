@@ -1,5 +1,8 @@
 ﻿namespace EFCore.Sharding
 {
+    /// <summary>
+    /// sharding仓库操作接口
+    /// </summary>
     public interface IShardingRepository : IBaseRepository
     {
         #region 查询数据

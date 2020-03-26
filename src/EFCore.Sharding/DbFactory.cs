@@ -50,8 +50,6 @@ namespace EFCore.Sharding
             DbContext dbContext = GetDbContext(conString, dbType, new List<Type> { tableEntityType });
             var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
             databaseCreator.CreateTables();
-            //if (!dbContext.Database.EnsureCreated())
-            //    dbContext.Database.Migrate();
         }
 
         internal static BaseDbContext GetDbContext([NotNull] string conString, DatabaseType dbType, List<Type> entityTypes = null)

@@ -68,13 +68,11 @@ namespace EFCore.Sharding
         /// <typeparam name="TEntity">对应抽象表类型</typeparam>
         /// <param name="startTime">开始时间</param>
         /// <param name="expandByDateMode">扩容模式</param>
-        /// <param name="createTableSqlBuilder">生产创建表的SQL语句,传入具体表名,返回完成SQL语句</param>
         /// <param name="groupName">数据库组名</param>
         /// <returns></returns>
         IConfigInit AutoExpandByDate<TEntity>(
             DateTime startTime,
             ExpandByDateMode expandByDateMode,
-            Func<string, string> createTableSqlBuilder,
             string groupName = ShardingConfig.DefaultDbGourpName);
     }
 }

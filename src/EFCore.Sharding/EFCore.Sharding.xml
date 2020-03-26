@@ -24,13 +24,6 @@
             <param name="func">任务</param>
             <returns></returns>
         </member>
-        <member name="T:EFCore.Sharding.Util.ConsistentHash`1">
-            <summary>
-            一致性HASH,解决传统HASH的扩容难的问题
-            注:常用与分布式缓存与分表
-            </summary>
-            <typeparam name="T">泛型</typeparam>
-        </member>
         <member name="T:EFCore.Sharding.Util.DbProviderFactoryHelper">
             <summary>
             数据库操作提供源工厂帮助类
@@ -106,14 +99,6 @@
             <param name="entityType">实体类型</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToList``1(System.Data.DataTable)">
-            <summary>
-            DataTable转List
-            </summary>
-            <typeparam name="T">转换类型</typeparam>
-            <param name="dt">数据源</param>
-            <returns></returns>
-        </member>
         <member name="M:EFCore.Sharding.Util.Extention.ToCsvStr(System.Data.DataTable)">
              <summary>
             将DataTable转换为标准的CSV字符串
@@ -121,195 +106,7 @@
              <param name="dt">数据表</param>
              <returns>返回标准的CSV</returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.BuildExtendSelectExpre``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
-            <summary>
-            组合继承属性选择表达式树,无拓展参数
-            TResult将继承TBase的所有属性
-            </summary>
-            <typeparam name="TBase">原数据类型</typeparam>
-            <typeparam name="TResult">返回类型</typeparam>
-            <param name="expression">拓展表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.BuildExtendSelectExpre``3(System.Linq.Expressions.Expression{System.Func{``0,``1,``2}})">
-            <summary>
-            组合继承属性选择表达式树,1个拓展参数
-            TResult将继承TBase的所有属性
-            </summary>
-            <typeparam name="TBase">原数据类型</typeparam>
-            <typeparam name="T1">拓展类型1</typeparam>
-            <typeparam name="TResult">返回类型</typeparam>
-            <param name="expression">拓展表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.BuildExtendSelectExpre``4(System.Linq.Expressions.Expression{System.Func{``0,``1,``2,``3}})">
-            <summary>
-            组合继承属性选择表达式树,2个拓展参数
-            TResult将继承TBase的所有属性
-            </summary>
-            <typeparam name="TBase">原数据类型</typeparam>
-            <typeparam name="T1">拓展类型1</typeparam>
-            <typeparam name="T2">拓展类型2</typeparam>
-            <typeparam name="TResult">返回类型</typeparam>
-            <param name="expression">拓展表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.BuildExtendSelectExpre``5(System.Linq.Expressions.Expression{System.Func{``0,``1,``2,``3,``4}})">
-            <summary>
-            组合继承属性选择表达式树,3个拓展参数
-            TResult将继承TBase的所有属性
-            </summary>
-            <typeparam name="TBase">原数据类型</typeparam>
-            <typeparam name="T1">拓展类型1</typeparam>
-            <typeparam name="T2">拓展类型2</typeparam>
-            <typeparam name="T3">拓展类型3</typeparam>
-            <typeparam name="TResult">返回类型</typeparam>
-            <param name="expression">拓展表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.BuildExtendSelectExpre``6(System.Linq.Expressions.Expression{System.Func{``0,``1,``2,``3,``4,``5}})">
-            <summary>
-            组合继承属性选择表达式树,4个拓展参数
-            TResult将继承TBase的所有属性
-            </summary>
-            <typeparam name="TBase">原数据类型</typeparam>
-            <typeparam name="T1">拓展类型1</typeparam>
-            <typeparam name="T2">拓展类型2</typeparam>
-            <typeparam name="T3">拓展类型3</typeparam>
-            <typeparam name="T4">拓展类型4</typeparam>
-            <typeparam name="TResult">返回类型</typeparam>
-            <param name="expression">拓展表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.BuildExtendSelectExpre``7(System.Linq.Expressions.Expression{System.Func{``0,``1,``2,``3,``4,``5,``6}})">
-            <summary>
-            组合继承属性选择表达式树,5个拓展参数
-            TResult将继承TBase的所有属性
-            </summary>
-            <typeparam name="TBase">原数据类型</typeparam>
-            <typeparam name="T1">拓展类型1</typeparam>
-            <typeparam name="T2">拓展类型2</typeparam>
-            <typeparam name="T3">拓展类型3</typeparam>
-            <typeparam name="T4">拓展类型4</typeparam>
-            <typeparam name="T5">拓展类型5</typeparam>
-            <typeparam name="TResult">返回类型</typeparam>
-            <param name="expression">拓展表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.BuildExtendSelectExpre``8(System.Linq.Expressions.Expression{System.Func{``0,``1,``2,``3,``4,``5,``6,``7}})">
-            <summary>
-            组合继承属性选择表达式树,6个拓展参数
-            TResult将继承TBase的所有属性
-            </summary>
-            <typeparam name="TBase">原数据类型</typeparam>
-            <typeparam name="T1">拓展类型1</typeparam>
-            <typeparam name="T2">拓展类型2</typeparam>
-            <typeparam name="T3">拓展类型3</typeparam>
-            <typeparam name="T4">拓展类型4</typeparam>
-            <typeparam name="T5">拓展类型5</typeparam>
-            <typeparam name="T6">拓展类型6</typeparam>
-            <typeparam name="TResult">返回类型</typeparam>
-            <param name="expression">拓展表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.BuildExtendSelectExpre``9(System.Linq.Expressions.Expression{System.Func{``0,``1,``2,``3,``4,``5,``6,``7,``8}})">
-            <summary>
-            组合继承属性选择表达式树,7个拓展参数
-            TResult将继承TBase的所有属性
-            </summary>
-            <typeparam name="TBase">原数据类型</typeparam>
-            <typeparam name="T1">拓展类型1</typeparam>
-            <typeparam name="T2">拓展类型2</typeparam>
-            <typeparam name="T3">拓展类型3</typeparam>
-            <typeparam name="T4">拓展类型4</typeparam>
-            <typeparam name="T5">拓展类型5</typeparam>
-            <typeparam name="T6">拓展类型6</typeparam>
-            <typeparam name="T7">拓展类型7</typeparam>
-            <typeparam name="TResult">返回类型</typeparam>
-            <param name="expression">拓展表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.BuildExtendSelectExpre``10(System.Linq.Expressions.Expression{System.Func{``0,``1,``2,``3,``4,``5,``6,``7,``8,``9}})">
-            <summary>
-            组合继承属性选择表达式树,8个拓展参数
-            TResult将继承TBase的所有属性
-            </summary>
-            <typeparam name="TBase">原数据类型</typeparam>
-            <typeparam name="T1">拓展类型1</typeparam>
-            <typeparam name="T2">拓展类型2</typeparam>
-            <typeparam name="T3">拓展类型3</typeparam>
-            <typeparam name="T4">拓展类型4</typeparam>
-            <typeparam name="T5">拓展类型5</typeparam>
-            <typeparam name="T6">拓展类型6</typeparam>
-            <typeparam name="T7">拓展类型7</typeparam>
-            <typeparam name="T8">拓展类型8</typeparam>
-            <typeparam name="TResult">返回类型</typeparam>
-            <param name="expression">拓展表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.BuildExtendSelectExpre``11(System.Linq.Expressions.Expression{System.Func{``0,``1,``2,``3,``4,``5,``6,``7,``8,``9,``10}})">
-            <summary>
-            组合继承属性选择表达式树,9个拓展参数
-            TResult将继承TBase的所有属性
-            </summary>
-            <typeparam name="TBase">原数据类型</typeparam>
-            <typeparam name="T1">拓展类型1</typeparam>
-            <typeparam name="T2">拓展类型2</typeparam>
-            <typeparam name="T3">拓展类型3</typeparam>
-            <typeparam name="T4">拓展类型4</typeparam>
-            <typeparam name="T5">拓展类型5</typeparam>
-            <typeparam name="T6">拓展类型6</typeparam>
-            <typeparam name="T7">拓展类型7</typeparam>
-            <typeparam name="T8">拓展类型8</typeparam>
-            <typeparam name="T9">拓展类型9</typeparam>
-            <typeparam name="TResult">返回类型</typeparam>
-            <param name="expression">拓展表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.And``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
-            <summary>
-            连接表达式与运算
-            </summary>
-            <typeparam name="T">参数</typeparam>
-            <param name="one">原表达式</param>
-            <param name="another">新的表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.Or``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
-            <summary>
-            连接表达式或运算
-            </summary>
-            <typeparam name="T">参数</typeparam>
-            <param name="one">原表达式</param>
-            <param name="another">新表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.GetConstantValue(System.Linq.Expressions.Expression)">
-            <summary>
-            获取表达式中的固定值
-            </summary>
-            <param name="expression">表达式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.Copy``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Int32)">
-            <summary>
-            复制序列中的数据
-            </summary>
-            <typeparam name="T">泛型</typeparam>
-            <param name="iEnumberable">原数据</param>
-            <param name="startIndex">原数据开始复制的起始位置</param>
-            <param name="length">需要复制的数据长度</param>
-            <returns></returns>
-        </member>
         <member name="M:EFCore.Sharding.Util.Extention.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
-            <summary>
-            给IEnumerable拓展ForEach方法
-            </summary>
-            <typeparam name="T">模型类</typeparam>
-            <param name="iEnumberable">数据源</param>
-            <param name="func">方法</param>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0,System.Int32})">
             <summary>
             给IEnumerable拓展ForEach方法
             </summary>
@@ -332,48 +129,6 @@
             <typeparam name="T">数据模型</typeparam>
             <param name="iEnumberable">数据源</param>
             <returns>DataTable</returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.OrderBy``1(System.Linq.IQueryable{``0},System.String,System.String)">
-            <summary>
-            动态排序法
-            </summary>
-            <typeparam name="T">实体类型</typeparam>
-            <param name="source">IQueryable数据源</param>
-            <param name="sortColumn">排序的列</param>
-            <param name="sortType">排序的方法</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.OrderBy``1(System.Linq.IQueryable{``0},System.Collections.Generic.KeyValuePair{System.String,System.String}[])">
-            <summary>
-            动态排序法
-            </summary>
-            <typeparam name="T">实体类型</typeparam>
-            <param name="source">数据源</param>
-            <param name="sort">排序规则，Key为排序列，Value为排序类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.AsExpandable``1(System.Linq.IQueryable{``0})">
-            <summary>
-            拓展IQueryable"T"方法操作
-            </summary>
-            <typeparam name="T">数据类型</typeparam>
-            <param name="source">数据源</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.RemoveOrderBy``1(System.Linq.IQueryable{``0})">
-            <summary>
-            删除OrderBy表达式
-            </summary>
-            <typeparam name="T">实体类型</typeparam>
-            <param name="source">数据源</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.RemoveOrderBy(System.Linq.IQueryable)">
-            <summary>
-            删除OrderBy表达式
-            </summary>
-            <param name="source">数据源</param>
-            <returns></returns>
         </member>
         <member name="M:EFCore.Sharding.Util.Extention.RemoveSkip``1(System.Linq.IQueryable{``0})">
             <summary>
@@ -468,13 +223,6 @@
             构造函数
             </summary>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToBytes(System.Object)">
-            <summary>
-            将一个object对象序列化，返回一个byte[]         
-            </summary> 
-            <param name="obj">能序列化的对象</param>
-            <returns></returns> 
-        </member>
         <member name="M:EFCore.Sharding.Util.Extention.IsNullOrEmpty(System.Object)">
             <summary>
             判断是否为Null或者空
@@ -489,86 +237,12 @@
             <param name="obj">需要序列化的对象</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.EntityToJson(System.Object)">
-            <summary>
-            实体类转json数据，速度快
-            </summary>
-            <param name="t">实体类</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.DeepClone``1(``0)">
-            <summary>
-            深复制
-            </summary>
-            <typeparam name="T">类型</typeparam>
-            <param name="obj">对象</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToXmlStr``1(``0)">
-            <summary>
-            将对象序列化为XML字符串
-            </summary>
-            <typeparam name="T">对象类型</typeparam>
-            <param name="obj">对象</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToXmlStr``1(``0,System.String)">
-            <summary>
-            将对象序列化为XML字符串
-            </summary>
-            <typeparam name="T">对象类型</typeparam>
-            <param name="obj">对象</param>
-            <param name="rootNodeName">根节点名(建议设为xml)</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ContainsProperty(System.Object,System.String)">
-            <summary>
-            是否拥有某属性
-            </summary>
-            <param name="obj">对象</param>
-            <param name="propertyName">属性名</param>
-            <returns></returns>
-        </member>
         <member name="M:EFCore.Sharding.Util.Extention.GetPropertyValue(System.Object,System.String)">
             <summary>
             获取某属性值
             </summary>
             <param name="obj">对象</param>
             <param name="propertyName">属性名</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.SetPropertyValue(System.Object,System.String,System.Object)">
-            <summary>
-            设置某属性值
-            </summary>
-            <param name="obj">对象</param>
-            <param name="propertyName">属性名</param>
-            <param name="value">值</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ContainsField(System.Object,System.String)">
-            <summary>
-            是否拥有某字段
-            </summary>
-            <param name="obj">对象</param>
-            <param name="fieldName">字段名</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.GetGetFieldValue(System.Object,System.String)">
-            <summary>
-            获取某字段值
-            </summary>
-            <param name="obj">对象</param>
-            <param name="fieldName">字段名</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.SetFieldValue(System.Object,System.String,System.Object)">
-            <summary>
-            设置某字段值
-            </summary>
-            <param name="obj">对象</param>
-            <param name="fieldName">字段名</param>
-            <param name="value">值</param>
             <returns></returns>
         </member>
         <member name="M:EFCore.Sharding.Util.Extention.ChangeType(System.Object,System.Type)">
@@ -587,213 +261,12 @@
             <param name="obj">对象</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ChangeType_ByConvert(System.Object,System.Type)">
-            <summary>
-            改变类型
-            </summary>
-            <param name="obj">原对象</param>
-            <param name="targetType">目标类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToBytes_FromBase64Str(System.String)">
-            <summary>
-            转为字节数组
-            </summary>
-            <param name="base64Str">base64字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToMD5String(System.String)">
-            <summary>
-            转换为MD5加密后的字符串（默认加密为32位）
-            </summary>
-            <param name="str"></param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToMD5String16(System.String)">
-            <summary>
-            转换为MD5加密后的字符串（16位）
-            </summary>
-            <param name="str"></param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.Base64Encode(System.String)">
-            <summary>
-            Base64加密
-            注:默认采用UTF8编码
-            </summary>
-            <param name="source">待加密的明文</param>
-            <returns>加密后的字符串</returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.Base64Encode(System.String,System.Text.Encoding)">
-            <summary>
-            Base64加密
-            </summary>
-            <param name="source">待加密的明文</param>
-            <param name="encoding">加密采用的编码方式</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.Base64Decode(System.String)">
-            <summary>
-            Base64解密
-            注:默认使用UTF8编码
-            </summary>
-            <param name="result">待解密的密文</param>
-            <returns>解密后的字符串</returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.Base64Decode(System.String,System.Text.Encoding)">
-            <summary>
-            Base64解密
-            </summary>
-            <param name="result">待解密的密文</param>
-            <param name="encoding">解密采用的编码方式，注意和加密时采用的方式一致</param>
-            <returns>解密后的字符串</returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.Base64UrlEncode(System.String)">
-            <summary>
-            Base64Url编码
-            </summary>
-            <param name="text">待编码的文本字符串</param>
-            <returns>编码的文本字符串</returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.Base64UrlDecode(System.String)">
-            <summary>
-            Base64Url解码
-            </summary>
-            <param name="base64UrlStr">使用Base64Url编码后的字符串</param>
-            <returns>解码后的内容</returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToSHA1Bytes(System.String)">
-            <summary>
-            计算SHA1摘要
-            注：默认使用UTF8编码
-            </summary>
-            <param name="str">字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToSHA1Bytes(System.String,System.Text.Encoding)">
-            <summary>
-            计算SHA1摘要
-            </summary>
-            <param name="str">字符串</param>
-            <param name="encoding">编码</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToSHA1String(System.String)">
-            <summary>
-            转为SHA1哈希加密字符串
-            注：默认使用UTF8编码
-            </summary>
-            <param name="str">字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToSHA1String(System.String,System.Text.Encoding)">
-            <summary>
-            转为SHA1哈希
-            </summary>
-            <param name="str">字符串</param>
-            <param name="encoding">编码</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToSHA256String(System.String)">
-            <summary>
-            SHA256加密
-            </summary>
-            <param name="str">字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToHMACSHA256String(System.String,System.String)">
-            <summary>
-            HMACSHA256算法
-            </summary>
-            <param name="text">内容</param>
-            <param name="secret">密钥</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToInt(System.String)">
-            <summary>
-            string转int
-            </summary>
-            <param name="str">字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToLong(System.String)">
-            <summary>
-            string转long
-            </summary>
-            <param name="str">字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToInt_FromBinString(System.String)">
-            <summary>
-            二进制字符串转为Int
-            </summary>
-            <param name="str">二进制字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToInt0X(System.String)">
-            <summary>
-            将16进制字符串转为Int
-            </summary>
-            <param name="str">数值</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToDouble(System.String)">
-            <summary>
-            转换为double
-            </summary>
-            <param name="str">字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToBytes(System.String)">
-            <summary>
-            string转byte[]
-            </summary>
-            <param name="str">字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToBytes(System.String,System.Text.Encoding)">
-            <summary>
-            string转byte[]
-            </summary>
-            <param name="str">字符串</param>
-            <param name="theEncoding">需要的编码</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.To0XBytes(System.String)">
-            <summary>
-            将16进制字符串转为Byte数组
-            </summary>
-            <param name="str">16进制字符串(2个16进制字符表示一个Byte)</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToASCIIBytes(System.String)">
-            <summary>
-            将ASCII码形式的字符串转为对应字节数组
-            注：一个字节一个ASCII码字符
-            </summary>
-            <param name="str">字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToDateTime(System.String)">
-            <summary>
-            转换为日期格式
-            </summary>
-            <param name="str"></param>
-            <returns></returns>
-        </member>
         <member name="M:EFCore.Sharding.Util.Extention.ToObject``1(System.String)">
             <summary>
             将Json字符串反序列化为对象
             </summary>
             <typeparam name="T">对象类型</typeparam>
             <param name="jsonStr">Json字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.RemoveAt(System.String)">
-            <summary>
-            删除Json字符串中键中的@符号
-            </summary>
-            <param name="jsonStr">json字符串</param>
             <returns></returns>
         </member>
         <member name="M:EFCore.Sharding.Util.Extention.ToObject(System.String,System.Type)">
@@ -804,85 +277,11 @@
             <param name="type">对象类型</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.XmlStrToObject``1(System.String)">
-            <summary>
-            将XML字符串反序列化为对象
-            </summary>
-            <typeparam name="T">对象类型</typeparam>
-            <param name="xmlStr">XML字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.XmlStrToJObject(System.String)">
-            <summary>
-            将XML字符串反序列化为对象
-            </summary>
-            <param name="xmlStr">XML字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToList``1(System.String)">
-            <summary>
-            将Json字符串转为List'T'
-            </summary>
-            <typeparam name="T">对象类型</typeparam>
-            <param name="jsonStr"></param>
-            <returns></returns>
-        </member>
         <member name="M:EFCore.Sharding.Util.Extention.ToDataTable(System.String)">
             <summary>
             将Json字符串转为DataTable
             </summary>
             <param name="jsonStr">Json字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToJObject(System.String)">
-            <summary>
-            将Json字符串转为JObject
-            </summary>
-            <param name="jsonStr">Json字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToJArray(System.String)">
-            <summary>
-            将Json字符串转为JArray
-            </summary>
-            <param name="jsonStr">Json字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToEntity``1(System.String)">
-            <summary>
-            json数据转实体类,仅仅应用于单个实体类，速度非常快
-            </summary>
-            <typeparam name="T">泛型参数</typeparam>
-            <param name="json">json字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToFirstUpperStr(System.String)">
-            <summary>
-            转为首字母大写
-            </summary>
-            <param name="str">字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToFirstLowerStr(System.String)">
-            <summary>
-            转为首字母小写
-            </summary>
-            <param name="str">字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToIPEndPoint(System.String)">
-            <summary>
-            转为网络终结点IPEndPoint
-            </summary>=
-            <param name="str">字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToEnum``1(System.String)">
-            <summary>
-            将枚举类型的文本转为枚举类型
-            </summary>
-            <typeparam name="T">枚举类型</typeparam>
-            <param name="enumText">枚举文本</param>
             <returns></returns>
         </member>
         <member name="M:EFCore.Sharding.Util.Extention.ToMurmurHash(System.String)">
@@ -891,19 +290,6 @@
             </summary>
             <param name="str">字符串</param>
             <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.IsWeakPwd(System.String)">
-            <summary>
-            是否为弱密码
-            注:密码必须包含数字、小写字母、大写字母和其他符号中的两种并且长度大于8
-            </summary>
-            <param name="pwd">密码</param>
-            <returns></returns>
-        </member>
-        <member name="T:EFCore.Sharding.Util.ParameterReplaceVisitor">
-            <summary>
-            继承ExpressionVisitor类，实现参数替换统一
-            </summary>
         </member>
         <member name="F:EFCore.Sharding.Util.GlobalData.FxAllTypes">
             <summary>
@@ -955,25 +341,6 @@
             删除任务
             </summary>
             <param name="jobId">任务标识Id</param>
-        </member>
-        <member name="T:EFCore.Sharding.Util.LinqHelper">
-            <summary>
-            Linq操作帮助类
-            </summary>
-        </member>
-        <member name="M:EFCore.Sharding.Util.LinqHelper.True``1">
-            <summary>
-            创建初始条件为True的表达式
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.LinqHelper.False``1">
-            <summary>
-            创建初始条件为False的表达式
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
         </member>
         <member name="T:EFCore.Sharding.Util.RandomHelper">
             <summary>
@@ -1077,72 +444,6 @@
         <member name="P:EFCore.Sharding.Util.AttributeConfig.Properties">
             <summary>
             初始化属性
-            </summary>
-        </member>
-        <member name="T:EFCore.Sharding.DatabaseType">
-            <summary>
-            数据库类型
-            </summary>
-        </member>
-        <member name="F:EFCore.Sharding.DatabaseType.SqlServer">
-            <summary>
-            SqlServer数据库
-            </summary>
-        </member>
-        <member name="F:EFCore.Sharding.DatabaseType.MySql">
-            <summary>
-            MySql数据库
-            </summary>
-        </member>
-        <member name="F:EFCore.Sharding.DatabaseType.Oracle">
-            <summary>
-            Oracle数据库
-            </summary>
-        </member>
-        <member name="F:EFCore.Sharding.DatabaseType.PostgreSql">
-            <summary>
-            PostgreSql数据库
-            </summary>
-        </member>
-        <member name="F:EFCore.Sharding.DatabaseType.SQLite">
-            <summary>
-            SQLite数据库
-            </summary>
-        </member>
-        <member name="F:EFCore.Sharding.DatabaseType.Memory">
-            <summary>
-            内存数据库
-            </summary>
-        </member>
-        <member name="T:EFCore.Sharding.UpdateType">
-            <summary>
-            更新模式
-            注:[Field]=[Field] {UpdateType} value
-            </summary>
-        </member>
-        <member name="F:EFCore.Sharding.UpdateType.Equal">
-            <summary>
-            等,即赋值,[Field]= value
-            </summary>
-        </member>
-        <member name="F:EFCore.Sharding.UpdateType.Add">
-            <summary>
-            自增,[Field]=[Field] + value
-            </summary>
-        </member>
-        <member name="F:EFCore.Sharding.UpdateType.Minus">
-            <summary>
-            自减,[Field]=[Field] - value
-            </summary>
-        </member>
-        <member name="F:EFCore.Sharding.UpdateType.Multiply">
-            <summary>
-            自乘,[Field]=[Field] * value
-            </summary>
-        </member>
-        <member name="F:EFCore.Sharding.UpdateType.Divide">
-            <summary>
-            自除,[Field]=[Field] / value
             </summary>
         </member>
         <member name="M:EFCore.Sharding.DbModelFactory.GetDbCompiledModel(System.String,EFCore.Sharding.DatabaseType)">
@@ -1364,6 +665,11 @@
             <typeparam name="T">实体泛型</typeparam>
             <returns></returns>
         </member>
+        <member name="T:EFCore.Sharding.IRepository">
+            <summary>
+            操作接口
+            </summary>
+        </member>
         <member name="P:EFCore.Sharding.IRepository.HandleSqlLog">
             <summary>
             SQL日志处理方法
@@ -1537,8 +843,9 @@
             用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name","小明"))
             注：生成的SQL类似于UPDATE [TABLE] SET [Name] = 'xxx' WHERE [Id] = 'Admin'
             </summary>
-            <typeparam name="T">实体类型</typeparam>
+            <param name="entityType">实体类型</param>
             <param name="where">筛选条件</param>
+            <param name="paramters">参数</param>
             <param name="values">字段值设置</param>
             <returns>影响条数</returns>
         </member>
@@ -1548,8 +855,9 @@
             用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name","小明"))
             注：生成的SQL类似于UPDATE [TABLE] SET [Name] = 'xxx' WHERE [Id] = 'Admin'
             </summary>
-            <typeparam name="T">实体类型</typeparam>
+            <param name="entityType">实体类型</param>
             <param name="where">筛选条件</param>
+            <param name="paramters">参数</param>
             <param name="values">字段值设置</param>
             <returns>影响条数</returns>
         </member>
@@ -1658,7 +966,7 @@
             执行SQL语句
             </summary>
             <param name="sql">SQL语句</param>
-            <param name="parameters">SQL参数</param>
+            <param name="parameters">参数</param>
         </member>
         <member name="M:EFCore.Sharding.IRepository.ExecuteSqlAsync(System.String,System.ValueTuple{System.String,System.Object}[])">
             <summary>
@@ -1667,12 +975,128 @@
             <param name="sql">SQL语句</param>
             <param name="parameters">SQL参数</param>
         </member>
+        <member name="T:EFCore.Sharding.IShardingRepository">
+            <summary>
+            sharding仓库操作接口
+            </summary>
+        </member>
         <member name="M:EFCore.Sharding.IShardingRepository.GetIShardingQueryable``1">
             <summary>
             获取IShardingQueryable
             </summary>
             <typeparam name="T">实体泛型</typeparam>
             <returns></returns>
+        </member>
+        <member name="T:EFCore.Sharding.DatabaseType">
+            <summary>
+            数据库类型
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.DatabaseType.SqlServer">
+            <summary>
+            SqlServer数据库
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.DatabaseType.MySql">
+            <summary>
+            MySql数据库
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.DatabaseType.Oracle">
+            <summary>
+            Oracle数据库
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.DatabaseType.PostgreSql">
+            <summary>
+            PostgreSql数据库
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.DatabaseType.SQLite">
+            <summary>
+            SQLite数据库
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.DatabaseType.Memory">
+            <summary>
+            内存数据库
+            </summary>
+        </member>
+        <member name="T:EFCore.Sharding.ExpandByDateMode">
+            <summary>
+            按时间扩容模式
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.ExpandByDateMode.PerMinute">
+            <summary>
+            每分钟
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.ExpandByDateMode.PerHour">
+            <summary>
+            每小时
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.ExpandByDateMode.PerDay">
+            <summary>
+            每天
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.ExpandByDateMode.PerMonth">
+            <summary>
+            每月
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.ExpandByDateMode.PerYear">
+            <summary>
+            每年
+            </summary>
+        </member>
+        <member name="T:EFCore.Sharding.ReadWriteType">
+            <summary>
+            读写模式
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.ReadWriteType.Read">
+            <summary>
+            只读
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.ReadWriteType.Write">
+            <summary>
+            只写
+            </summary>
+        </member>
+        <member name="T:EFCore.Sharding.UpdateType">
+            <summary>
+            更新模式
+            注:[Field]=[Field] {UpdateType} value
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.UpdateType.Equal">
+            <summary>
+            等,即赋值,[Field]= value
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.UpdateType.Add">
+            <summary>
+            自增,[Field]=[Field] + value
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.UpdateType.Minus">
+            <summary>
+            自减,[Field]=[Field] - value
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.UpdateType.Multiply">
+            <summary>
+            自乘,[Field]=[Field] * value
+            </summary>
+        </member>
+        <member name="F:EFCore.Sharding.UpdateType.Divide">
+            <summary>
+            自除,[Field]=[Field] / value
+            </summary>
         </member>
         <member name="M:EFCore.Sharding.DbRepository.#ctor(System.String,EFCore.Sharding.DatabaseType)">
             <summary>
@@ -1780,7 +1204,7 @@
             <param name="absDbName">抽象数据库名</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.IConfigInit.AutoExpandByDate``1(System.DateTime,EFCore.Sharding.ExpandByDateMode,System.Func{System.String,System.String},System.String)">
+        <member name="M:EFCore.Sharding.IConfigInit.AutoExpandByDate``1(System.DateTime,EFCore.Sharding.ExpandByDateMode,System.String)">
             <summary>
             通过日期自动扩容
             优点:即自动定时按照建表,无需数据迁移
@@ -1788,33 +1212,7 @@
             <typeparam name="TEntity">对应抽象表类型</typeparam>
             <param name="startTime">开始时间</param>
             <param name="expandByDateMode">扩容模式</param>
-            <param name="createTableSqlBuilder">生产创建表的SQL语句,传入具体表名,返回完成SQL语句</param>
             <param name="groupName">数据库组名</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.IConfigProvider.GetReadTables(System.String,System.String)">
-            <summary>
-            获取读表
-            </summary>
-            <typeparam name="T">实体泛型</typeparam>
-            <param name="absDbName">抽象数据库名</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.IConfigProvider.GetAllWriteTables(System.String,System.String)">
-            <summary>
-            获取所有的写表
-            </summary>
-            <param name="absTableName">抽象表名</param>
-            <param name="absDbName">抽象数据库名</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.IConfigProvider.GetTheWriteTable(System.String,System.Object,System.String)">
-            <summary>
-            获取特定写表
-            </summary>
-            <param name="absTableName">抽象表名</param>
-            <param name="obj">实体对象</param>
-            <param name="absDbName">抽象数据库名</param>
             <returns></returns>
         </member>
         <member name="T:EFCore.Sharding.ShardingConfig">
@@ -1852,35 +1250,426 @@
             <param name="absDbName">抽象数据库</param>
             <returns>IShardingQueryable</returns>
         </member>
-        <member name="T:EFCore.Sharding.ExpandByDateMode">
+        <member name="T:EFCore.Sharding.IShardingQueryable`1">
             <summary>
-            按时间扩容模式
+            IShardingQueryable
             </summary>
+            <typeparam name="T">逻辑表泛型</typeparam>
         </member>
-        <member name="F:EFCore.Sharding.ExpandByDateMode.PerMinute">
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Where(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
             <summary>
-            每分钟
+            筛选
             </summary>
+            <param name="predicate">表达式</param>
+            <returns></returns>
         </member>
-        <member name="F:EFCore.Sharding.ExpandByDateMode.PerHour">
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Where(System.String,System.Object[])">
             <summary>
-            每小时
+            动态筛选
             </summary>
+            <param name="predicate">动态表达式</param>
+            <param name="values">参数</param>
+            <returns></returns>
         </member>
-        <member name="F:EFCore.Sharding.ExpandByDateMode.PerDay">
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Skip(System.Int32)">
             <summary>
-            每天
+            SKip
             </summary>
+            <param name="count">数量</param>
+            <returns></returns>
         </member>
-        <member name="F:EFCore.Sharding.ExpandByDateMode.PerMonth">
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Take(System.Int32)">
             <summary>
-            每月
+            Take
             </summary>
+            <param name="count">数量</param>
+            <returns></returns>
         </member>
-        <member name="F:EFCore.Sharding.ExpandByDateMode.PerYear">
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.OrderBy``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
             <summary>
-            每年
+            顺序排序
             </summary>
+            <typeparam name="TKey">返回类型</typeparam>
+            <param name="keySelector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.OrderByDescending``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+            倒序排序
+            </summary>
+            <typeparam name="TKey">返回类型</typeparam>
+            <param name="keySelector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.OrderBy(System.String,System.Object[])">
+            <summary>
+            动态排序
+            </summary>
+            <param name="ordering">动态表达式</param>
+            <param name="values">参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Count">
+            <summary>
+            获取数量
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.CountAsync">
+            <summary>
+            异步获取数量
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.ToList">
+            <summary>
+            获取列表
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.ToListAsync">
+            <summary>
+            异步获取列表
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.FirstOrDefault">
+            <summary>
+            获取第一个,若不存在则返回默认值
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.FirstOrDefaultAsync">
+            <summary>
+            获取第一个,若不存在则返回默认值
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Any(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            判断是否存在
+            </summary>
+            <param name="predicate">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.AnyAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            异步判断是否存在
+            </summary>
+            <param name="predicate">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Max``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+            计算最大值
+            </summary>
+            <typeparam name="TResult">数据类型</typeparam>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.MaxAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+            异步计算最大值
+            </summary>
+            <typeparam name="TResult">数据类型</typeparam>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Min``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+            计算最小值
+            </summary>
+            <typeparam name="TResult">数据类型</typeparam>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.MinAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+            异步计算最小值
+            </summary>
+            <typeparam name="TResult">数据类型</typeparam>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Average(System.Linq.Expressions.Expression{System.Func{`0,System.Int32}})">
+            <summary>
+            计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.AverageAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Int32}})">
+            <summary>
+            异步计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Average(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Int32}}})">
+            <summary>
+            计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.AverageAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Int32}}})">
+            <summary>
+            异步计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Average(System.Linq.Expressions.Expression{System.Func{`0,System.Single}})">
+            <summary>
+            计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.AverageAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Single}})">
+            <summary>
+            异步计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Average(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Single}}})">
+            <summary>
+            计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.AverageAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Single}}})">
+            <summary>
+            异步计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Average(System.Linq.Expressions.Expression{System.Func{`0,System.Int64}})">
+            <summary>
+            计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.AverageAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Int64}})">
+            <summary>
+            异步计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Average(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Int64}}})">
+            <summary>
+            计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.AverageAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Int64}}})">
+            <summary>
+            异步计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Average(System.Linq.Expressions.Expression{System.Func{`0,System.Double}})">
+            <summary>
+            计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.AverageAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Double}})">
+            <summary>
+            异步计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Average(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Double}}})">
+            <summary>
+            计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.AverageAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Double}}})">
+            <summary>
+            异步计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Average(System.Linq.Expressions.Expression{System.Func{`0,System.Decimal}})">
+            <summary>
+            计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.AverageAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Decimal}})">
+            <summary>
+            异步计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Average(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Decimal}}})">
+            <summary>
+            计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.AverageAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Decimal}}})">
+            <summary>
+            异步计算平均值
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Sum(System.Linq.Expressions.Expression{System.Func{`0,System.Decimal}})">
+            <summary>
+            求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.SumAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Decimal}})">
+            <summary>
+            异步求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Sum(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Decimal}}})">
+            <summary>
+            求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.SumAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Decimal}}})">
+            <summary>
+            异步求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Sum(System.Linq.Expressions.Expression{System.Func{`0,System.Double}})">
+            <summary>
+            求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.SumAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Double}})">
+            <summary>
+            异步求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Sum(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Double}}})">
+            <summary>
+            求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.SumAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Double}}})">
+            <summary>
+            异步求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Sum(System.Linq.Expressions.Expression{System.Func{`0,System.Single}})">
+            <summary>
+            求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.SumAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Single}})">
+            <summary>
+            异步求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Sum(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Single}}})">
+            <summary>
+            求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.SumAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Single}}})">
+            <summary>
+            异步求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Sum(System.Linq.Expressions.Expression{System.Func{`0,System.Int32}})">
+            <summary>
+            求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.SumAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Int32}})">
+            <summary>
+            异步求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Sum(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Int32}}})">
+            <summary>
+            求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.SumAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Int32}}})">
+            <summary>
+            异步求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Sum(System.Linq.Expressions.Expression{System.Func{`0,System.Int64}})">
+            <summary>
+            求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.SumAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Int64}})">
+            <summary>
+            异步求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.Sum(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Int64}}})">
+            <summary>
+            求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.IShardingQueryable`1.SumAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Nullable{System.Int64}}})">
+            <summary>
+            异步求和
+            </summary>
+            <param name="selector">表达式</param>
+            <returns></returns>
         </member>
         <member name="M:EFCore.Sharding.ShardingHelper.MapTable(System.Type,System.String)">
             <summary>
@@ -1919,40 +1708,6 @@
             </summary>
             <param name="obj">实体对象</param>
             <returns>日期</returns>
-        </member>
-        <member name="T:EFCore.Sharding.ConsistentHashShardingRule`1">
-            <summary>
-            一致性HASH分片规则
-            优点:数据扩容时数据迁移量较小,表越多扩容效果越明显
-            缺点:扩容时需要进行数据迁移,比较复杂
-            建议:若雪花分片不满足则采用本方案,此方案为分片规则中的"核弹"
-            </summary>
-        </member>
-        <member name="M:EFCore.Sharding.ConsistentHashShardingRule`1.#ctor(System.Collections.Generic.List{System.String})">
-            <summary>
-            构造函数
-            </summary>
-            <param name="tables">所有分表名集合</param>
-        </member>
-        <member name="P:EFCore.Sharding.ConsistentHashShardingRule`1._tables">
-            <summary>
-            所有分表名集合
-            </summary>
-        </member>
-        <member name="P:EFCore.Sharding.ConsistentHashShardingRule`1._consistentHash">
-            <summary>
-            一致性哈希
-            </summary>
-        </member>
-        <member name="M:EFCore.Sharding.ConsistentHashShardingRule`1.BuildTableName(`0)">
-            <summary>
-            生成完整表名
-            注:BuildTableSuffix与BuildTableName实现二选一
-            </summary>
-            <param name="obj">实体对象</param>
-            <returns>
-            完整表名
-            </returns>
         </member>
         <member name="T:EFCore.Sharding.ModShardingRule`1">
             <summary>
@@ -2025,6 +1780,11 @@
             <param name="repositories">多个仓储</param>
             <returns></returns>
         </member>
+        <member name="T:EFCore.Sharding.ITransaction">
+            <summary>
+            食物操作接口
+            </summary>
+        </member>
         <member name="M:EFCore.Sharding.ITransaction.RunTransaction(System.Action,System.Data.IsolationLevel)">
             <summary>
             执行事务,具体执行操作包括在action中
@@ -2042,40 +1802,6 @@
             <param name="action">执行操作</param>
             <param name="isolationLevel">事务级别,默认为ReadCommitted</param>
             <returns></returns>
-        </member>
-        <member name="T:LinqKit.ExpandableQuery`1">
-            <summary>
-            An IQueryable wrapper that allows us to visit the query's expression tree just before LINQ to SQL gets to it.
-            This is based on the excellent work of Tomas Petricek: http://tomasp.net/blog/linq-expand.aspx
-            </summary>
-        </member>
-        <member name="T:LinqKit.ExpressionExpander">
-            <summary>
-            Custom expresssion visitor for ExpandableQuery. This expands calls to Expression.Compile() and
-            collapses captured lambda references in subqueries which LINQ to SQL can't otherwise handle.
-            </summary>
-        </member>
-        <member name="M:LinqKit.ExpressionExpander.VisitInvocation(System.Linq.Expressions.InvocationExpression)">
-            <summary>
-            Flatten calls to Invoke so that Entity Framework can understand it. Calls to Invoke are generated
-            by PredicateBuilder.
-            </summary>
-        </member>
-        <member name="T:LinqKit.ExpressionVisitor">
-            <summary>
-            This comes from Matt Warren's sample:
-            http://blogs.msdn.com/mattwar/archive/2007/07/31/linq-building-an-iqueryable-provider-part-ii.aspx
-            </summary>
-        </member>
-        <member name="T:LinqKit.Extensions">
-            <summary>Refer to http://www.albahari.com/nutshell/linqkit.html and
-            http://tomasp.net/blog/linq-expand.aspx for more information.</summary>
-        </member>
-        <member name="T:LinqKit.Linq">
-            <summary>
-            Another good idea by Tomas Petricek.
-            See http://tomasp.net/blog/dynamic-linq-queries.aspx for information on how it's used.
-            </summary>
         </member>
     </members>
 </doc>

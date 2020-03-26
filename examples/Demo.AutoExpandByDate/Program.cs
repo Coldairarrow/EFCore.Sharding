@@ -1,18 +1,15 @@
 ﻿using Coldairarrow.Util;
 using EFCore.Sharding;
 using System;
-using System.IO;
 using System.Threading;
 
 namespace Demo.AutoExpandByDate
 {
     class Base_UnitTestShardingRule : AbsShardingRule<Base_UnitTest>
     {
-        public override string BuildTableSuffix(Base_UnitTest obj)
+        public override DateTime BuildDate(Base_UnitTest obj)
         {
-            var time = new SnowflakeId(Convert.ToInt64(obj.Id)).Time;
-
-            return time.ToString("yyyyMMddHHmm");
+            return new SnowflakeId(Convert.ToInt64(obj.Id)).Time;
         }
     }
 
@@ -24,7 +21,7 @@ namespace Demo.AutoExpandByDate
         }
         static void Main(string[] args)
         {
-            DateTime startTime = Convert.ToDateTime("21:47:00");
+            DateTime startTime = Convert.ToDateTime("21:05:00");
             string conString = "Data Source=.;Initial Catalog=Colder.Admin.AntdVue;Integrated Security=True";
 
             ShardingConfig.Init(config =>
@@ -33,12 +30,7 @@ namespace Demo.AutoExpandByDate
                     .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, conString)
                     .AddPhysicDbGroup()
                     .SetShardingRule(new Base_UnitTestShardingRule())
-                    .AutoExpandByDate<Base_UnitTest>(
-                        startTime,
-                        ExpandByDateMode.PerMinute,
-                        time => $"{typeof(Base_UnitTest).Name}_{time.ToString("yyyyMMddHHmm")}",
-                        tableName => File.ReadAllText("Base_UnitTest.sql").Replace("Base_UnitTest", tableName)
-                        );
+                    .AutoExpandByDate<Base_UnitTest>(startTime, ExpandByDateMode.PerMinute);
             });
 
             var db = DbFactory.GetShardingRepository();

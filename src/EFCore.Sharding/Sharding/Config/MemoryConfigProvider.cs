@@ -114,7 +114,6 @@ namespace EFCore.Sharding
         public IConfigInit AutoExpandByDate<TEntity>(
             DateTime startTime,
             ExpandByDateMode expandByDateMode,
-            Func<string, string> createTableSqlBuilder,
             string groupName = ShardingConfig.DefaultDbGourpName)
         {
             string absTableName = typeof(TEntity).Name;
@@ -133,7 +132,9 @@ namespace EFCore.Sharding
                    ExpandByDateMode.PerYear => ("0 0 0 L 12 ? *", TimeSpan.FromDays(1)),
                    _ => throw new Exception("expandByDateMode参数无效")
                };
+
             var theTime = startTime;
+
 
             while (true)
             {
@@ -141,6 +142,13 @@ namespace EFCore.Sharding
                     break;
                 string tableName = BuildTableName(theTime);
                 AddPhysicTable<TEntity>(tableName, groupName);
+                //建表
+                //自动创建数据库表
+                GetGroupDbs(groupName).ForEach(aDb =>
+                {
+                    var entityType = ShardingHelper.MapTable(typeof(TEntity), tableName);
+                    DbFactory.CreateTable(aDb.ConString, aDb.DbType, entityType);
+                });
 
                 var key = expandByDateMode.ToString().Replace("Per", "");
                 var method = theTime.GetType().GetMethod($"Add{key}s");
@@ -150,22 +158,12 @@ namespace EFCore.Sharding
             {
                 DateTime trueDate = DateTime.Now + paramter.leadTime;
                 string tableName = BuildTableName(trueDate);
-                string sql = createTableSqlBuilder(tableName);
-                var q = from a in _physicDbs
-                        join b in _physicDbGroups on a.GroupName equals b.GroupName
-                        join c in _absDbs on b.AbsDbName equals c.Name
-                        where b.GroupName == groupName
-                        select new
-                        {
-                            a.ConString,
-                            c.DbType
-                        };
-                var dbList = q.ToList();
+
                 //自动创建数据库表
-                dbList.ForEach(aDb =>
+                GetGroupDbs(groupName).ForEach(aDb =>
                 {
-                    var repository = DbFactory.GetRepository(aDb.ConString, aDb.DbType);
-                    repository.ExecuteSql(sql);
+                    var entityType = ShardingHelper.MapTable(typeof(TEntity), tableName);
+                    DbFactory.CreateTable(aDb.ConString, aDb.DbType, entityType);
                 });
 
                 //添加物理表
@@ -177,6 +175,17 @@ namespace EFCore.Sharding
             string BuildTableName(DateTime dateTime)
             {
                 return $"{absTableName}_{dateTime.ToString(GetDateFormat(expandByDateMode))}";
+            }
+
+            List<(string ConString, DatabaseType DbType)> GetGroupDbs(string _groupName)
+            {
+                var q = from a in _physicDbs
+                        join b in _physicDbGroups on a.GroupName equals b.GroupName
+                        join c in _absDbs on b.AbsDbName equals c.Name
+                        where b.GroupName == _groupName
+                        select (a.ConString, c.DbType);
+
+                return q.ToList();
             }
         }
 
