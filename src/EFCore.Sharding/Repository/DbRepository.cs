@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
-    internal abstract class DbRepository : IRepository, IInternalTransaction
+    public abstract class DbRepository : IRepository, IInternalTransaction
     {
         #region 构造函数
 
@@ -30,12 +30,14 @@ namespace EFCore.Sharding
             ConnectionString = conString;
             DbType = dbType;
             _db = DbFactory.GetDbContext(conString, dbType);
+            _provider = DbFactory.GetProvider(dbType);
         }
 
         #endregion
 
         #region 私有成员
 
+        protected AbstractProvider _provider { get; }
         protected BaseDbContext _db { get; }
         protected IDbContextTransaction _transaction { get; set; }
         protected static PropertyInfo GetKeyProperty(Type type)
@@ -135,7 +137,6 @@ namespace EFCore.Sharding
         private (string sql, List<(string paramterName, object paramterValue)> paramters) GetUpdateWhereSql(IQueryable iq, params (string field, UpdateType updateType, object value)[] values)
         {
             string tableName = iq.ElementType.Name;
-            DbProviderFactory dbProviderFactory = DbProviderFactoryHelper.GetDbProviderFactory(DbType);
             var whereSql = GetWhereSql(iq);
 
             List<string> propertySetStr = new List<string>();
@@ -165,11 +166,10 @@ namespace EFCore.Sharding
         }
         private List<DbParameter> CreateDbParamters(List<(string paramterName, object paramterValue)> paramters)
         {
-            DbProviderFactory dbProviderFactory = DbProviderFactoryHelper.GetDbProviderFactory(DbType);
             List<DbParameter> dbParamters = new List<DbParameter>();
             paramters.ForEach(aParamter =>
             {
-                var newParamter = dbProviderFactory.CreateParameter();
+                var newParamter = _provider.GetDbParameter();
                 newParamter.ParameterName = aParamter.paramterName;
                 newParamter.Value = aParamter.paramterValue;
                 dbParamters.Add(newParamter);
@@ -561,8 +561,7 @@ namespace EFCore.Sharding
         }
         public DataTable GetDataTableWithSql(string sql, params (string paramterName, object value)[] parameters)
         {
-            DbProviderFactory dbProviderFactory = DbProviderFactoryHelper.GetDbProviderFactory(DbType);
-            using (DbConnection conn = dbProviderFactory.CreateConnection())
+            using (DbConnection conn = _provider.GetDbConnection())
             {
                 conn.ConnectionString = ConnectionString;
                 if (conn.State != ConnectionState.Open)
@@ -595,8 +594,7 @@ namespace EFCore.Sharding
         }
         public async Task<DataTable> GetDataTableWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
         {
-            DbProviderFactory dbProviderFactory = DbProviderFactoryHelper.GetDbProviderFactory(DbType);
-            using (DbConnection conn = dbProviderFactory.CreateConnection())
+            using (DbConnection conn = _provider.GetDbConnection())
             {
                 conn.ConnectionString = ConnectionString;
                 if (conn.State != ConnectionState.Open)

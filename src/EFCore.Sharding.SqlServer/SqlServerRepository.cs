@@ -5,7 +5,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 
-namespace EFCore.Sharding
+namespace EFCore.Sharding.SqlServer
 {
     internal class SqlServerRepository : DbRepository, IRepository
     {

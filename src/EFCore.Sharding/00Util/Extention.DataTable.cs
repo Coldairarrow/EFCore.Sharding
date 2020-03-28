@@ -3,7 +3,7 @@ using System.Text;
 
 namespace EFCore.Sharding.Util
 {
-    internal static partial class Extention
+    public static partial class PublicExtention
     {
         /// <summary>
         ///将DataTable转换为标准的CSV字符串

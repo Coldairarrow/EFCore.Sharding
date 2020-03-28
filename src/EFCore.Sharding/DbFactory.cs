@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Reflection;
 
 namespace EFCore.Sharding
 {
@@ -18,6 +19,23 @@ namespace EFCore.Sharding
     {
         #region 外部接口
 
+        internal static AbstractProvider GetProvider(DatabaseType databaseType)
+        {
+            string assemblyName = $"EFCore.Sharding.{databaseType}";
+            try
+            {
+                Assembly assembly = Assembly.Load(assemblyName);
+
+                var type = assembly.GetType($"{assemblyName}.{databaseType}Provider");
+
+                return Activator.CreateInstance(type) as AbstractProvider;
+            }
+            catch
+            {
+                throw new Exception($"请安装nuget包:{assemblyName}");
+            }
+        }
+
         /// <summary>
         /// 根据配置文件获取数据库类型，并返回对应的工厂接口
         /// </summary>
@@ -26,11 +44,7 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static IRepository GetRepository(string conString, DatabaseType dbType)
         {
-            Type dbRepositoryType = Type.GetType("EFCore.Sharding." + DbProviderFactoryHelper.DbTypeToDbTypeStr(dbType) + "Repository");
-
-            var repository = Activator.CreateInstance(dbRepositoryType, new object[] { conString }) as IRepository;
-
-            return repository;
+            return GetProvider(dbType).GetRepository(conString);
         }
 
         /// <summary>
@@ -54,12 +68,14 @@ namespace EFCore.Sharding
 
         internal static BaseDbContext GetDbContext([NotNull] string conString, DatabaseType dbType, List<Type> entityTypes = null)
         {
+            AbstractProvider provider = GetProvider(dbType);
+
             if (conString.IsNullOrEmpty())
                 throw new Exception("conString能为空");
 
-            DbConnection dbConnection = null;
-            if (dbType != DatabaseType.Memory)
-                dbConnection = DbProviderFactoryHelper.GetDbConnection(conString, dbType);
+            DbConnection dbConnection = provider.GetDbConnection();
+            dbConnection.ConnectionString = conString;
+
             IModel model;
             if (entityTypes?.Count > 0)
                 model = DbModelFactory.BuildDbCompiledModel(dbType, entityTypes);
@@ -67,16 +83,18 @@ namespace EFCore.Sharding
                 model = DbModelFactory.GetDbCompiledModel(conString, dbType);
             DbContextOptionsBuilder builder = new DbContextOptionsBuilder();
 
-            switch (dbType)
-            {
-                case DatabaseType.SqlServer: builder.UseSqlServer(dbConnection, x => x.UseRowNumberForPaging()); break;
-                case DatabaseType.MySql: builder.UseMySql(dbConnection); break;
-                case DatabaseType.PostgreSql: builder.UseNpgsql(dbConnection); break;
-                case DatabaseType.Oracle: builder.UseOracle(dbConnection, x => x.UseOracleSQLCompatibility("11")); break;
-                case DatabaseType.SQLite: builder.UseSqlite(dbConnection); break;
-                case DatabaseType.Memory: builder.UseInMemoryDatabase(conString); break;
-                default: throw new Exception("暂不支持该数据库！");
-            }
+            provider.UseDatabase(builder, dbConnection);
+
+            //switch (dbType)
+            //{
+            //    case DatabaseType.SqlServer: builder.UseSqlServer(dbConnection, x => x.UseRowNumberForPaging()); break;
+            //    case DatabaseType.MySql: builder.UseMySql(dbConnection); break;
+            //    case DatabaseType.PostgreSql: builder.UseNpgsql(dbConnection); break;
+            //    case DatabaseType.Oracle: builder.UseOracle(dbConnection, x => x.UseOracleSQLCompatibility("11")); break;
+            //    case DatabaseType.SQLite: builder.UseSqlite(dbConnection); break;
+            //    case DatabaseType.Memory: builder.UseInMemoryDatabase(conString); break;
+            //    default: throw new Exception("暂不支持该数据库！");
+            //}
             builder.EnableSensitiveDataLogging();
             builder.UseModel(model);
             builder.UseLoggerFactory(_loggerFactory);

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
-    internal class BaseDbContext : DbContext
+    public class BaseDbContext : DbContext
     {
         public BaseDbContext([NotNull] DbContextOptions options)
             : base(options)

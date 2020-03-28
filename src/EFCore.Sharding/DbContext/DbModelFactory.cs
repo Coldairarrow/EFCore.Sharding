@@ -1,10 +1,6 @@
 ﻿using EFCore.Sharding.Util;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.InMemory.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata.Conventions;
-using Oracle.EntityFrameworkCore.Metadata.Conventions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -83,18 +79,19 @@ namespace EFCore.Sharding
 
         public static IModel BuildDbCompiledModel(DatabaseType dbType, List<Type> entityTypes = null)
         {
-            ConventionSet conventionSet = null;
-            switch (dbType)
-            {
-                case DatabaseType.SqlServer: conventionSet = SqlServerConventionSetBuilder.Build(); break;
-                case DatabaseType.MySql: conventionSet = MySqlConventionSetBuilder.Build(); break;
-                case DatabaseType.PostgreSql: conventionSet = NpgsqlConventionSetBuilder.Build(); break;
-                case DatabaseType.Oracle: conventionSet = OracleConventionSetBuilder.Build(); break;
-                case DatabaseType.SQLite: conventionSet = SqliteConventionSetBuilder.Build(); break;
-                case DatabaseType.Memory: conventionSet = InMemoryConventionSetBuilder.Build(); break;
-                default: throw new Exception("暂不支持该数据库!");
-            }
-            ModelBuilder modelBuilder = new ModelBuilder(conventionSet);
+            AbstractProvider provider = DbFactory.GetProvider(dbType);
+            //ConventionSet conventionSet = null;
+            //switch (dbType)
+            //{
+            //    case DatabaseType.SqlServer: conventionSet = SqlServerConventionSetBuilder.Build(); break;
+            //    case DatabaseType.MySql: conventionSet = MySqlConventionSetBuilder.Build(); break;
+            //    case DatabaseType.PostgreSql: conventionSet = NpgsqlConventionSetBuilder.Build(); break;
+            //    case DatabaseType.Oracle: conventionSet = OracleConventionSetBuilder.Build(); break;
+            //    case DatabaseType.SQLite: conventionSet = SqliteConventionSetBuilder.Build(); break;
+            //    case DatabaseType.Memory: conventionSet = InMemoryConventionSetBuilder.Build(); break;
+            //    default: throw new Exception("暂不支持该数据库!");
+            //}
+            ModelBuilder modelBuilder = DbFactory.GetProvider(dbType).GetModelBuilder();
             List<Type> needTypes = entityTypes?.Count > 0 ? entityTypes : _entityTypeMap.Values.ToList();
             needTypes.ForEach(x =>
             {
