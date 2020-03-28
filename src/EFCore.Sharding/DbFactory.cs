@@ -85,16 +85,6 @@ namespace EFCore.Sharding
 
             provider.UseDatabase(builder, dbConnection);
 
-            //switch (dbType)
-            //{
-            //    case DatabaseType.SqlServer: builder.UseSqlServer(dbConnection, x => x.UseRowNumberForPaging()); break;
-            //    case DatabaseType.MySql: builder.UseMySql(dbConnection); break;
-            //    case DatabaseType.PostgreSql: builder.UseNpgsql(dbConnection); break;
-            //    case DatabaseType.Oracle: builder.UseOracle(dbConnection, x => x.UseOracleSQLCompatibility("11")); break;
-            //    case DatabaseType.SQLite: builder.UseSqlite(dbConnection); break;
-            //    case DatabaseType.Memory: builder.UseInMemoryDatabase(conString); break;
-            //    default: throw new Exception("暂不支持该数据库！");
-            //}
             builder.EnableSensitiveDataLogging();
             builder.UseModel(model);
             builder.UseLoggerFactory(_loggerFactory);

@@ -261,6 +261,13 @@ namespace EFCore.Sharding
             return resList;
         }
 
+        public IConfigInit SetEntityAssembly(params string[] entityAssemblyNames)
+        {
+            ShardingConfig.AssemblyNames = entityAssemblyNames;
+
+            return this;
+        }
+
         #endregion
     }
 }
