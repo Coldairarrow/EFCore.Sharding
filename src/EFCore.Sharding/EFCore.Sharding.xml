@@ -126,6 +126,14 @@
             删除Take表达式
             </summary>
         </member>
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ToList``1(System.Data.DataTable)">
+            <summary>
+            DataTable转List
+            </summary>
+            <typeparam name="T">转换类型</typeparam>
+            <param name="dt">数据源</param>
+            <returns></returns>
+        </member>
         <member name="M:EFCore.Sharding.Util.PublicExtention.ToCsvStr(System.Data.DataTable)">
              <summary>
             将DataTable转换为标准的CSV字符串
@@ -184,6 +192,23 @@
             <param name="propertyName">属性名</param>
             <returns></returns>
         </member>
+        <member name="M:EFCore.Sharding.Util.PublicExtention.GetGetFieldValue(System.Object,System.String)">
+            <summary>
+            获取某字段值
+            </summary>
+            <param name="obj">对象</param>
+            <param name="fieldName">字段名</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.Util.PublicExtention.SetFieldValue(System.Object,System.String,System.Object)">
+            <summary>
+            设置某字段值
+            </summary>
+            <param name="obj">对象</param>
+            <param name="fieldName">字段名</param>
+            <param name="value">值</param>
+            <returns></returns>
+        </member>
         <member name="M:EFCore.Sharding.Util.PublicExtention.ChangeType(System.Object,System.Type)">
             <summary>
             改变实体类型
@@ -198,6 +223,14 @@
             </summary>
             <typeparam name="T">目标泛型</typeparam>
             <param name="obj">对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ChangeType_ByConvert(System.Object,System.Type)">
+            <summary>
+            改变类型
+            </summary>
+            <param name="obj">原对象</param>
+            <param name="targetType">目标类型</param>
             <returns></returns>
         </member>
         <member name="M:EFCore.Sharding.Util.PublicExtention.ToObject``1(System.String)">

@@ -15,7 +15,7 @@ namespace EFCore.Sharding.SqlServer
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            dbContextOptionsBuilder.UseSqlServer(dbConnection, x => x.UseRowNumberForPaging());
+            dbContextOptionsBuilder.UseSqlServer(dbConnection);
         }
     }
 }

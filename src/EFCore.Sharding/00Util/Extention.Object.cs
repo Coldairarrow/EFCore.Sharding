@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace EFCore.Sharding.Util
@@ -62,6 +63,29 @@ namespace EFCore.Sharding.Util
         }
 
         /// <summary>
+        /// 获取某字段值
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">字段名</param>
+        /// <returns></returns>
+        public static object GetGetFieldValue(this object obj, string fieldName)
+        {
+            return obj.GetType().GetField(fieldName, _bindingFlags).GetValue(obj);
+        }
+
+        /// <summary>
+        /// 设置某字段值
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="fieldName">字段名</param>
+        /// <param name="value">值</param>
+        /// <returns></returns>
+        public static void SetFieldValue(this object obj, string fieldName, object value)
+        {
+            obj.GetType().GetField(fieldName, _bindingFlags).SetValue(obj, value);
+        }
+
+        /// <summary>
         /// 改变实体类型
         /// </summary>
         /// <param name="obj">对象</param>
@@ -81,6 +105,28 @@ namespace EFCore.Sharding.Util
         public static T ChangeType<T>(this object obj)
         {
             return obj.ToJson().ToObject<T>();
+        }
+
+        /// <summary>
+        /// 改变类型
+        /// </summary>
+        /// <param name="obj">原对象</param>
+        /// <param name="targetType">目标类型</param>
+        /// <returns></returns>
+        public static object ChangeType_ByConvert(this object obj, Type targetType)
+        {
+            object resObj;
+            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
+            {
+                NullableConverter newNullableConverter = new NullableConverter(targetType);
+                resObj = newNullableConverter.ConvertFrom(obj);
+            }
+            else
+            {
+                resObj = Convert.ChangeType(obj, targetType);
+            }
+
+            return resObj;
         }
     }
 }

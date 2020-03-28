@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>EFCore.Sharding.MySql</AssemblyName>
+    <RootNamespace>EFCore.Sharding.MySql</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.2.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EFCore.Sharding\EFCore.Sharding.2x.csproj" />
+  </ItemGroup>
+</Project>
