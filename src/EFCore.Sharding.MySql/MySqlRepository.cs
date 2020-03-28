@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace EFCore.Sharding
+namespace EFCore.Sharding.MySql
 {
     internal class MySqlRepository : DbRepository, IRepository
     {

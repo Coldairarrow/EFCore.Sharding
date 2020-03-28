@@ -4,12 +4,12 @@ using System.Reflection;
 
 namespace EFCore.Sharding.Util
 {
-    internal static partial class Extention
+    public static partial class PublicExtention
     {
         /// <summary>
         /// 构造函数
         /// </summary>
-        static Extention()
+        static PublicExtention()
         {
             JsonSerializerSettings setting = new JsonSerializerSettings();
             JsonConvert.DefaultSettings = new Func<JsonSerializerSettings>(() =>

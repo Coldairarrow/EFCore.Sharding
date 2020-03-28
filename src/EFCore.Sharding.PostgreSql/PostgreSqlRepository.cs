@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EFCore.Sharding
+namespace EFCore.Sharding.PostgreSql
 {
     internal class PostgreSqlRepository : DbRepository, IRepository
     {

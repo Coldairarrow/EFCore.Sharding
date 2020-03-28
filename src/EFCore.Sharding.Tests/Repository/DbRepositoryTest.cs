@@ -1,6 +1,5 @@
 ﻿using Coldairarrow.Util;
 using EFCore.Sharding.Tests.Util;
-using EFCore.Sharding.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;

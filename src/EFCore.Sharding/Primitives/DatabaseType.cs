@@ -28,11 +28,6 @@
         /// <summary>
         /// SQLite数据库
         /// </summary>
-        SQLite,
-
-        /// <summary>
-        /// 内存数据库
-        /// </summary>
-        Memory
+        SQLite
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EFCore.Sharding
+namespace EFCore.Sharding.SQLite
 {
     internal class SQLiteRepository : DbRepository, IRepository
     {

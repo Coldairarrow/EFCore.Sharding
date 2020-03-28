@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EFCore.Sharding
+namespace EFCore.Sharding.Oracle
 {
     internal class OracleRepository : DbRepository, IRepository
     {

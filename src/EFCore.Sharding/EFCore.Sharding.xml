@@ -24,67 +24,6 @@
             <param name="func">任务</param>
             <returns></returns>
         </member>
-        <member name="T:EFCore.Sharding.Util.DbProviderFactoryHelper">
-            <summary>
-            数据库操作提供源工厂帮助类
-            </summary>
-        </member>
-        <member name="M:EFCore.Sharding.Util.DbProviderFactoryHelper.GetDbProviderFactory(EFCore.Sharding.DatabaseType)">
-            <summary>
-            获取提供工厂
-            </summary>
-            <param name="dbType">数据库类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.DbProviderFactoryHelper.GetDbConnection(EFCore.Sharding.DatabaseType)">
-            <summary>
-            获取DbConnection
-            </summary>
-            <param name="dbType">数据库类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.DbProviderFactoryHelper.GetDbCommand(EFCore.Sharding.DatabaseType)">
-            <summary>
-            获取DbCommand
-            </summary>
-            <param name="dbType">数据库类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.DbProviderFactoryHelper.GetDbParameter(EFCore.Sharding.DatabaseType)">
-            <summary>
-            获取DbParameter
-            </summary>
-            <param name="dbType">数据库类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.DbProviderFactoryHelper.GetDataAdapter(EFCore.Sharding.DatabaseType)">
-            <summary>
-            获取DataAdapter
-            </summary>
-            <param name="dbType">数据库类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.DbProviderFactoryHelper.DbTypeStrToDbType(System.String)">
-            <summary>
-            将数据库类型字符串转换为对应的数据库类型
-            </summary>
-            <param name="dbTypeStr">数据库类型字符串</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.DbProviderFactoryHelper.DbTypeToDbTypeStr(EFCore.Sharding.DatabaseType)">
-            <summary>
-            将数据库类型转换为对应的数据库类型字符串
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.DbProviderFactoryHelper.GetDbConnection(System.String,EFCore.Sharding.DatabaseType)">
-            <summary>
-            获取数据库连接对象
-            </summary>
-            <param name="conStr">连接字符串</param>
-            <param name="dbType">数据库类型</param>
-            <returns></returns>
-        </member>
         <member name="T:EFCore.Sharding.Util.Extention">
             <summary>
             IQueryable"T"的拓展操作
@@ -98,37 +37,6 @@
             <param name="context">上下文</param>
             <param name="entityType">实体类型</param>
             <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToCsvStr(System.Data.DataTable)">
-             <summary>
-            将DataTable转换为标准的CSV字符串
-             </summary>
-             <param name="dt">数据表</param>
-             <returns>返回标准的CSV</returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
-            <summary>
-            给IEnumerable拓展ForEach方法
-            </summary>
-            <typeparam name="T">模型类</typeparam>
-            <param name="iEnumberable">数据源</param>
-            <param name="func">方法</param>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.CastToList``1(System.Collections.IEnumerable)">
-            <summary>
-            IEnumerable转换为List'T'
-            </summary>
-            <typeparam name="T">参数</typeparam>
-            <param name="source">数据源</param>
-            <returns></returns>
-        </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToDataTable``1(System.Collections.Generic.IEnumerable{``0})">
-            <summary>
-            将IEnumerable'T'转为对应的DataTable
-            </summary>
-            <typeparam name="T">数据模型</typeparam>
-            <param name="iEnumberable">数据源</param>
-            <returns>DataTable</returns>
         </member>
         <member name="M:EFCore.Sharding.Util.Extention.RemoveSkip``1(System.Linq.IQueryable{``0})">
             <summary>
@@ -218,26 +126,57 @@
             删除Take表达式
             </summary>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.#cctor">
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ToCsvStr(System.Data.DataTable)">
+             <summary>
+            将DataTable转换为标准的CSV字符串
+             </summary>
+             <param name="dt">数据表</param>
+             <returns>返回标准的CSV</returns>
+        </member>
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
+            <summary>
+            给IEnumerable拓展ForEach方法
+            </summary>
+            <typeparam name="T">模型类</typeparam>
+            <param name="iEnumberable">数据源</param>
+            <param name="func">方法</param>
+        </member>
+        <member name="M:EFCore.Sharding.Util.PublicExtention.CastToList``1(System.Collections.IEnumerable)">
+            <summary>
+            IEnumerable转换为List'T'
+            </summary>
+            <typeparam name="T">参数</typeparam>
+            <param name="source">数据源</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ToDataTable``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            将IEnumerable'T'转为对应的DataTable
+            </summary>
+            <typeparam name="T">数据模型</typeparam>
+            <param name="iEnumberable">数据源</param>
+            <returns>DataTable</returns>
+        </member>
+        <member name="M:EFCore.Sharding.Util.PublicExtention.#cctor">
             <summary>
             构造函数
             </summary>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.IsNullOrEmpty(System.Object)">
+        <member name="M:EFCore.Sharding.Util.PublicExtention.IsNullOrEmpty(System.Object)">
             <summary>
             判断是否为Null或者空
             </summary>
             <param name="obj">对象</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToJson(System.Object)">
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ToJson(System.Object)">
             <summary>
             将对象序列化成Json字符串
             </summary>
             <param name="obj">需要序列化的对象</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.GetPropertyValue(System.Object,System.String)">
+        <member name="M:EFCore.Sharding.Util.PublicExtention.GetPropertyValue(System.Object,System.String)">
             <summary>
             获取某属性值
             </summary>
@@ -245,7 +184,7 @@
             <param name="propertyName">属性名</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ChangeType(System.Object,System.Type)">
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ChangeType(System.Object,System.Type)">
             <summary>
             改变实体类型
             </summary>
@@ -253,7 +192,7 @@
             <param name="targetType">目标类型</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ChangeType``1(System.Object)">
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ChangeType``1(System.Object)">
             <summary>
             改变实体类型
             </summary>
@@ -261,7 +200,7 @@
             <param name="obj">对象</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToObject``1(System.String)">
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ToObject``1(System.String)">
             <summary>
             将Json字符串反序列化为对象
             </summary>
@@ -269,7 +208,7 @@
             <param name="jsonStr">Json字符串</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToObject(System.String,System.Type)">
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ToObject(System.String,System.Type)">
             <summary>
             将Json字符串反序列化为对象
             </summary>
@@ -277,14 +216,14 @@
             <param name="type">对象类型</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToDataTable(System.String)">
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ToDataTable(System.String)">
             <summary>
             将Json字符串转为DataTable
             </summary>
             <param name="jsonStr">Json字符串</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.Util.Extention.ToMurmurHash(System.String)">
+        <member name="M:EFCore.Sharding.Util.PublicExtention.ToMurmurHash(System.String)">
             <summary>
             转为MurmurHash
             </summary>
@@ -445,6 +384,60 @@
             <summary>
             初始化属性
             </summary>
+        </member>
+        <member name="T:EFCore.Sharding.AbstractProvider">
+            <summary>
+            数据库提供抽象类
+            </summary>
+        </member>
+        <member name="M:EFCore.Sharding.AbstractProvider.UseDatabase(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder,System.Data.Common.DbConnection)">
+            <summary>
+            使用某个数据库
+            </summary>
+            <param name="dbContextOptionsBuilder">dbContextOptionsBuilder</param>
+            <param name="dbConnection">连接字符串</param>
+        </member>
+        <member name="M:EFCore.Sharding.AbstractProvider.GetModelBuilder">
+            <summary>
+            获取ModelBuilder
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.AbstractProvider.GetRepository(System.String)">
+            <summary>
+            获取仓储接口
+            </summary>
+            <param name="conString">完整数据库连接字符串</param>
+            <returns></returns>
+        </member>
+        <member name="P:EFCore.Sharding.AbstractProvider.DbProviderFactory">
+            <summary>
+            提供工厂
+            </summary>
+        </member>
+        <member name="M:EFCore.Sharding.AbstractProvider.GetDbConnection">
+            <summary>
+            获取DbConnection
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.AbstractProvider.GetDbCommand">
+            <summary>
+            获取DbCommand
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.AbstractProvider.GetDbParameter">
+            <summary>
+            获取DbParameter
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.AbstractProvider.GetDataAdapter">
+            <summary>
+            获取DataAdapter
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:EFCore.Sharding.DbModelFactory.GetDbCompiledModel(System.String,EFCore.Sharding.DatabaseType)">
             <summary>
@@ -1017,11 +1010,6 @@
             SQLite数据库
             </summary>
         </member>
-        <member name="F:EFCore.Sharding.DatabaseType.Memory">
-            <summary>
-            内存数据库
-            </summary>
-        </member>
         <member name="T:EFCore.Sharding.ExpandByDateMode">
             <summary>
             按时间扩容模式
@@ -1104,57 +1092,6 @@
             </summary>
             <param name="conString">构造参数，可以为数据库连接字符串或者DbContext</param>
             <param name="dbType">数据库类型</param>
-        </member>
-        <member name="M:EFCore.Sharding.MemoryRepository.#ctor(System.String)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="conStr">数据库连接名</param>
-        </member>
-        <member name="M:EFCore.Sharding.MySqlRepository.#ctor(System.String)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="conStr">数据库连接名</param>
-        </member>
-        <member name="M:EFCore.Sharding.MySqlRepository.BulkInsert``1(System.Collections.Generic.List{``0})">
-            <summary>
-            使用Bulk批量插入数据（适合大数据量，速度非常快）
-            </summary>
-            <typeparam name="T">实体类型</typeparam>
-            <param name="entities">数据</param>
-        </member>
-        <member name="M:EFCore.Sharding.PostgreSqlRepository.#ctor(System.String)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="conStr">数据库连接名</param>
-        </member>
-        <member name="M:EFCore.Sharding.PostgreSqlRepository.BulkInsert``1(System.Collections.Generic.List{``0})">
-            <summary>
-            使用Bulk批量插入数据（适合大数据量，速度非常快）
-            </summary>
-            <typeparam name="T">实体类型</typeparam>
-            <param name="entities">数据</param>
-        </member>
-        <member name="M:EFCore.Sharding.SQLiteRepository.#ctor(System.String)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="conStr">数据库连接名</param>
-        </member>
-        <member name="M:EFCore.Sharding.SqlServerRepository.#ctor(System.String)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="conStr">数据库连接名</param>
-        </member>
-        <member name="M:EFCore.Sharding.SqlServerRepository.BulkInsert``1(System.Collections.Generic.List{``0})">
-            <summary>
-            使用Bulk批量插入数据（适合大数据量，速度非常快）
-            </summary>
-            <typeparam name="T">实体类型</typeparam>
-            <param name="entities">数据</param>
         </member>
         <member name="T:EFCore.Sharding.IConfigInit">
             <summary>
