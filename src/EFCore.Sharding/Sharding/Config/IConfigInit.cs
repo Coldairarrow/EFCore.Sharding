@@ -8,6 +8,15 @@ namespace EFCore.Sharding
     public interface IConfigInit
     {
         /// <summary>
+        /// 设置实体的程序集
+        /// 注:使用模糊匹配获取,例如传入"Entity",则将会扫描所有名字包含"Entity"的程序集
+        /// 注:实体类必须拥有System.ComponentModel.DataAnnotations.Schema.TableAttribute特性
+        /// </summary>
+        /// <param name="entityAssemblyNames">程序集名</param>
+        /// <returns></returns>
+        IConfigInit SetEntityAssembly(params string[] entityAssemblyNames);
+
+        /// <summary>
         /// 添加抽象数据库
         /// </summary>
         /// <param name="dbType">数据库类型</param>

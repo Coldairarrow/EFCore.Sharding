@@ -79,18 +79,6 @@ namespace EFCore.Sharding
 
         public static IModel BuildDbCompiledModel(DatabaseType dbType, List<Type> entityTypes = null)
         {
-            AbstractProvider provider = DbFactory.GetProvider(dbType);
-            //ConventionSet conventionSet = null;
-            //switch (dbType)
-            //{
-            //    case DatabaseType.SqlServer: conventionSet = SqlServerConventionSetBuilder.Build(); break;
-            //    case DatabaseType.MySql: conventionSet = MySqlConventionSetBuilder.Build(); break;
-            //    case DatabaseType.PostgreSql: conventionSet = NpgsqlConventionSetBuilder.Build(); break;
-            //    case DatabaseType.Oracle: conventionSet = OracleConventionSetBuilder.Build(); break;
-            //    case DatabaseType.SQLite: conventionSet = SqliteConventionSetBuilder.Build(); break;
-            //    case DatabaseType.Memory: conventionSet = InMemoryConventionSetBuilder.Build(); break;
-            //    default: throw new Exception("暂不支持该数据库!");
-            //}
             ModelBuilder modelBuilder = DbFactory.GetProvider(dbType).GetModelBuilder();
             List<Type> needTypes = entityTypes?.Count > 0 ? entityTypes : _entityTypeMap.Values.ToList();
             needTypes.ForEach(x =>
@@ -107,7 +95,7 @@ namespace EFCore.Sharding
 
         private static void InitEntityType()
         {
-            List<Type> types = GlobalData.FxAllTypes
+            List<Type> types = ShardingConfig.AllEntityTypes
                 .Where(x => x.GetCustomAttribute(typeof(TableAttribute), false) != null)
                 .ToList();
 

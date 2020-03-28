@@ -207,7 +207,7 @@ namespace EFCore.Sharding.Util
             return IQueryableToSql.ToSql(query);
         }
 
-#region 私有成员
+        #region 私有成员
 
         private static Dictionary<string, ParameterExpression> ChangeSource_BuildParamters(Expression expression, Dictionary<Type, Type> map)
         {
@@ -284,9 +284,9 @@ namespace EFCore.Sharding.Util
                 args.ToArray());
         }
 
-#endregion
+        #endregion
 
-#region 自定义类
+        #region 自定义类
 
         class StatisVisitor : ExpressionVisitor
         {
@@ -549,7 +549,6 @@ namespace EFCore.Sharding.Util
         }
 
 #endif
-
-#endregion
+        #endregion
     }
 }

@@ -38,6 +38,24 @@
             <param name="entityType">实体类型</param>
             <returns></returns>
         </member>
+        <member name="M:EFCore.Sharding.Util.Extention.And``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            连接表达式与运算
+            </summary>
+            <typeparam name="T">参数</typeparam>
+            <param name="one">原表达式</param>
+            <param name="another">新的表达式</param>
+            <returns></returns>
+        </member>
+        <member name="M:EFCore.Sharding.Util.Extention.Or``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            连接表达式或运算
+            </summary>
+            <typeparam name="T">参数</typeparam>
+            <param name="one">原表达式</param>
+            <param name="another">新表达式</param>
+            <returns></returns>
+        </member>
         <member name="M:EFCore.Sharding.Util.Extention.RemoveSkip``1(System.Linq.IQueryable{``0})">
             <summary>
             删除Skip表达式
@@ -263,9 +281,9 @@
             <param name="str">字符串</param>
             <returns></returns>
         </member>
-        <member name="F:EFCore.Sharding.Util.GlobalData.FxAllTypes">
+        <member name="T:EFCore.Sharding.Util.ParameterReplaceVisitor">
             <summary>
-            框架所有自定义类
+            继承ExpressionVisitor类，实现参数替换统一
             </summary>
         </member>
         <member name="T:EFCore.Sharding.Util.JobHelper">
@@ -1131,6 +1149,15 @@
             配置初始化
             </summary>
         </member>
+        <member name="M:EFCore.Sharding.IConfigInit.SetEntityAssembly(System.String[])">
+            <summary>
+            设置实体的程序集
+            注:使用模糊匹配获取,例如传入"Entity",则将会扫描所有名字包含"Entity"的程序集
+            注:实体类必须拥有System.ComponentModel.DataAnnotations.Schema.TableAttribute特性
+            </summary>
+            <param name="entityAssemblyNames">程序集名</param>
+            <returns></returns>
+        </member>
         <member name="M:EFCore.Sharding.IConfigInit.AddAbsDb(EFCore.Sharding.DatabaseType,System.String)">
             <summary>
             添加抽象数据库
@@ -1205,6 +1232,22 @@
             初始化,只需程序启动执行一次
             </summary>
             <param name="configInit">初始化操作</param>
+        </member>
+        <member name="M:EFCore.Sharding.ShardingConfig.UseEFCoreSharding(Microsoft.Extensions.DependencyInjection.IServiceCollection,EFCore.Sharding.DatabaseType,System.String,System.Action{EFCore.Sharding.IConfigInit})">
+            <summary>
+            使用EFCoreSharding
+            可直接注入IRepository
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="dbType">数据库默认类型</param>
+            <param name="conString">数据库默认连接字符串</param>
+            <param name="configInit">分表配置项</param>
+            <returns></returns>
+        </member>
+        <member name="P:EFCore.Sharding.ShardingConfig.AllEntityTypes">
+            <summary>
+            框架所有自定义类
+            </summary>
         </member>
         <member name="T:EFCore.Sharding.Extention">
             <summary>

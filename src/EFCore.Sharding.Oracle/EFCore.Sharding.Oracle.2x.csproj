@@ -4,6 +4,13 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>EFCore.Sharding.Oracle</AssemblyName>
     <RootNamespace>EFCore.Sharding.Oracle</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Coldairarrow</Authors>
+    <Description>Database Sharding For EFCore</Description>
+    <PackageProjectUrl>https://github.com/Coldairarrow/EFCore.Sharding</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Coldairarrow/EFCore.Sharding</RepositoryUrl>
+    <RepositoryType>github</RepositoryType>
+    <Version>2.19.60</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Oracle.EntityFrameworkCore" Version="2.19.60" />

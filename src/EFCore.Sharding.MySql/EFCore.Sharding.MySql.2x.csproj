@@ -4,6 +4,13 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>EFCore.Sharding.MySql</AssemblyName>
     <RootNamespace>EFCore.Sharding.MySql</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Coldairarrow</Authors>
+    <Description>Database Sharding For EFCore</Description>
+    <PackageProjectUrl>https://github.com/Coldairarrow/EFCore.Sharding</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Coldairarrow/EFCore.Sharding</RepositoryUrl>
+    <RepositoryType>github</RepositoryType>
+    <Version>2.2.6</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.2.6" />
