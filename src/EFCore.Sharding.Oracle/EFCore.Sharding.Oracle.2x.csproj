@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>EFCore.Sharding.Oracle</AssemblyName>
+    <RootNamespace>EFCore.Sharding.Oracle</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Oracle.EntityFrameworkCore" Version="2.19.60" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EFCore.Sharding\EFCore.Sharding.2x.csproj" />
+  </ItemGroup>
+</Project>

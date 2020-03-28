@@ -627,11 +627,11 @@ namespace EFCore.Sharding
         }
         public List<T> GetListBySql<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class, new()
         {
-            return _db.Set<T>().FromSql(sqlStr, CreateDbParamters(parameters.ToList()).ToArray()).AsNoTracking().ToList();
+            return GetDataTableWithSql(sqlStr, parameters).ToList<T>();
         }
         public async Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class, new()
         {
-            return await _db.Set<T>().FromSql(sqlStr, CreateDbParamters(parameters.ToList()).ToArray()).AsNoTracking().ToListAsync();
+            return (await GetDataTableWithSqlAsync(sqlStr, parameters)).ToList<T>();
         }
 
         #endregion
@@ -640,11 +640,23 @@ namespace EFCore.Sharding
 
         public int ExecuteSql(string sql, params (string paramterName, object paramterValue)[] paramters)
         {
+#if EFCORE3
+            return _db.Database.ExecuteSqlRaw(sql, CreateDbParamters(paramters.ToList()).ToArray());
+#endif
+
+#if EFCORE2
             return _db.Database.ExecuteSqlCommand(sql, CreateDbParamters(paramters.ToList()).ToArray());
+#endif
         }
         public async Task<int> ExecuteSqlAsync(string sql, params (string paramterName, object paramterValue)[] paramters)
         {
+#if EFCORE3
+            return await _db.Database.ExecuteSqlRawAsync(sql, CreateDbParamters(paramters.ToList()).ToArray());
+#endif
+
+#if EFCORE2
             return await _db.Database.ExecuteSqlCommandAsync(sql, CreateDbParamters(paramters.ToList()).ToArray());
+#endif
         }
 
         #endregion

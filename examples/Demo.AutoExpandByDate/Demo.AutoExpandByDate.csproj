@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\EFCore.Sharding.SqlServer\EFCore.Sharding.SqlServer.csproj" />
     <ProjectReference Include="..\..\src\EFCore.Sharding\EFCore.Sharding.csproj" />
   </ItemGroup>
 

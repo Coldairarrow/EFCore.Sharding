@@ -1,8 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+#if EFCORE3
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+#endif
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -203,7 +207,7 @@ namespace EFCore.Sharding.Util
             return IQueryableToSql.ToSql(query);
         }
 
-        #region 私有成员
+#region 私有成员
 
         private static Dictionary<string, ParameterExpression> ChangeSource_BuildParamters(Expression expression, Dictionary<Type, Type> map)
         {
@@ -280,9 +284,9 @@ namespace EFCore.Sharding.Util
                 args.ToArray());
         }
 
-        #endregion
+#endregion
 
-        #region 自定义类
+#region 自定义类
 
         class StatisVisitor : ExpressionVisitor
         {
@@ -487,6 +491,27 @@ namespace EFCore.Sharding.Util
             }
         }
 
+#if EFCORE3
+        static class IQueryableToSql
+        {
+            public static (string sql, IReadOnlyDictionary<string, object> parameters) ToSql(IQueryable query)
+            {
+                var enumerator = query.Provider.Execute<IEnumerable>(query.Expression).GetEnumerator();
+                var queryContext = enumerator.GetGetFieldValue("_relationalQueryContext") as RelationalQueryContext;
+                var relationalCommandCache = enumerator.GetGetFieldValue("_relationalCommandCache");
+                var selectExpression = relationalCommandCache.GetGetFieldValue("_selectExpression") as SelectExpression;
+                var factory = relationalCommandCache.GetGetFieldValue("_querySqlGeneratorFactory") as IQuerySqlGeneratorFactory;
+
+                var sqlGenerator = factory.Create();
+                var command = sqlGenerator.GetCommand(selectExpression);
+
+                return (command.CommandText, queryContext.ParameterValues);
+            }
+        }
+#endif
+
+#if EFCORE2
+
         static class IQueryableToSql
         {
             private static readonly TypeInfo QueryCompilerTypeInfo = typeof(QueryCompiler).GetTypeInfo();
@@ -523,6 +548,8 @@ namespace EFCore.Sharding.Util
             }
         }
 
-        #endregion
+#endif
+
+#endregion
     }
 }

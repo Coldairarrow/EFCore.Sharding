@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Demo.Performance</AssemblyName>
+    <RootNamespace>Demo.Performance</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\EFCore.Sharding.SqlServer\EFCore.Sharding.SqlServer.2x.csproj" />
+    <ProjectReference Include="..\..\src\EFCore.Sharding\EFCore.Sharding.2x.csproj" />
+  </ItemGroup>
+
+</Project>
