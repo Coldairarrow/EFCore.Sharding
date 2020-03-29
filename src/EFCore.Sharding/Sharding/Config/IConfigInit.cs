@@ -75,13 +75,12 @@ namespace EFCore.Sharding
         /// 优点:即自动定时按照建表,无需数据迁移
         /// </summary>
         /// <typeparam name="TEntity">对应抽象表类型</typeparam>
-        /// <param name="startTime">开始时间</param>
         /// <param name="expandByDateMode">扩容模式</param>
-        /// <param name="groupName">数据库组名</param>
+        /// <param name="ranges">表在不同时间段的分布设置,即某个时间段的表都分布在特定的数据库组中</param>
         /// <returns></returns>
         IConfigInit AutoExpandByDate<TEntity>(
-            DateTime startTime,
             ExpandByDateMode expandByDateMode,
-            string groupName = ShardingConfig.DefaultDbGourpName);
+            params (DateTime startTime, DateTime endTime, string groupName)[] ranges
+            );
     }
 }

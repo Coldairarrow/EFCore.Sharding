@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Performance.2x", "exam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding.Tests.2x", "src\EFCore.Sharding.Tests\EFCore.Sharding.Tests.2x.csproj", "{74E98BA1-9F54-4D2F-B57F-269CF72C5929}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Common.2x", "examples\Demo.Common\Demo.Common.2x.csproj", "{6A691D2F-0010-402C-83DF-083638F32A67}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{74E98BA1-9F54-4D2F-B57F-269CF72C5929}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74E98BA1-9F54-4D2F-B57F-269CF72C5929}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74E98BA1-9F54-4D2F-B57F-269CF72C5929}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A691D2F-0010-402C-83DF-083638F32A67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A691D2F-0010-402C-83DF-083638F32A67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A691D2F-0010-402C-83DF-083638F32A67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A691D2F-0010-402C-83DF-083638F32A67}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +87,7 @@ Global
 		{E38348E4-92F9-43C2-9B7C-7F77494760BA} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
 		{6AA62E42-6149-4F41-A17C-2F335F5898BE} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
 		{74E98BA1-9F54-4D2F-B57F-269CF72C5929} = {A8EA1A26-EA0A-4647-A69F-48204A7AA9A0}
+		{6A691D2F-0010-402C-83DF-083638F32A67} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {777B6C86-08A0-4823-83C5-4DE00B557828}

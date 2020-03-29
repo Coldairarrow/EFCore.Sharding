@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading;
@@ -9,7 +8,7 @@ namespace EFCore.Sharding
 {
     public class BaseDbContext : DbContext
     {
-        public BaseDbContext([NotNull] DbContextOptions options)
+        public BaseDbContext(DbContextOptions options)
             : base(options)
         {
 

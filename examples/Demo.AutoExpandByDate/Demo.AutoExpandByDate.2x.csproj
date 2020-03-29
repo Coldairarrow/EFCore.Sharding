@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\EFCore.Sharding.SqlServer\EFCore.Sharding.SqlServer.csproj" />
     <ProjectReference Include="..\..\src\EFCore.Sharding\EFCore.Sharding.2x.csproj" />
+    <ProjectReference Include="..\Demo.Common\Demo.Common.2x.csproj" />
   </ItemGroup>
 
 </Project>

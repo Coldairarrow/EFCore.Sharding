@@ -1,4 +1,5 @@
-﻿using EFCore.Sharding;
+﻿using Demo.Common;
+using EFCore.Sharding;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -15,11 +16,10 @@ namespace Demo.Performance
     {
         static void Main(string[] args)
         {
-            string conString = "Data Source=.;Initial Catalog=Colder.Admin.AntdVue;Integrated Security=True";
             ShardingConfig.Init(config =>
             {
                 config.AddAbsDb(DatabaseType.SqlServer)
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, conString)
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.ConString1)
                     .AddPhysicDbGroup()
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
@@ -27,7 +27,7 @@ namespace Demo.Performance
                     .SetShardingRule(new Base_UnitTestShardingRule());
             });
 
-            var db = DbFactory.GetRepository(conString, DatabaseType.SqlServer);
+            var db = DbFactory.GetRepository(Config.ConString1, DatabaseType.SqlServer);
             Stopwatch watch = new Stopwatch();
             var q = db.GetIQueryable<Base_UnitTest>()
                 .Where(x => x.UserName.Contains("00001C22-8DD2-4D47-B500-407554B099AB"))

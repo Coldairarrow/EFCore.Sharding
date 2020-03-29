@@ -71,7 +71,7 @@ namespace EFCore.Sharding
         public static void AddEntityType(string tableName, Type entityType)
         {
             if (_entityTypeMap.ContainsKey(tableName))
-                throw new Exception($"表[{tableName}]已存在实体模型!");
+                return;
 
             _entityTypeMap[tableName] = entityType;
             _dbCompiledModel.Clear();

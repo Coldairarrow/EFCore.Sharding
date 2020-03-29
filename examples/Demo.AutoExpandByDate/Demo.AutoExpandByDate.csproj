@@ -6,12 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="IdHelper" Version="1.4.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\EFCore.Sharding.SqlServer\EFCore.Sharding.SqlServer.csproj" />
     <ProjectReference Include="..\..\src\EFCore.Sharding\EFCore.Sharding.csproj" />
+    <ProjectReference Include="..\Demo.Common\Demo.Common.csproj" />
   </ItemGroup>
 
 </Project>
