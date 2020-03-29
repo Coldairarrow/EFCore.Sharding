@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Demo.AutoExpandByDate
+namespace Demo.Common
 {
     /// <summary>
     /// 单元测试表
@@ -10,27 +10,27 @@ namespace Demo.AutoExpandByDate
     [Table("Base_UnitTest")]
     public class Base_UnitTest
     {
-
         /// <summary>
         /// 代理主键
         /// </summary>
-        [Key]
+        [Key, StringLength(50)]
         public String Id { get; set; }
 
         /// <summary>
-        /// UserId
+        /// 创建时间
         /// </summary>
-        public String UserId { get; set; }
+        public DateTime CreateTime { get; set; }
 
         /// <summary>
-        /// UserName
+        /// 用户名
         /// </summary>
+        /// 
+        [StringLength(50)]
         public String UserName { get; set; }
 
         /// <summary>
         /// Age
         /// </summary>
         public Int32? Age { get; set; }
-
     }
 }

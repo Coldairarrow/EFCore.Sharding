@@ -1201,15 +1201,14 @@
             <param name="absDbName">抽象数据库名</param>
             <returns></returns>
         </member>
-        <member name="M:EFCore.Sharding.IConfigInit.AutoExpandByDate``1(System.DateTime,EFCore.Sharding.ExpandByDateMode,System.String)">
+        <member name="M:EFCore.Sharding.IConfigInit.AutoExpandByDate``1(EFCore.Sharding.ExpandByDateMode,System.ValueTuple{System.DateTime,System.DateTime,System.String}[])">
             <summary>
             通过日期自动扩容
             优点:即自动定时按照建表,无需数据迁移
             </summary>
             <typeparam name="TEntity">对应抽象表类型</typeparam>
-            <param name="startTime">开始时间</param>
             <param name="expandByDateMode">扩容模式</param>
-            <param name="groupName">数据库组名</param>
+            <param name="ranges">表在不同时间段的分布设置,即某个时间段的表都分布在特定的数据库组中</param>
             <returns></returns>
         </member>
         <member name="T:EFCore.Sharding.ShardingConfig">

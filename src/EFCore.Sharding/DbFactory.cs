@@ -1,6 +1,4 @@
-﻿using EFCore.Sharding.Util;
-using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -56,22 +54,28 @@ namespace EFCore.Sharding
         {
             ShardingConfig.CheckInit();
 
-            return new ShardingRepository(GetRepository("DataSource=db.db", DatabaseType.SQLite), absDbName);
+            var dbType = ShardingConfig.ConfigProvider.GetAbsDbType(absDbName);
+
+            return new ShardingRepository(GetRepository(string.Empty, dbType), absDbName);
         }
 
         internal static void CreateTable(string conString, DatabaseType dbType, Type tableEntityType)
         {
             DbContext dbContext = GetDbContext(conString, dbType, new List<Type> { tableEntityType });
             var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
-            databaseCreator.CreateTables();
+            try
+            {
+                databaseCreator.CreateTables();
+            }
+            catch
+            {
+
+            }
         }
 
-        internal static BaseDbContext GetDbContext([NotNull] string conString, DatabaseType dbType, List<Type> entityTypes = null)
+        internal static BaseDbContext GetDbContext(string conString, DatabaseType dbType, List<Type> entityTypes = null)
         {
             AbstractProvider provider = GetProvider(dbType);
-
-            if (conString.IsNullOrEmpty())
-                throw new Exception("conString能为空");
 
             DbConnection dbConnection = provider.GetDbConnection();
             dbConnection.ConnectionString = conString;

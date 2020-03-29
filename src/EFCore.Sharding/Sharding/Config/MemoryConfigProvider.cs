@@ -3,12 +3,22 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace EFCore.Sharding
 {
     internal class MemoryConfigProvider : IConfigInit, IConfigProvider
     {
         #region 外部接口
+
+        public DatabaseType GetAbsDbType(string absDbName)
+        {
+            var theDb = _absDbs.Where(x => x.Name == absDbName).FirstOrDefault();
+            if (theDb.IsNullOrEmpty())
+                throw new Exception("缺少抽象数据库");
+
+            return theDb.DbType;
+        }
 
         public List<(string tableName, string conString, DatabaseType dbType)> GetReadTables(string absTableName, string absDbName)
         {
@@ -63,12 +73,23 @@ namespace EFCore.Sharding
         {
             var absEntityType = typeof(TEntity);
 
+            _lock.EnterReadLock();
+            bool exists = _physicTables.Any(x =>
+                x.AbsTableName == absEntityType.Name
+                && x.GroupName == groupName
+                && x.PhysicTableName == physicTableName);
+            _lock.ExitReadLock();
+            if (exists)
+                return this;
+
+            _lock.EnterWriteLock();
             _physicTables.Add(new PhysicTable
             {
                 AbsTableName = absEntityType.Name,
                 GroupName = groupName,
                 PhysicTableName = physicTableName
             });
+            _lock.ExitWriteLock();
 
             var physicEntityType = ShardingHelper.MapTable(absEntityType, physicTableName);
             DbModelFactory.AddEntityType(physicTableName, physicEntityType);
@@ -112,12 +133,12 @@ namespace EFCore.Sharding
         }
 
         public IConfigInit AutoExpandByDate<TEntity>(
-            DateTime startTime,
             ExpandByDateMode expandByDateMode,
-            string groupName = ShardingConfig.DefaultDbGourpName)
+            params (DateTime startTime, DateTime endTime, string groupName)[] ranges)
         {
+            var aRange = ranges.FirstOrDefault();
             string absTableName = typeof(TEntity).Name;
-            string absDbName = _physicDbGroups.Where(x => x.GroupName == groupName).FirstOrDefault()?.AbsDbName;
+            string absDbName = _physicDbGroups.Where(x => x.GroupName == aRange.groupName).FirstOrDefault()?.AbsDbName;
             if (absDbName.IsNullOrEmpty())
                 throw new Exception("缺少抽象数据库与物理数据库组信息");
             _expandByDateMode[GetTableKey(absDbName, absTableName)] = expandByDateMode;
@@ -125,22 +146,39 @@ namespace EFCore.Sharding
             (string conExpression, TimeSpan leadTime) paramter =
                expandByDateMode switch
                {
-                   ExpandByDateMode.PerMinute => ("50 * * * * ? *", TimeSpan.FromSeconds(10)),
-                   ExpandByDateMode.PerHour => ("0 50 * * * ? *", TimeSpan.FromMinutes(10)),
-                   ExpandByDateMode.PerDay => ("0 0 23 * * ? *", TimeSpan.FromHours(1)),
-                   ExpandByDateMode.PerMonth => ("0 0 0 L * ? *", TimeSpan.FromDays(1)),
-                   ExpandByDateMode.PerYear => ("0 0 0 L 12 ? *", TimeSpan.FromDays(1)),
+                   ExpandByDateMode.PerMinute => ("30 * * * * ? *", TimeSpan.FromSeconds(60)),
+                   ExpandByDateMode.PerHour => ("0 30 * * * ? *", TimeSpan.FromMinutes(60)),
+                   ExpandByDateMode.PerDay => ("0 0 23 * * ? *", TimeSpan.FromHours(2)),
+                   ExpandByDateMode.PerMonth => ("0 0 0 L * ? *", TimeSpan.FromDays(2)),
+                   ExpandByDateMode.PerYear => ("0 0 0 L 12 ? *", TimeSpan.FromDays(2)),
                    _ => throw new Exception("expandByDateMode参数无效")
                };
 
-            var theTime = startTime;
+            JobHelper.SetCronJob(() =>
+            {
+                DateTime trueDate = DateTime.Now + paramter.leadTime;
+                string tableName = BuildTableName(trueDate);
+                string groupName = GetTheGroup(trueDate);
+                //自动创建数据库表
+                GetGroupDbs(groupName).ForEach(aDb =>
+                {
+                    var entityType = ShardingHelper.MapTable(typeof(TEntity), tableName);
+                    DbFactory.CreateTable(aDb.ConString, aDb.DbType, entityType);
+                });
 
+                //添加物理表
+                AddPhysicTable<TEntity>(tableName, groupName);
+            }, paramter.conExpression);
+
+            //确保之前的表已存在
+            var theTime = ranges.Min(x => x.startTime);
 
             while (true)
             {
-                if (theTime > DateTime.Now)
+                if (theTime > DateTime.Now + paramter.leadTime)
                     break;
                 string tableName = BuildTableName(theTime);
+                string groupName = GetTheGroup(theTime);
                 AddPhysicTable<TEntity>(tableName, groupName);
                 //建表
                 //自动创建数据库表
@@ -154,21 +192,6 @@ namespace EFCore.Sharding
                 var method = theTime.GetType().GetMethod($"Add{key}s");
                 theTime = (DateTime)method.Invoke(theTime, new object[] { 1 });
             }
-            JobHelper.SetCronJob(() =>
-            {
-                DateTime trueDate = DateTime.Now + paramter.leadTime;
-                string tableName = BuildTableName(trueDate);
-
-                //自动创建数据库表
-                GetGroupDbs(groupName).ForEach(aDb =>
-                {
-                    var entityType = ShardingHelper.MapTable(typeof(TEntity), tableName);
-                    DbFactory.CreateTable(aDb.ConString, aDb.DbType, entityType);
-                });
-
-                //添加物理表
-                AddPhysicTable<TEntity>(tableName, groupName);
-            }, paramter.conExpression);
 
             return this;
 
@@ -187,12 +210,18 @@ namespace EFCore.Sharding
 
                 return q.ToList();
             }
+
+            string GetTheGroup(DateTime time)
+            {
+                return ranges.Where(x => time >= x.startTime && time < x.endTime).FirstOrDefault().groupName;
+            }
         }
 
         #endregion
 
         #region 私有成员
 
+        private ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
         private SynchronizedCollection<AbsDb> _absDbs { get; }
             = new SynchronizedCollection<AbsDb>();
         private SynchronizedCollection<PhysicDbGroup> _physicDbGroups { get; }
@@ -224,6 +253,8 @@ namespace EFCore.Sharding
         private List<(string tableName, string conString, DatabaseType dbType)>
             GetTargetTables(string absTableName, ReadWriteType opType, string absDbName, object obj = null)
         {
+            _lock.EnterReadLock();
+
             //获取数据库组
             var groupList = (from a in _physicTables
                              join b in _physicDbGroups on a.GroupName equals b.GroupName
@@ -238,6 +269,8 @@ namespace EFCore.Sharding
                                  AbsDbName = c.Name
                              }).ToList();
 
+            _lock.ExitReadLock();
+
             //若为写操作则只获取特定表
             if (!obj.IsNullOrEmpty())
             {
@@ -251,7 +284,7 @@ namespace EFCore.Sharding
             var resList = groupList.Select(x =>
             {
                 var dbs = _physicDbs
-                    .Where(x => x.GroupName == x.GroupName && x.OpType.HasFlag(opType))
+                    .Where(y => y.GroupName == x.GroupName && y.OpType.HasFlag(opType))
                     .ToList();
                 var theDb = RandomHelper.Next(dbs);
 
