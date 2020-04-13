@@ -44,17 +44,14 @@ namespace EFCore.Sharding
 
         /// <summary>
         /// 使用EFCoreSharding
-        /// 可直接注入IRepository
         /// </summary>
         /// <param name="services">服务集合</param>
-        /// <param name="dbType">数据库默认类型</param>
-        /// <param name="conString">数据库默认连接字符串</param>
         /// <param name="configInit">分表配置项</param>
         /// <returns></returns>
-        public static IServiceCollection UseEFCoreSharding(this IServiceCollection services, DatabaseType dbType, string conString, Action<IConfigInit> configInit = null)
+        public static IServiceCollection UseEFCoreSharding(this IServiceCollection services, Action<IConfigInit> configInit)
         {
-            services.AddScoped(_ => DbFactory.GetRepository(conString, dbType));
-
+            if (ServiceDescriptors == null)
+                ServiceDescriptors = services;
             if (configInit != null)
                 Init(configInit);
 
@@ -65,23 +62,17 @@ namespace EFCore.Sharding
 
         #region 私有成员
 
+        internal static IServiceCollection ServiceDescriptors;
         internal static string[] AssemblyNames;
-
         internal static void CheckInit()
         {
             if (!_inited)
                 throw new Exception("未配置相关参数,请使用ShardingConfig.Init初始化");
         }
-
         private static bool _inited = false;
         internal static IConfigProvider ConfigProvider { get; set; }
-
         private static List<Type> _allEntityTypes;
         private static object _lock = new object();
-
-        /// <summary>
-        /// 框架所有自定义类
-        /// </summary>
         internal static List<Type> AllEntityTypes
         {
             get

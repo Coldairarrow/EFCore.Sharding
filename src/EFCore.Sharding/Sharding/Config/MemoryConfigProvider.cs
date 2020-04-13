@@ -1,4 +1,6 @@
 ﻿using EFCore.Sharding.Util;
+using ImpromptuInterface;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,6 +12,34 @@ namespace EFCore.Sharding
     internal class MemoryConfigProvider : IConfigInit, IConfigProvider
     {
         #region 外部接口
+
+        public IConfigInit SetEntityAssembly(params string[] entityAssemblyNames)
+        {
+            ShardingConfig.AssemblyNames = entityAssemblyNames;
+
+            return this;
+        }
+
+        public IConfigInit UseDatabase<TRepository>(string conString, DatabaseType dbType) where TRepository : class, IRepository
+        {
+            if (ShardingConfig.ServiceDescriptors != null)
+            {
+                ShardingConfig.ServiceDescriptors.AddScoped(_ =>
+                {
+                    if (typeof(TRepository) == typeof(IRepository))
+                        return (TRepository)DbFactory.GetRepository(conString, dbType);
+                    else
+                        return DbFactory.GetRepository(conString, dbType).ActLike<TRepository>();
+                });
+            }
+
+            return this;
+        }
+
+        public IConfigInit UseDatabase(string conString, DatabaseType dbType)
+        {
+            return UseDatabase<IRepository>(conString, dbType);
+        }
 
         public DatabaseType GetAbsDbType(string absDbName)
         {
@@ -292,13 +322,6 @@ namespace EFCore.Sharding
             }).ToList();
 
             return resList;
-        }
-
-        public IConfigInit SetEntityAssembly(params string[] entityAssemblyNames)
-        {
-            ShardingConfig.AssemblyNames = entityAssemblyNames;
-
-            return this;
         }
 
         #endregion
