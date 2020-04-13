@@ -62,8 +62,9 @@ namespace EFCore.Sharding
             int count = 0;
             if (!OpenedTransaction)
             {
-                using (var transaction = DistributedTransactionFactory.GetDistributedTransaction(dbs))
+                using (var transaction = DistributedTransactionFactory.GetDistributedTransaction())
                 {
+                    transaction.AddRepository(dbs);
                     var (Success, ex) = transaction.RunTransaction(() =>
                     {
                         count = access();
@@ -89,8 +90,10 @@ namespace EFCore.Sharding
             int count = 0;
             if (!OpenedTransaction)
             {
-                using (var transaction = DistributedTransactionFactory.GetDistributedTransaction(dbs))
+                using (var transaction = DistributedTransactionFactory.GetDistributedTransaction())
                 {
+                    transaction.AddRepository(dbs);
+
                     var (Success, ex) = await transaction.RunTransactionAsync(async () =>
                     {
                         count = await access();

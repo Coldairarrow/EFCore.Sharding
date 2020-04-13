@@ -694,8 +694,9 @@ namespace EFCore.Sharding.Tests
 
             new Action(() =>
             {
-                var succcess = DistributedTransactionFactory.GetDistributedTransaction(_db1, _db2)
-                    .RunTransaction(() =>
+                var transaction = DistributedTransactionFactory.GetDistributedTransaction();
+                transaction.AddRepository(_db1, _db2);
+                var succcess = transaction.RunTransaction(() =>
                     {
                         _db1.ExecuteSql("insert into Base_UnitTest(Id) values('10') ");
                         _db1.Insert(data1);
@@ -711,7 +712,10 @@ namespace EFCore.Sharding.Tests
             //成功事务
             new Action(() =>
             {
-                var succcess = DistributedTransactionFactory.GetDistributedTransaction(_db1, _db2)
+                var transaction = DistributedTransactionFactory.GetDistributedTransaction();
+                transaction.AddRepository(_db1, _db2);
+
+                var succcess = transaction
                     .RunTransaction(() =>
                     {
                         _db1.ExecuteSql("insert into Base_UnitTest(Id) values('10') ");

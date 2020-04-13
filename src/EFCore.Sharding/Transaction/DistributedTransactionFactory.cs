@@ -8,11 +8,10 @@
         /// <summary>
         /// 获取分布式事务
         /// </summary>
-        /// <param name="repositories">多个仓储</param>
         /// <returns></returns>
-        public static ITransaction GetDistributedTransaction(params IRepository[] repositories)
+        public static IDistributedTransaction GetDistributedTransaction()
         {
-            return new DistributedTransaction(repositories);
+            return new DistributedTransaction();
         }
     }
 }

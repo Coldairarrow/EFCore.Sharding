@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace EFCore.Sharding
@@ -10,32 +9,10 @@ namespace EFCore.Sharding
     /// <summary>
     /// 数据库分布式事务,跨库事务
     /// </summary>
-    internal class DistributedTransaction : IInternalTransaction, IDisposable
+    internal class DistributedTransaction : IInternalTransaction, IDistributedTransaction
     {
-        #region 构造函数
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="repositories">其它数据仓储</param>
-        public DistributedTransaction(params IRepository[] repositories)
-        {
-            if (repositories == null)
-                throw new Exception("repositories不能为NULL");
-
-            if (repositories.Length > 0)
-            {
-                repositories.ForEach(aRepository =>
-                {
-                    if (!_repositories.Contains(aRepository))
-                        _repositories.Add(aRepository);
-                });
-            }
-        }
-
-        #endregion
-
         #region 内部成员
+
         private IsolationLevel _isolationLevel { get; set; }
         private SynchronizedCollection<IRepository> _repositories { get; set; }
             = new SynchronizedCollection<IRepository>();
