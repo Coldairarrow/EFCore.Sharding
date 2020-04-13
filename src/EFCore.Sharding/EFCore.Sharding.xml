@@ -1774,22 +1774,15 @@
             数据库分布式事务,跨库事务
             </summary>
         </member>
-        <member name="M:EFCore.Sharding.DistributedTransaction.#ctor(EFCore.Sharding.IRepository[])">
-            <summary>
-            构造函数
-            </summary>
-            <param name="repositories">其它数据仓储</param>
-        </member>
         <member name="T:EFCore.Sharding.DistributedTransactionFactory">
             <summary>
             分布式事务工厂
             </summary>
         </member>
-        <member name="M:EFCore.Sharding.DistributedTransactionFactory.GetDistributedTransaction(EFCore.Sharding.IRepository[])">
+        <member name="M:EFCore.Sharding.DistributedTransactionFactory.GetDistributedTransaction">
             <summary>
             获取分布式事务
             </summary>
-            <param name="repositories">多个仓储</param>
             <returns></returns>
         </member>
         <member name="T:EFCore.Sharding.ITransaction">
