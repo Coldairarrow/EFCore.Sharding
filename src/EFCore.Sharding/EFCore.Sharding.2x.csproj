@@ -11,7 +11,7 @@
     <PackageProjectUrl>https://github.com/Coldairarrow/EFCore.Sharding</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Coldairarrow/EFCore.Sharding</RepositoryUrl>
     <RepositoryType>github</RepositoryType>
-    <Version>2.2.6.31</Version>
+    <Version>2.2.6.32</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -28,6 +28,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="IdHelper" Version="1.4.1" />
+    <PackageReference Include="ImpromptuInterface" Version="7.0.1" />
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.6" />

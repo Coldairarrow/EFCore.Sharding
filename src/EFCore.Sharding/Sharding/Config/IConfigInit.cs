@@ -17,6 +17,24 @@ namespace EFCore.Sharding
         IConfigInit SetEntityAssembly(params string[] entityAssemblyNames);
 
         /// <summary>
+        /// 使用数据库
+        /// </summary>
+        /// <typeparam name="TRepository">自定义的IRepository</typeparam>
+        /// <param name="conString">连接字符串</param>
+        /// <param name="dbType">数据库类型</param>
+        /// <returns></returns>
+        IConfigInit UseDatabase<TRepository>(string conString, DatabaseType dbType) where TRepository : class, IRepository;
+
+        /// <summary>
+        /// 使用默认数据库
+        /// 注入IRepository
+        /// </summary>
+        /// <param name="conString">连接字符串</param>
+        /// <param name="dbType">数据库类型</param>
+        /// <returns></returns>
+        IConfigInit UseDatabase(string conString, DatabaseType dbType);
+
+        /// <summary>
         /// 添加抽象数据库
         /// </summary>
         /// <param name="dbType">数据库类型</param>
