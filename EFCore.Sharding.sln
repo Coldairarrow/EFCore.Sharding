@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding.Tests", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Common", "examples\Demo.Common\Demo.Common.csproj", "{E16B30A7-06F6-42FA-9334-43AC17F7B689}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.DI", "examples\Demo.DI\Demo.DI.csproj", "{3CDCE132-319A-4A45-A31A-6B1C1100A213}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{E16B30A7-06F6-42FA-9334-43AC17F7B689}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E16B30A7-06F6-42FA-9334-43AC17F7B689}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E16B30A7-06F6-42FA-9334-43AC17F7B689}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CDCE132-319A-4A45-A31A-6B1C1100A213}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CDCE132-319A-4A45-A31A-6B1C1100A213}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CDCE132-319A-4A45-A31A-6B1C1100A213}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CDCE132-319A-4A45-A31A-6B1C1100A213}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +87,7 @@ Global
 		{E8B34B9C-5599-45A3-9E49-2A8CAC36DF5B} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
 		{EA885C90-072C-4591-B8F9-784E709DF9AE} = {A8EA1A26-EA0A-4647-A69F-48204A7AA9A0}
 		{E16B30A7-06F6-42FA-9334-43AC17F7B689} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
+		{3CDCE132-319A-4A45-A31A-6B1C1100A213} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {777B6C86-08A0-4823-83C5-4DE00B557828}
