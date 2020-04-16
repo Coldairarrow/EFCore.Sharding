@@ -267,6 +267,7 @@ namespace EFCore.Sharding
             _openedTransaction = false;
         }
         public Action<string> HandleSqlLog { set => EFCoreSqlLogeerProvider.HandleSqlLog = value; }
+        public IRepository FullRepository { get; set; }
 
         #endregion
 

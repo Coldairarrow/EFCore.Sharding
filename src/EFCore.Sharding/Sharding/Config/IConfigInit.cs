@@ -17,6 +17,14 @@ namespace EFCore.Sharding
         IConfigInit SetEntityAssembly(params string[] entityAssemblyNames);
 
         /// <summary>
+        /// 使用逻辑删除
+        /// </summary>
+        /// <param name="keyField">主键字段,字段类型为string</param>
+        /// <param name="deletedField">已删除标志字段,字段类型为bool</param>
+        /// <returns></returns>
+        IConfigInit UseLogicDelete(string keyField = "Id", string deletedField = "Deleted");
+
+        /// <summary>
         /// 使用数据库
         /// </summary>
         /// <typeparam name="TRepository">自定义的IRepository</typeparam>

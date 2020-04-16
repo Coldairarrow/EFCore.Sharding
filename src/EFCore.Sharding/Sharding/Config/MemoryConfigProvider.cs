@@ -26,10 +26,14 @@ namespace EFCore.Sharding
             {
                 ShardingConfig.ServiceDescriptors.AddScoped(_ =>
                 {
+                    IRepository repository = DbFactory.GetRepository(conString, dbType);
+                    if (ShardingConfig.LogicDelete)
+                        repository = new LogicDeleteRepository(repository);
+
                     if (typeof(TRepository) == typeof(IRepository))
-                        return (TRepository)DbFactory.GetRepository(conString, dbType);
+                        return (TRepository)repository;
                     else
-                        return DbFactory.GetRepository(conString, dbType).ActLike<TRepository>();
+                        return repository.ActLike<TRepository>();
                 });
             }
 
@@ -39,6 +43,15 @@ namespace EFCore.Sharding
         public IConfigInit UseDatabase(string conString, DatabaseType dbType)
         {
             return UseDatabase<IRepository>(conString, dbType);
+        }
+
+        public IConfigInit UseLogicDelete(string keyField = "Id", string deletedField = "Deleted")
+        {
+            ShardingConfig.LogicDelete = true;
+            ShardingConfig.DeletedField = deletedField;
+            ShardingConfig.KeyField = keyField;
+
+            return this;
         }
 
         public DatabaseType GetAbsDbType(string absDbName)
