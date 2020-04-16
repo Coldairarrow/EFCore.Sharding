@@ -32,6 +32,11 @@ namespace EFCore.Sharding
         /// </summary>
         DatabaseType DbType { get; }
 
+        /// <summary>
+        /// 获取完整Repository,通过此接口可以操作逻辑删除的数据
+        /// </summary>
+        IRepository FullRepository { get; }
+
         #endregion
 
         #region 增加数据

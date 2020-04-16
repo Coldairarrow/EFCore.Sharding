@@ -24,8 +24,6 @@ namespace Demo.Common
         /// <summary>
         /// 用户名
         /// </summary>
-        /// 
-        [StringLength(50)]
         public String UserName { get; set; }
 
         /// <summary>

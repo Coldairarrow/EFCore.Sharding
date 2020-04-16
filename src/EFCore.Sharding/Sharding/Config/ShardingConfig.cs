@@ -62,6 +62,9 @@ namespace EFCore.Sharding
 
         #region 私有成员
 
+        internal static bool LogicDelete { get; set; } = false;
+        internal static string KeyField { get; set; } = "Id";
+        internal static string DeletedField { get; set; } = "Deleted";
         internal static IServiceCollection ServiceDescriptors;
         internal static string[] AssemblyNames;
         internal static void CheckInit()
@@ -99,17 +102,30 @@ namespace EFCore.Sharding
 
                                 where = where.And(tmpWhere);
                             }
-
                             Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll")
+                                .Select(x => new FileInfo(x).Name)
                                 .Where(where.Compile())
-                                .Select(x => Assembly.LoadFrom(x))
-                                .Where(x => !x.IsDynamic)
+                                .Select(x => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, x))
+                                .Distinct()
+                                .Select(x =>
+                                {
+                                    try
+                                    {
+                                        return Assembly.LoadFrom(x);
+                                    }
+                                    catch
+                                    {
+                                        return null;
+                                    }
+                                })
+                                .Where(x => x != null && !x.IsDynamic)
                                 .ForEach(aAssembly =>
                                 {
                                     try
                                     {
                                         _allEntityTypes.AddRange(aAssembly.GetTypes());
                                     }
+
                                     catch
                                     {
 
