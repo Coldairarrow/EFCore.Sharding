@@ -47,6 +47,8 @@ namespace Demo.Performance
             Console.WriteLine($"分表后耗时:{watch.ElapsedMilliseconds}ms");
 
             Console.WriteLine("完成");
+
+            Console.ReadLine();
         }
     }
 }
