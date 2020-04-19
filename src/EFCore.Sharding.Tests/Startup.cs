@@ -37,16 +37,16 @@ namespace EFCore.Sharding.Tests
         }
         private static void InitSharding()
         {
-            ShardingConfig.Init(config =>
-            {
-                config.AddAbsDb(DatabaseType.SQLite)
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, "DataSource=db.db")
-                    .AddPhysicDbGroup()
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
-                    .SetShardingRule(new Base_UnitTestShardingRule());
-            });
+ShardingConfig.Init(config =>
+{
+    config.AddAbsDb(DatabaseType.SQLite)
+        .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, "DataSource=db.db")
+        .AddPhysicDbGroup()
+        .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
+        .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
+        .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
+        .SetShardingRule(new Base_UnitTestShardingRule());
+});
         }
     }
 }
