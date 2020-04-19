@@ -9,7 +9,7 @@
     <PackageProjectUrl>https://github.com/Coldairarrow/EFCore.Sharding</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Coldairarrow/EFCore.Sharding</RepositoryUrl>
     <RepositoryType>github</RepositoryType>
-    <Version>3.1.3.35</Version>
+    <Version>3.1.3.36</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -27,6 +27,7 @@
   <ItemGroup>
     <PackageReference Include="IdHelper" Version="1.4.1" />
     <PackageReference Include="ImpromptuInterface" Version="7.0.1" />
+    <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="3.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
