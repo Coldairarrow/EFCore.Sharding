@@ -333,8 +333,11 @@ namespace Demo.Performance
     }
 }
 ```
-分表Base_UnitTest_0~2各有100万数据,然后将这三张表的数据导入Base_UnitTest中(即Base_UnitTest表的数据与Base_UnitTest_0~2三张表综合数据一致)    
+
+分表Base_UnitTest_0~2各有100万数据,然后将这三张表的数据导入Base_UnitTest中(即Base_UnitTest表的数据与Base_UnitTest_0~2三张表综合数据一致) 
+
 分表与不分表测试结果如下
+
 ![JMSJBQ.png](https://s1.ax1x.com/2020/04/19/JMSJBQ.png)
 
 这里仅仅分了3张表，其效果立杆见影，若分表几十张，那效果想想就很棒
