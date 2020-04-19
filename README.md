@@ -334,7 +334,7 @@ namespace Demo.Performance
 }
 ```
 
-分表Base_UnitTest_0~2各有100万数据,然后将这三张表的数据导入Base_UnitTest中(即Base_UnitTest表的数据与Base_UnitTest_0~2三张表综合数据一致) 
+分表Base_UnitTest_0-2各有100万数据,然后将这三张表的数据导入Base_UnitTest中(即Base_UnitTest表的数据与Base_UnitTest_0-2三张表总合数据一致) 
 
 分表与不分表测试结果如下
 
