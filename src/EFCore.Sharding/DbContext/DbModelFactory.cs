@@ -85,7 +85,7 @@ namespace EFCore.Sharding
             {
                 modelBuilder.Model.AddEntityType(x);
             });
-
+            modelBuilder.ApplyConfigurationsFromAssembly(_entityTypeMap.Values.First().Assembly);
             return modelBuilder.FinalizeModel();
         }
 
