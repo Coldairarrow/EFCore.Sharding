@@ -64,7 +64,10 @@ ShardingConfig.Init(config =>
 首先获取分片仓储接口IShardingRepository
 
 ```c#
-IShardingRepository _db = DbFactory.GetRepository().ToSharding();
+using(IShardingRepository _db = DbFactory.GetShardingRepository())
+{
+
+}
 ```
 然后即可进行数据操作：
 

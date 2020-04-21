@@ -55,6 +55,8 @@ namespace EFCore.Sharding
             if (configInit != null)
                 Init(configInit);
 
+            services.AddScoped(_ => DbFactory.GetShardingRepository());
+
             return services;
         }
 

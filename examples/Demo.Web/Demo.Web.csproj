@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\EFCore.Sharding.SQLite\EFCore.Sharding.SQLite.csproj" />
+    <ProjectReference Include="..\..\src\EFCore.Sharding\EFCore.Sharding.csproj" />
+    <ProjectReference Include="..\Demo.Common\Demo.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="db.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
