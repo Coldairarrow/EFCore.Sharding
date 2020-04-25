@@ -1,6 +1,7 @@
 ﻿using EFCore.Sharding.Util;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace EFCore.Sharding
 {
@@ -17,6 +18,15 @@ namespace EFCore.Sharding
             var config = TypeBuilderHelper.GetConfig(absTable);
 
             config.AssemblyName = "EFCore.Sharding";
+
+            var theTableAttribute = config.Attributes
+                .Where(x => x.Attribute == typeof(TableAttribute))
+                .FirstOrDefault();
+            if (theTableAttribute != null)
+            {
+                theTableAttribute.ConstructorArgs[0] = targetTableName;
+            }
+
             config.Attributes.RemoveAll(x => x.Attribute == typeof(TableAttribute));
             config.FullName = $"EFCore.Sharding.{targetTableName}";
 

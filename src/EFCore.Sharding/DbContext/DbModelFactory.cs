@@ -1,4 +1,5 @@
-﻿using EFCore.Sharding.Util;
+﻿using EFCore.Sharding.DataAnnotations;
+using EFCore.Sharding.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System;
@@ -83,10 +84,29 @@ namespace EFCore.Sharding
             List<Type> needTypes = entityTypes?.Count > 0 ? entityTypes : _entityTypeMap.Values.ToList();
             needTypes.ForEach(x =>
             {
-                modelBuilder.Model.AddEntityType(x);
+                var entityTypeBuilder = modelBuilder.Entity(x);
+
+                //主键
+                var keys = x.GetCustomAttribute<KeysAttribute>();
+                if (keys != null)
+                    entityTypeBuilder.HasKey(keys.PropertyNames);
+
+                //索引
+                var indexs = x.GetCustomAttributes<IndexAttribute>();
+                if (indexs != null)
+                {
+                    indexs.ToList().ForEach(aIndex =>
+                    {
+                        entityTypeBuilder.HasIndex(aIndex.PropertyNames).IsUnique(aIndex.IsUnique);
+                    });
+                }
             });
             //支持IEntityTypeConfiguration配置
-            modelBuilder.ApplyConfigurationsFromAssembly(_entityTypeMap.Values.First().Assembly);
+            needTypes.Select(x => x.Assembly).ToList().ForEach(aAssembly =>
+            {
+                modelBuilder.ApplyConfigurationsFromAssembly(aAssembly);
+            });
+
             return modelBuilder.FinalizeModel();
         }
 

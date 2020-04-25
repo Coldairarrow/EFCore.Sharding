@@ -9,6 +9,9 @@
   - [按时间自动分表](#%e6%8c%89%e6%97%b6%e9%97%b4%e8%87%aa%e5%8a%a8%e5%88%86%e8%a1%a8)
   - [性能测试](#%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95)
   - [其它简单操作(非Sharing)](#%e5%85%b6%e5%ae%83%e7%ae%80%e5%8d%95%e6%93%8d%e4%bd%9c%e9%9d%9esharing)
+- [常用配置](#%e5%b8%b8%e7%94%a8%e9%85%8d%e7%bd%ae)
+  - [多主键支持](#%e5%a4%9a%e4%b8%bb%e9%94%ae%e6%94%af%e6%8c%81)
+  - [索引支持](#%e7%b4%a2%e5%bc%95%e6%94%af%e6%8c%81)
 - [总结](#%e6%80%bb%e7%bb%93)
 
 
@@ -349,6 +352,82 @@ namespace Demo.Performance
 框架不仅支持Sharing,而且封装了常用数据库操作,使用比较简单  
 详细使用方式参考 [链接](https://github.com/Coldairarrow/EFCore.Sharding/blob/master/examples/Demo.DI/Program.cs)
 
+# 常用配置
+## 多主键支持
+在实体类上加上EFCore.Sharding.DataAnnotations.Keys特性即可  
+自动建表时会自动创建主键  
+```c#
+    /// <summary>
+    /// 单元测试表
+    /// </summary>
+    [Table("Base_UnitTest")]
+    [Index(false, nameof(CreateTime))]
+    [Index(false, nameof(Age))]
+    [Keys(nameof(Id), nameof(UserName))]
+    public class Base_UnitTest
+    {
+        /// <summary>
+        /// 代理主键
+        /// </summary>
+        [Key, StringLength(50)]
+        public String Id { get; set; }
+
+        /// <summary>
+        /// 创建时间
+        /// </summary>
+        public DateTime CreateTime { get; set; }
+
+        /// <summary>
+        /// 用户名
+        /// </summary>
+        public String UserName { get; set; }
+
+        /// <summary>
+        /// Age
+        /// </summary>
+        public Int32? Age { get; set; }
+    }
+
+```
+
+## 索引支持
+在实体类上加上EFCore.Sharding.DataAnnotations.Index特性即可  
+可以设置多个Index特性  
+自动建表时会自动创建索引
+
+```c#
+    /// <summary>
+    /// 单元测试表
+    /// </summary>
+    [Table("Base_UnitTest")]
+    [Index(false, nameof(CreateTime))]
+    [Index(false, nameof(Age))]
+    [Keys(nameof(Id), nameof(UserName))]
+    public class Base_UnitTest
+    {
+        /// <summary>
+        /// 代理主键
+        /// </summary>
+        [Key, StringLength(50)]
+        public String Id { get; set; }
+
+        /// <summary>
+        /// 创建时间
+        /// </summary>
+        public DateTime CreateTime { get; set; }
+
+        /// <summary>
+        /// 用户名
+        /// </summary>
+        public String UserName { get; set; }
+
+        /// <summary>
+        /// Age
+        /// </summary>
+        public Int32? Age { get; set; }
+    }
+
+```
 # 总结
 这个简单实用强大的框架希望能够帮助到大家,力求为.NET生态贡献一份力,大家一起壮大.NET生态
 

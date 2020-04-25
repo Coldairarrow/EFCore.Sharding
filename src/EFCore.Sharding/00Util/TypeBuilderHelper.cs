@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -60,9 +61,22 @@ namespace EFCore.Sharding.Util
                 return theType.GetCustomAttributesData().Select(y => new AttributeConfig
                 {
                     Attribute = y.AttributeType,
-                    ConstructorArgs = y.ConstructorArguments.Select(x => x.Value).ToList(),
-                    Properties = y.NamedArguments.Select(x => (x.MemberName, x.TypedValue.Value)).ToList()
+                    ConstructorArgs = y.ConstructorArguments.Select(x => GetArgument(x)).ToList(),
+                    Properties = y.NamedArguments.Select(x => (x.MemberName, GetArgument(x.TypedValue))).ToList()
                 }).ToList();
+
+                object GetArgument(CustomAttributeTypedArgument argument)
+                {
+                    object res;
+                    if (argument.Value is ReadOnlyCollection<CustomAttributeTypedArgument> argList)
+                    {
+                        res = argList.Select(x => GetArgument(x)).ToArray();
+                    }
+                    else
+                        res = argument.Value;
+
+                    return res;
+                }
             }
         }
 
@@ -129,7 +143,7 @@ namespace EFCore.Sharding.Util
         private static CustomAttributeBuilder GetCustomAttributeBuilder(AttributeConfig attributeConfig)
         {
             var attributeType = attributeConfig.Attribute;
-            var attributeConstructor = attributeType.GetConstructor(attributeConfig.ConstructorArgs.Select(x => x.GetType()).ToArray());
+            var attributeConstructor = attributeType.GetConstructors()[0];
             List<(PropertyInfo PropertyInfo, object Value)> properties = new List<(PropertyInfo, object)>();
             var allProperties = attributeType.GetProperties().ToList();
             attributeConfig.Properties.ForEach(aProperty =>
