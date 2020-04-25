@@ -178,7 +178,7 @@ namespace EFCore.Sharding
 
         /// <summary>
         /// 使用SQL语句按照条件更新
-        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name","小明"))
+        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name",UpdateType.Equal,"小明"))
         /// 注：生成的SQL类似于UPDATE [TABLE] SET [Name] = 'xxx' WHERE [Id] = 'Admin'
         /// </summary>
         /// <typeparam name="T">实体类型</typeparam>
@@ -189,7 +189,7 @@ namespace EFCore.Sharding
 
         /// <summary>
         /// 使用SQL语句按照条件更新
-        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name","小明"))
+        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name",UpdateType.Equal,"小明"))
         /// 注：生成的SQL类似于UPDATE [TABLE] SET [Name] = 'xxx' WHERE [Id] = 'Admin'
         /// </summary>
         /// <typeparam name="T">实体类型</typeparam>
@@ -200,7 +200,7 @@ namespace EFCore.Sharding
 
         /// <summary>
         /// 使用SQL语句按照条件更新
-        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name","小明"))
+        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name",UpdateType.Equal,"小明"))
         /// 注：生成的SQL类似于UPDATE [TABLE] SET [Name] = 'xxx' WHERE [Id] = 'Admin'
         /// </summary>
         /// <param name="entityType">实体类型</param>
@@ -212,7 +212,7 @@ namespace EFCore.Sharding
 
         /// <summary>
         /// 使用SQL语句按照条件更新
-        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name","小明"))
+        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name",UpdateType.Equal,"小明"))
         /// 注：生成的SQL类似于UPDATE [TABLE] SET [Name] = 'xxx' WHERE [Id] = 'Admin'
         /// </summary>
         /// <param name="entityType">实体类型</param>
@@ -224,7 +224,7 @@ namespace EFCore.Sharding
 
         /// <summary>
         /// 使用SQL语句按照条件更新
-        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name","小明"))
+        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name",UpdateType.Equal,"小明"))
         /// 注：生成的SQL类似于UPDATE [TABLE] SET [Name] = 'xxx' WHERE [Id] = 'Admin'
         /// </summary>
         /// <param name="source">数据源</param>
@@ -234,7 +234,7 @@ namespace EFCore.Sharding
 
         /// <summary>
         /// 使用SQL语句按照条件更新
-        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name","小明"))
+        /// 用法:UpdateWhere_Sql"Base_User"(x=>x.Id == "Admin",("Name",UpdateType.Equal,"小明"))
         /// 注：生成的SQL类似于UPDATE [TABLE] SET [Name] = 'xxx' WHERE [Id] = 'Admin'
         /// </summary>
         /// <param name="source">数据源</param>
