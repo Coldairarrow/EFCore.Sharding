@@ -26,5 +26,11 @@ namespace EFCore.Sharding
         /// <param name="isolationLevel">事务级别,默认为ReadCommitted</param>
         /// <returns></returns>
         Task<(bool Success, Exception ex)> RunTransactionAsync(Func<Task> action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+
+        void BeginTransaction(IsolationLevel isolationLevel);
+        Task BeginTransactionAsync(IsolationLevel isolationLevel);
+        void CommitTransaction();
+        void RollbackTransaction();
+        void DisposeTransaction();
     }
 }

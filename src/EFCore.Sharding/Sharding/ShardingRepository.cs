@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
-    internal class ShardingRepository : IShardingRepository, IInternalTransaction
+    internal class ShardingRepository : IShardingRepository
     {
         #region 构造函数
 

@@ -342,6 +342,31 @@ namespace EFCore.Sharding
             return FullRepository.RunTransactionAsync(action, isolationLevel);
         }
 
+        public void BeginTransaction(IsolationLevel isolationLevel)
+        {
+            FullRepository.BeginTransaction(isolationLevel);
+        }
+
+        public Task BeginTransactionAsync(IsolationLevel isolationLevel)
+        {
+            return FullRepository.BeginTransactionAsync(isolationLevel);
+        }
+
+        public void CommitTransaction()
+        {
+            FullRepository.CommitTransaction();
+        }
+
+        public void RollbackTransaction()
+        {
+            FullRepository.RollbackTransaction();
+        }
+
+        public void DisposeTransaction()
+        {
+            FullRepository.DisposeTransaction();
+        }
+
         #endregion
     }
 }

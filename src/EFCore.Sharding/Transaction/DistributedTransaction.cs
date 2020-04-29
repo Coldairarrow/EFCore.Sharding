@@ -9,7 +9,7 @@ namespace EFCore.Sharding
     /// <summary>
     /// 数据库分布式事务,跨库事务
     /// </summary>
-    internal class DistributedTransaction : IInternalTransaction, IDistributedTransaction
+    internal class DistributedTransaction : IDistributedTransaction
     {
         #region 内部成员
 
@@ -30,7 +30,7 @@ namespace EFCore.Sharding
                 if (!_repositories.Contains(aRepositroy))
                 {
                     if (OpenTransaction)
-                        (aRepositroy as IInternalTransaction).BeginTransaction(_isolationLevel);
+                        aRepositroy.BeginTransaction(_isolationLevel);
 
                     _repositories.Add(aRepositroy);
                 }
@@ -41,7 +41,7 @@ namespace EFCore.Sharding
         {
             OpenTransaction = true;
             _isolationLevel = isolationLevel;
-            _repositories.ForEach(aRepository => (aRepository as IInternalTransaction).BeginTransaction(isolationLevel));
+            _repositories.ForEach(aRepository => aRepository.BeginTransaction(isolationLevel));
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel)
@@ -50,7 +50,7 @@ namespace EFCore.Sharding
             _isolationLevel = isolationLevel;
             foreach (var aRepository in _repositories)
             {
-                await (aRepository as IInternalTransaction).BeginTransactionAsync(isolationLevel);
+                await aRepository.BeginTransactionAsync(isolationLevel);
             }
         }
 
@@ -85,18 +85,18 @@ namespace EFCore.Sharding
 
         public void CommitTransaction()
         {
-            _repositories.ForEach(x => (x as IInternalTransaction).CommitTransaction());
+            _repositories.ForEach(x => x.CommitTransaction());
         }
 
         public void RollbackTransaction()
         {
-            _repositories.ForEach(x => (x as IInternalTransaction).RollbackTransaction());
+            _repositories.ForEach(x => x.RollbackTransaction());
         }
 
         public void DisposeTransaction()
         {
             OpenTransaction = false;
-            _repositories.ForEach(x => (x as IInternalTransaction).DisposeTransaction());
+            _repositories.ForEach(x => x.DisposeTransaction());
         }
 
         public async Task<(bool Success, Exception ex)> RunTransactionAsync(Func<Task> action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
