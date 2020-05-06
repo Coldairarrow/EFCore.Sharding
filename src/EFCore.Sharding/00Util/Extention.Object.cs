@@ -7,21 +7,6 @@ namespace EFCore.Sharding.Util
 {
     public static partial class PublicExtention
     {
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        static PublicExtention()
-        {
-            JsonSerializerSettings setting = new JsonSerializerSettings();
-            JsonConvert.DefaultSettings = new Func<JsonSerializerSettings>(() =>
-            {
-                //日期类型默认格式化处理
-                setting.DateFormatHandling = DateFormatHandling.MicrosoftDateFormat;
-                setting.DateFormatString = "yyyy-MM-dd HH:mm:ss";
-                return setting;
-            });
-        }
-
         private static BindingFlags _bindingFlags { get; }
             = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
 
