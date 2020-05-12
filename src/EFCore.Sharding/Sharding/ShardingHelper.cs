@@ -27,7 +27,6 @@ namespace EFCore.Sharding
                 theTableAttribute.ConstructorArgs[0] = targetTableName;
             }
 
-            config.Attributes.RemoveAll(x => x.Attribute == typeof(TableAttribute));
             config.FullName = $"EFCore.Sharding.{targetTableName}";
 
             return TypeBuilderHelper.BuildType(config);

@@ -39,12 +39,10 @@ namespace EFCore.Sharding
         }
         private List<(object targetObj, IRepository targetDb)> GetMapConfigs<T>(List<T> entities)
         {
-            var configs = entities.Select(x => ShardingConfig.ConfigProvider.GetTheWriteTable(typeof(T).Name, x, _absDbName)).ToList();
-            var targetDbs = GetTargetDb(configs);
             List<(object targetObj, IRepository targetDb)> resList = new List<(object targetObj, IRepository targetDb)>();
             entities.ForEach(aEntity =>
             {
-                (string tableName, string conString, DatabaseType dbType) = ShardingConfig.ConfigProvider.GetTheWriteTable(typeof(T).Name, aEntity, _absDbName);
+                (string tableName, string conString, DatabaseType dbType) = ShardingConfig.ConfigProvider.GetTheWriteTable<T>(aEntity, _absDbName);
                 var targetDb = _repositories[GetDbId(conString, dbType)];
                 var targetObj = aEntity.ChangeType(MapTable(tableName));
                 resList.Add((targetObj, targetDb));
@@ -55,33 +53,6 @@ namespace EFCore.Sharding
         private string GetDbId(string conString, DatabaseType dbType)
         {
             return $"{conString}{dbType.ToString()}";
-        }
-        private int PackAccessData(Func<int> access)
-        {
-            var dbs = _repositories.Values.ToArray();
-            int count = 0;
-            if (!OpenedTransaction)
-            {
-                using (var transaction = DistributedTransactionFactory.GetDistributedTransaction())
-                {
-                    transaction.AddRepository(dbs);
-                    var (Success, ex) = transaction.RunTransaction(() =>
-                    {
-                        count = access();
-                    });
-                    if (!Success)
-                        throw ex;
-                }
-                ClearRepositories();
-                return count;
-            }
-            else
-            {
-                _transaction.AddRepository(dbs);
-                count = access();
-            }
-
-            return count;
         }
         private async Task<int> PackAccessDataAsync(Func<Task<int>> access)
         {
@@ -112,24 +83,11 @@ namespace EFCore.Sharding
 
             return count;
         }
-        private int WriteTable<T>(List<T> entities, Func<object, IRepository, int> accessData)
-        {
-            var mapConfigs = GetMapConfigs(entities);
-
-            return PackAccessData(() =>
-            {
-                int tmpCount = 0;
-
-                mapConfigs.ForEach(aConfig =>
-                {
-                    tmpCount += accessData(aConfig.targetObj, aConfig.targetDb);
-                });
-
-                return tmpCount;
-            });
-        }
         private async Task<int> WriteTableAsync<T>(List<T> entities, Func<object, IRepository, Task<int>> accessDataAsync)
         {
+            var configs = ShardingConfig.ConfigProvider.GetAllWriteTables<T>(_absDbName);
+            var targetDbs = GetTargetDb(configs);
+
             var mapConfigs = GetMapConfigs(entities);
 
             return await PackAccessDataAsync(async () =>
@@ -176,7 +134,7 @@ namespace EFCore.Sharding
         }
         public int Insert<T>(List<T> entities) where T : class, new()
         {
-            return WriteTable(entities, (targetObj, targetDb) => targetDb.Insert(targetObj));
+            return AsyncHelper.RunSync(() => InsertAsync(entities));
         }
         public async Task<int> InsertAsync<T>(List<T> entities) where T : class, new()
         {
@@ -184,23 +142,11 @@ namespace EFCore.Sharding
         }
         public int DeleteAll<T>() where T : class, new()
         {
-            var configs = ShardingConfig.ConfigProvider.GetAllWriteTables(typeof(T).Name, _absDbName);
-            var targetDbs = GetTargetDb(configs);
-            return PackAccessData(() =>
-            {
-                int count = 0;
-
-                targetDbs.ForEach(x =>
-                {
-                    count += x.targetDb.DeleteAll(MapTable(x.targetTableName));
-                });
-
-                return count;
-            });
+            return AsyncHelper.RunSync(() => DeleteAllAsync<T>());
         }
         public async Task<int> DeleteAllAsync<T>() where T : class, new()
         {
-            var configs = ShardingConfig.ConfigProvider.GetAllWriteTables(typeof(T).Name, _absDbName);
+            var configs = ShardingConfig.ConfigProvider.GetAllWriteTables<T>(_absDbName);
             var targetDbs = GetTargetDb(configs);
             return await PackAccessDataAsync(async () =>
             {
@@ -218,7 +164,7 @@ namespace EFCore.Sharding
         }
         public int Delete<T>(List<T> entities) where T : class, new()
         {
-            return WriteTable(entities, (targetObj, targetDb) => targetDb.Delete(targetObj));
+            return AsyncHelper.RunSync(() => DeleteAsync(entities));
         }
         public async Task<int> DeleteAsync<T>(List<T> entities) where T : class, new()
         {
@@ -226,9 +172,7 @@ namespace EFCore.Sharding
         }
         public int Delete<T>(Expression<Func<T, bool>> condition) where T : class, new()
         {
-            var deleteList = GetIShardingQueryable<T>().Where(condition).ToList();
-
-            return Delete(deleteList);
+            return AsyncHelper.RunSync(() => DeleteAsync(condition));
         }
         public async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class, new()
         {
@@ -246,7 +190,7 @@ namespace EFCore.Sharding
         }
         public int Update<T>(List<T> entities) where T : class, new()
         {
-            return WriteTable(entities, (targetObj, targetDb) => targetDb.Update(targetObj));
+            return AsyncHelper.RunSync(() => UpdateAsync(entities));
         }
         public async Task<int> UpdateAsync<T>(List<T> entities) where T : class, new()
         {
@@ -262,7 +206,7 @@ namespace EFCore.Sharding
         }
         public int UpdateAny<T>(List<T> entities, List<string> properties) where T : class, new()
         {
-            return WriteTable(entities, (targetObj, targetDb) => targetDb.UpdateAny(targetObj, properties));
+            return AsyncHelper.RunSync(() => UpdateAnyAsync(entities, properties));
         }
         public async Task<int> UpdateAnyAsync<T>(List<T> entities, List<string> properties) where T : class, new()
         {
@@ -270,9 +214,7 @@ namespace EFCore.Sharding
         }
         public int UpdateWhere<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class, new()
         {
-            var list = GetIShardingQueryable<T>().Where(whereExpre).ToList();
-            list.ForEach(aData => set(aData));
-            return Update(list);
+            return AsyncHelper.RunSync(() => UpdateWhereAsync(whereExpre, set));
         }
         public async Task<int> UpdateWhereAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class, new()
         {

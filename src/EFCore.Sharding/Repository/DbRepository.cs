@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
@@ -53,17 +52,6 @@ namespace EFCore.Sharding
 
             return properties;
         }
-        protected string GetDbTableName(Type type)
-        {
-            string tableName = string.Empty;
-            var tableAttribute = type.GetCustomAttribute<TableAttribute>();
-            if (tableAttribute != null)
-                tableName = tableAttribute.Name;
-            else
-                tableName = type.Name;
-
-            return tableName;
-        }
         protected bool _openedTransaction { get; set; } = false;
         protected virtual string FormatFieldName(string name)
         {
@@ -111,7 +99,7 @@ namespace EFCore.Sharding
         }
         private (string sql, List<(string paramterName, object paramterValue)> paramters) GetDeleteSql(IQueryable iq)
         {
-            string tableName = iq.ElementType.Name;
+            string tableName = AnnotationHelper.GetDbTableName(iq.ElementType);
             var whereSql = GetWhereSql(iq);
             string sql = $"DELETE FROM {FormatFieldName(tableName)} WHERE {whereSql.sql}";
 
@@ -136,7 +124,7 @@ namespace EFCore.Sharding
         }
         private (string sql, List<(string paramterName, object paramterValue)> paramters) GetUpdateWhereSql(IQueryable iq, params (string field, UpdateType updateType, object value)[] values)
         {
-            string tableName = iq.ElementType.Name;
+            string tableName = AnnotationHelper.GetDbTableName(iq.ElementType);
             var whereSql = GetWhereSql(iq);
 
             List<string> propertySetStr = new List<string>();

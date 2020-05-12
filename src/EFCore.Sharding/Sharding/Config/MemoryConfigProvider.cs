@@ -68,14 +68,18 @@ namespace EFCore.Sharding
             return GetTargetTables(absTableName, ReadWriteType.Read, absDbName);
         }
 
-        public (string tableName, string conString, DatabaseType dbType) GetTheWriteTable(string absTableName, object obj, string absDbName)
+        public List<(string tableName, string conString, DatabaseType dbType)> GetAllWriteTables<T>(string absDbName)
         {
-            return GetTargetTables(absTableName, ReadWriteType.Write, absDbName, obj).Single();
+            var absTableName = AnnotationHelper.GetDbTableName(typeof(T));
+
+            return GetTargetTables(absTableName, ReadWriteType.Write, absDbName, null);
         }
 
-        public List<(string tableName, string conString, DatabaseType dbType)> GetAllWriteTables(string absTableName, string absDbName)
+        public (string tableName, string conString, DatabaseType dbType) GetTheWriteTable<T>(object obj, string absDbName)
         {
-            return GetTargetTables(absTableName, ReadWriteType.Write, absDbName, null);
+            var absTableName = AnnotationHelper.GetDbTableName(typeof(T));
+
+            return GetTargetTables(absTableName, ReadWriteType.Write, absDbName, obj).Single();
         }
 
         public IConfigInit AddAbsDb(DatabaseType dbType, string absDbName = "BaseDb")
@@ -115,10 +119,11 @@ namespace EFCore.Sharding
         public IConfigInit AddPhysicTable<TEntity>(string physicTableName, string groupName = "BaseDbGroup")
         {
             var absEntityType = typeof(TEntity);
+            var absTableName = AnnotationHelper.GetDbTableName(absEntityType);
 
             _lock.EnterReadLock();
             bool exists = _physicTables.Any(x =>
-                x.AbsTableName == absEntityType.Name
+                x.AbsTableName == absTableName
                 && x.GroupName == groupName
                 && x.PhysicTableName == physicTableName);
             _lock.ExitReadLock();
@@ -128,7 +133,7 @@ namespace EFCore.Sharding
             _lock.EnterWriteLock();
             _physicTables.Add(new PhysicTable
             {
-                AbsTableName = absEntityType.Name,
+                AbsTableName = absTableName,
                 GroupName = groupName,
                 PhysicTableName = physicTableName
             });
@@ -142,7 +147,7 @@ namespace EFCore.Sharding
 
         public IConfigInit SetShardingRule<TEntity>(AbsShardingRule<TEntity> shardingRule, string absDbName = "BaseDb")
         {
-            string absTableName = typeof(TEntity).Name;
+            string absTableName = AnnotationHelper.GetDbTableName(typeof(TEntity));
             string key = $"{absDbName}.{absTableName}";
             _shardingRules[key] = obj =>
             {
@@ -180,7 +185,7 @@ namespace EFCore.Sharding
             params (DateTime startTime, DateTime endTime, string groupName)[] ranges)
         {
             var aRange = ranges.FirstOrDefault();
-            string absTableName = typeof(TEntity).Name;
+            string absTableName = AnnotationHelper.GetDbTableName(typeof(TEntity));
             string absDbName = _physicDbGroups.Where(x => x.GroupName == aRange.groupName).FirstOrDefault()?.AbsDbName;
             if (absDbName.IsNullOrEmpty())
                 throw new Exception("缺少抽象数据库与物理数据库组信息");

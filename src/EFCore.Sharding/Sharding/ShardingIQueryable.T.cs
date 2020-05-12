@@ -16,8 +16,7 @@ namespace EFCore.Sharding
         public ShardingQueryable(IQueryable<T> source, ShardingRepository repository, string absDbName)
         {
             _source = source;
-            _absTableType = source.ElementType;
-            _absTableName = _absTableType.Name;
+            _absTableName = AnnotationHelper.GetDbTableName(source.ElementType);
             _absDbName = absDbName;
             _repository = repository;
         }
@@ -28,7 +27,6 @@ namespace EFCore.Sharding
 
         ShardingRepository _repository { get; }
         private string _absDbName { get; }
-        private Type _absTableType { get; }
         private string _absTableName { get; }
         private IQueryable<T> _source { get; set; }
         private Type MapTable(string targetTableName)
