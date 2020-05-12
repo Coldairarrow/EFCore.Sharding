@@ -426,12 +426,18 @@ namespace EFCore.Sharding
         }
         public int Update<T>(List<T> entities) where T : class, new()
         {
-            _db.UpdateRange(entities);
+            entities.ForEach(aEntity =>
+            {
+                _db.Entry(aEntity).State = EntityState.Modified;
+            });
             return _db.SaveChanges();
         }
         public async Task<int> UpdateAsync<T>(List<T> entities) where T : class, new()
         {
-            _db.UpdateRange(entities);
+            entities.ForEach(aEntity =>
+            {
+                _db.Entry(aEntity).State = EntityState.Modified;
+            });
 
             return await _db.SaveChangesAsync();
         }

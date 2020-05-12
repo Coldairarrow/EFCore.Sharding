@@ -216,10 +216,13 @@ namespace EFCore.Sharding
             //确保之前的表已存在
             var theTime = ranges.Min(x => x.startTime);
 
-            while (true)
+            var key = expandByDateMode.ToString().Replace("Per", "");
+            var method = theTime.GetType().GetMethod($"Add{key}s");
+
+            DateTime endTime = (DateTime)method.Invoke(DateTime.Now, new object[] { 1 }) + paramter.leadTime;
+
+            while (theTime <= endTime)
             {
-                if (theTime > DateTime.Now + paramter.leadTime)
-                    break;
                 string tableName = BuildTableName(theTime);
                 string groupName = GetTheGroup(theTime);
                 AddPhysicTable<TEntity>(tableName, groupName);
@@ -231,8 +234,7 @@ namespace EFCore.Sharding
                     DbFactory.CreateTable(aDb.ConString, aDb.DbType, entityType);
                 });
 
-                var key = expandByDateMode.ToString().Replace("Per", "");
-                var method = theTime.GetType().GetMethod($"Add{key}s");
+                //var method = theTime.GetType().GetMethod($"Add{key}s");
                 theTime = (DateTime)method.Invoke(theTime, new object[] { 1 });
             }
 
