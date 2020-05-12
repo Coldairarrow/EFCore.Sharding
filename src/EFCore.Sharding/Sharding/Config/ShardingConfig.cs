@@ -68,7 +68,8 @@ namespace EFCore.Sharding
         internal static string KeyField { get; set; } = "Id";
         internal static string DeletedField { get; set; } = "Deleted";
         internal static IServiceCollection ServiceDescriptors;
-        internal static string[] AssemblyNames;
+        internal static List<string> AssemblyNames = new List<string>();
+        internal static List<string> AssemblyPaths = new List<string>() { AppDomain.CurrentDomain.BaseDirectory };
         internal static void CheckInit()
         {
             if (!_inited)
@@ -94,7 +95,7 @@ namespace EFCore.Sharding
                             where = where.And(x =>
                                   !x.Contains("System.")
                                   && !x.Contains("Microsoft."));
-                            if (AssemblyNames != null)
+                            if (AssemblyNames.Count > 0)
                             {
                                 Expression<Func<string, bool>> tmpWhere = x => false;
                                 AssemblyNames.ToList().ForEach(aAssembly =>
@@ -104,10 +105,8 @@ namespace EFCore.Sharding
 
                                 where = where.And(tmpWhere);
                             }
-                            Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll")
-                                .Select(x => new FileInfo(x).Name)
-                                .Where(where.Compile())
-                                .Select(x => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, x))
+                            AssemblyPaths.SelectMany(x => Directory.GetFiles(x, "*.dll"))
+                                .Where(x => where.Compile()(new FileInfo(x).Name))
                                 .Distinct()
                                 .Select(x =>
                                 {

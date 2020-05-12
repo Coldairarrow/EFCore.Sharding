@@ -13,9 +13,16 @@ namespace EFCore.Sharding
     {
         #region 外部接口
 
+        public IConfigInit SetEntityAssemblyPath(params string[] entityAssemblyPaths)
+        {
+            ShardingConfig.AssemblyPaths.AddRange(entityAssemblyPaths);
+
+            return this;
+        }
+
         public IConfigInit SetEntityAssembly(params string[] entityAssemblyNames)
         {
-            ShardingConfig.AssemblyNames = entityAssemblyNames;
+            ShardingConfig.AssemblyNames.AddRange(entityAssemblyNames);
 
             return this;
         }

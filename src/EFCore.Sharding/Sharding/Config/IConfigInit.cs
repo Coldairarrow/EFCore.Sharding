@@ -8,6 +8,13 @@ namespace EFCore.Sharding
     public interface IConfigInit
     {
         /// <summary>
+        /// 设置实体的程序集路径
+        /// </summary>
+        /// <param name="entityAssemblyPaths">程序集路径</param>
+        /// <returns></returns>
+        IConfigInit SetEntityAssemblyPath(params string[] entityAssemblyPaths);
+
+        /// <summary>
         /// 设置实体的程序集
         /// 注:使用模糊匹配获取,例如传入"Entity",则将会扫描所有名字包含"Entity"的程序集
         /// 注:实体类必须拥有System.ComponentModel.DataAnnotations.Schema.TableAttribute特性
