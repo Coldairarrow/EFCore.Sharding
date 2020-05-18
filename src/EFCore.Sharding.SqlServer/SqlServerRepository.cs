@@ -59,11 +59,18 @@ namespace EFCore.Sharding.SqlServer
                 {
                     BatchSize = 100000,
                     BulkCopyTimeout = 0,
-                    DestinationTableName = tableName
+                    DestinationTableName = tableName,
                 };
+
+                var dataTable = entities.ToDataTable();
+                foreach (DataColumn col in dataTable.Columns)
+                {
+                    sqlBC.ColumnMappings.Add(col.ColumnName, col.ColumnName);
+                }
+                
                 using (sqlBC)
                 {
-                    sqlBC.WriteToServer(entities.ToDataTable());
+                    sqlBC.WriteToServer(dataTable);
                 }
             }
         }
