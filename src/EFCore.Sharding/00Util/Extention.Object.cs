@@ -139,8 +139,14 @@ namespace EFCore.Sharding.Util
             {
                 var name = new InvokeMemberName(invocation.Method.Name, invocation.Method.GetGenericArguments());
 
-                var value = Dynamic.InvokeMember(_obj, name, invocation.Arguments);
-                invocation.ReturnValue = value;
+                if (invocation.Method.ReturnType != typeof(void))
+                {
+                    invocation.ReturnValue = Dynamic.InvokeMember(_obj, name, invocation.Arguments);
+                }
+                else
+                {
+                    Dynamic.InvokeMemberAction(_obj, name, invocation.Arguments);
+                }
             }
         }
     }

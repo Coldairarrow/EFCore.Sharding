@@ -8,7 +8,7 @@ namespace EFCore.Sharding.Tests
     [TestClass]
     public class Startup
     {
-        private const string CONNECTION_STRING = "DataSource=db.db";
+        protected const string CONNECTION_STRING = "DataSource=db.db";
 
         /// <summary>
         /// 所有单元测试开始前
@@ -41,7 +41,7 @@ namespace EFCore.Sharding.Tests
         [AssemblyCleanup]
         public static void End()
         {
-            //结束后
+
         }
 
         public static IServiceProvider ServiceProvider;

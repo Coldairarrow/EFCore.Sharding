@@ -731,5 +731,15 @@ namespace EFCore.Sharding.Tests
                 Assert.AreEqual(2, count2);
             })();
         }
+
+        [TestMethod]
+        public void Dispose()
+        {
+            using (var scop = ServiceProvider.CreateScope())
+            {
+                scop.ServiceProvider.GetService<IRepository>().Dispose();
+                scop.ServiceProvider.GetService<ICustomRepository>().Dispose();
+            }
+        }
     }
 }
