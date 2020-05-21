@@ -1,5 +1,6 @@
 ﻿using Coldairarrow.Util;
 using EFCore.Sharding.Tests.Util;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace EFCore.Sharding.Tests
     [TestClass]
     public class ShardingRepositoryTest : BaseTest
     {
-        private IShardingRepository _db { get => DbFactory.GetShardingRepository(); }
+        private IShardingRepository _db { get => ServiceProvider.GetService<IShardingRepository>(); }
         protected override void Clear()
         {
             _db.DeleteAll<Base_UnitTest>();

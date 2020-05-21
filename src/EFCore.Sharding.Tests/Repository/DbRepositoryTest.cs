@@ -1,6 +1,7 @@
 ﻿using Coldairarrow.Util;
 using EFCore.Sharding.Tests.Util;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -19,8 +20,7 @@ namespace EFCore.Sharding.Tests
 
         #region 私有成员
 
-        IRepository _db { get; } =
-            DbFactory.GetRepository("DataSource=db.db", DatabaseType.SQLite);
+        protected virtual IRepository _db { get; } = ServiceProvider.GetService<IRepository>();
 
         #endregion
 

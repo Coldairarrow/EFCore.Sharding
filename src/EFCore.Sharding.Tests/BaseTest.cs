@@ -10,7 +10,7 @@ namespace EFCore.Sharding.Tests
         protected override int Mod => 3;
     }
 
-    public abstract class BaseTest
+    public abstract class BaseTest : Startup
     {
         static BaseTest()
         {

@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Castle.DynamicProxy;
+using Dynamitey;
+using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
 using System.Reflection;
@@ -7,8 +9,9 @@ namespace EFCore.Sharding.Util
 {
     public static partial class PublicExtention
     {
-        private static BindingFlags _bindingFlags { get; }
+        private static readonly BindingFlags _bindingFlags
             = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
+        private static readonly ProxyGenerator Generator = new ProxyGenerator();
 
         /// <summary>
         /// 判断是否为Null或者空
@@ -112,6 +115,33 @@ namespace EFCore.Sharding.Util
             }
 
             return resObj;
+        }
+
+        /// <summary>
+        /// 生成代理
+        /// </summary>
+        /// <typeparam name="T">代理类型</typeparam>
+        /// <param name="obj">实际类型</param>
+        /// <returns></returns>
+        public static T ActLike<T>(this object obj) where T : class
+        {
+            return Generator.CreateInterfaceProxyWithoutTarget<T>(new ActLikeInterceptor(obj));
+        }
+
+        private class ActLikeInterceptor : IInterceptor
+        {
+            public ActLikeInterceptor(object obj)
+            {
+                _obj = obj;
+            }
+            private object _obj;
+            public void Intercept(IInvocation invocation)
+            {
+                var name = new InvokeMemberName(invocation.Method.Name, invocation.Method.GetGenericArguments());
+
+                var value = Dynamic.InvokeMember(_obj, name, invocation.Arguments);
+                invocation.ReturnValue = value;
+            }
         }
     }
 }

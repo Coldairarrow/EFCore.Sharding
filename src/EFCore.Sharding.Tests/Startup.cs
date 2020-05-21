@@ -1,11 +1,15 @@
 ﻿using Coldairarrow.Util;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace EFCore.Sharding.Tests
 {
     [TestClass]
-    class Startup
+    public class Startup
     {
+        private const string CONNECTION_STRING = "DataSource=db.db";
+
         /// <summary>
         /// 所有单元测试开始前
         /// </summary>
@@ -14,7 +18,21 @@ namespace EFCore.Sharding.Tests
         public static void Begin(TestContext context)
         {
             InitId();
-            InitSharding();
+            ServiceCollection services = new ServiceCollection();
+            services.UseEFCoreSharding(config =>
+            {
+                config.UseDatabase(CONNECTION_STRING, DatabaseType.SQLite);
+                config.UseDatabase<ICustomRepository>(CONNECTION_STRING, DatabaseType.SQLite);
+                config.AddAbsDb(DatabaseType.SQLite)
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, CONNECTION_STRING)
+                    .AddPhysicDbGroup()
+                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
+                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
+                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
+                    .SetShardingRule(new Base_UnitTestShardingRule());
+            });
+
+            ServiceProvider = services.BuildServiceProvider();
         }
 
         /// <summary>
@@ -26,22 +44,11 @@ namespace EFCore.Sharding.Tests
             //结束后
         }
 
+        public static IServiceProvider ServiceProvider;
+
         private static void InitId()
         {
             new IdHelperBootstrapper().SetWorkderId(1).Boot();
-        }
-        private static void InitSharding()
-        {
-            ShardingConfig.Init(config =>
-            {
-                config.AddAbsDb(DatabaseType.SQLite)
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, "DataSource=db.db")
-                    .AddPhysicDbGroup()
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
-                    .SetShardingRule(new Base_UnitTestShardingRule());
-            });
         }
     }
 }
