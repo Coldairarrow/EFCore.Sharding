@@ -33,7 +33,7 @@
 | EFCore.Sharding.MySql | MySql支持 |
 | EFCore.Sharding.PostgreSql | PostgreSql支持 |
 | EFCore.Sharding.SQLite | SQLite支持 |
-| EFCore.Sharding.SqlServer | SqlServer支持 |
+| EFCore.Sharding.SqlServer | SqlServer支持(3.x版本需要SqlServer2012+,若要用低版本则用2.x版本) |
 | EFCore.Sharding.Oracle | Oracle支持(暂不支持3.x) |
 
 ## 配置
