@@ -1,4 +1,5 @@
-﻿using EFCore.Sharding.Util;
+﻿using System;
+using EFCore.Sharding.Util;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
@@ -40,31 +41,50 @@ namespace EFCore.Sharding.SqlServer
         /// <param name="entities">数据</param>
         public override void BulkInsert<T>(List<T> entities)
         {
-            using (SqlConnection conn = new SqlConnection())
+            using (var bulkCopy = new SqlBulkCopy(ConnectionString))
             {
-                conn.ConnectionString = ConnectionString;
-                if (conn.State != ConnectionState.Open)
+                bulkCopy.BatchSize = entities.Count;
+                var tableAttribute = (TableAttribute)typeof(T).GetCustomAttributes(typeof(TableAttribute), false).First();
+                var tableName = tableAttribute.Name;
+                bulkCopy.DestinationTableName = tableName;
+
+                var table = new DataTable();
+                var props = typeof(T).GetProperties().Where( x => x.GetSetMethod() != null).ToList();
+
+                foreach (var propertyInfo in props)
                 {
-                    conn.Open();
+                    var destinationColumn = string.Empty;
+                    
+                    var attributes = propertyInfo.GetCustomAttributes(false);
+                    foreach (var attribute in attributes)
+                    {
+                        if (!(attribute is ColumnAttribute columnAttribute)) continue;
+                        
+                        destinationColumn = columnAttribute.Name;
+                        
+                        break;
+                    }
+
+                    bulkCopy.ColumnMappings.Add(propertyInfo.Name,
+                        string.IsNullOrEmpty(destinationColumn) ? propertyInfo.Name : destinationColumn);
+                    
+                    table.Columns.Add(propertyInfo.Name, Nullable.GetUnderlyingType(propertyInfo.PropertyType) ?? propertyInfo.PropertyType);
                 }
 
-                string tableName = string.Empty;
-                var tableAttribute = typeof(T).GetCustomAttributes(typeof(TableAttribute), true).FirstOrDefault();
-                if (tableAttribute != null)
-                    tableName = ((TableAttribute)tableAttribute).Name;
-                else
-                    tableName = typeof(T).Name;
+                var values = new object[props.Count];
+                
+                foreach (var item in entities)
+                {
+                    for (var i = 0; i < values.Length; i++)
+                    {
+                        if (props[i].GetSetMethod() == null) continue;
 
-                SqlBulkCopy sqlBC = new SqlBulkCopy(conn)
-                {
-                    BatchSize = 100000,
-                    BulkCopyTimeout = 0,
-                    DestinationTableName = tableName
-                };
-                using (sqlBC)
-                {
-                    sqlBC.WriteToServer(entities.ToDataTable());
+                        values[i] = props[i].GetValue(item);
+                    }
+                    table.Rows.Add(values);
                 }
+
+                bulkCopy.WriteToServer(table);
             }
         }
 
