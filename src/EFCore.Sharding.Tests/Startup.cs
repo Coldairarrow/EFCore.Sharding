@@ -29,7 +29,8 @@ namespace EFCore.Sharding.Tests
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
-                    .SetShardingRule(new Base_UnitTestShardingRule());
+                    .SetShardingRule(new Base_UnitTestShardingRule())
+                    .AddPhysicTable<SqlDefaultTestModel>("sql_default_test");
             });
 
             ServiceProvider = services.BuildServiceProvider();

@@ -7,6 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+
+// 暴露给 EFCore.Sharding.Tests
+// y
+[assembly: InternalsVisibleTo("EFCore.Sharding.Tests")]
 
 namespace EFCore.Sharding
 {

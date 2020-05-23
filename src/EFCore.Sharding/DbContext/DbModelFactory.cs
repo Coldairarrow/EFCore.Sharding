@@ -100,6 +100,21 @@ namespace EFCore.Sharding
                         entityTypeBuilder.HasIndex(aIndex.PropertyNames).IsUnique(aIndex.IsUnique);
                     });
                 }
+
+                //sql默认值
+                // y
+                var defValues = x.GetCustomAttributes<SqlDefaultAttribute>();
+                if (defValues != null)
+                {
+                    defValues.ToList().ForEach(defs =>
+                    {
+                        defs.PropertyNames.ForEach(p =>
+                        {
+                            entityTypeBuilder.Property(p).HasDefaultValueSql(defs.Sql);
+                        });
+                        //entityTypeBuilder.Property(defs.PropertyNames).IsUnique(aIndex.IsUnique);
+                    });
+                }
             });
             //支持IEntityTypeConfiguration配置
             needTypes.Select(x => x.Assembly).ToList().ForEach(aAssembly =>
