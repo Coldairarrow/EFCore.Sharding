@@ -91,7 +91,7 @@ namespace EFCore.Sharding
 
             builder.EnableSensitiveDataLogging();
             builder.UseModel(model);
-            builder.UseLoggerFactory(_loggerFactory);
+            builder.UseLoggerFactory(ShardingConfig.LoggerFactory ?? _loggerFactory);
 
             return new BaseDbContext(builder.Options);
         }

@@ -11,6 +11,10 @@ namespace Demo.DI
             string conString = "DataSource=db.db";
 
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(config =>
+                {
+
+                })
                 .ConfigureServices((host, services) =>
                 {
                     services.AddHostedService<DbTest>();
