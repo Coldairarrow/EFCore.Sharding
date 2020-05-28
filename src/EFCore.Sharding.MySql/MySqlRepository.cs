@@ -12,35 +12,16 @@ namespace EFCore.Sharding.MySql
 {
     internal class MySqlRepository : DbRepository, IRepository
     {
-        #region 构造函数
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="conStr">数据库连接名</param>
-        public MySqlRepository(string conStr)
-            : base(conStr, DatabaseType.MySql)
+        public MySqlRepository(BaseDbContext baseDbContext)
+            : base(baseDbContext)
         {
         }
-
-        #endregion
-
-        #region 私有成员
 
         protected override string FormatFieldName(string name)
         {
             return $"`{name}`";
         }
 
-        #endregion
-
-        #region 插入数据
-
-        /// <summary>
-        /// 使用Bulk批量插入数据（适合大数据量，速度非常快）
-        /// </summary>
-        /// <typeparam name="T">实体类型</typeparam>
-        /// <param name="entities">数据</param>
         public override void BulkInsert<T>(List<T> entities)
         {
             DataTable dt = entities.ToDataTable();
@@ -93,11 +74,5 @@ namespace EFCore.Sharding.MySql
                 File.Delete(tmpPath);
             }
         }
-
-        #endregion
-
-        #region 删除数据
-
-        #endregion
     }
 }

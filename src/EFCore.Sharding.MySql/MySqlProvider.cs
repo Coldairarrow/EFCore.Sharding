@@ -11,7 +11,7 @@ namespace EFCore.Sharding.MySql
 
         public override ModelBuilder GetModelBuilder() => new ModelBuilder(MySqlConventionSetBuilder.Build());
 
-        public override IRepository GetRepository(string conString) => new MySqlRepository(conString);
+        public override IRepository GetRepository(BaseDbContext baseDbContext) => new MySqlRepository(baseDbContext);
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {

@@ -1,5 +1,6 @@
 ﻿using EFCore.Sharding.Util;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -32,7 +33,9 @@ namespace EFCore.Sharding
             {
                 ShardingConfig.ServiceDescriptors.AddScoped(_ =>
                 {
-                    IRepository repository = DbFactory.GetRepository(conString, dbType);
+                    ILoggerFactory loggerFactory = _.GetService<ILoggerFactory>();
+
+                    IRepository repository = DbFactory.GetRepository(conString, dbType, loggerFactory);
                     if (ShardingConfig.LogicDelete)
                         repository = new LogicDeleteRepository(repository);
 

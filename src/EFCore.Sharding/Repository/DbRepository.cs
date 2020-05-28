@@ -22,14 +22,11 @@ namespace EFCore.Sharding
         /// <summary>
         /// 构造函数
         /// </summary>
-        /// <param name="conString">构造参数，可以为数据库连接字符串或者DbContext</param>
-        /// <param name="dbType">数据库类型</param>
-        public DbRepository(string conString, DatabaseType dbType)
+        /// <param name="baseDbContext">BaseDbContext</param>
+        public DbRepository(BaseDbContext baseDbContext)
         {
-            ConnectionString = conString;
-            DbType = dbType;
-            _db = DbFactory.GetDbContext(conString, dbType);
-            _provider = DbFactory.GetProvider(dbType);
+            _db = baseDbContext;
+            _provider = DbFactory.GetProvider(DbType);
         }
 
         #endregion
@@ -238,8 +235,8 @@ namespace EFCore.Sharding
 
         #region 数据库相关
 
-        public string ConnectionString { get; }
-        public DatabaseType DbType { get; }
+        public string ConnectionString => _db.ConnectionString;
+        public DatabaseType DbType => _db.DbType;
         public void CommitTransaction()
         {
             _transaction?.Commit();

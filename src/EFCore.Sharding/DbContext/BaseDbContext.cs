@@ -8,11 +8,16 @@ namespace EFCore.Sharding
 {
     public class BaseDbContext : DbContext
     {
-        public BaseDbContext(DbContextOptions options)
+        public BaseDbContext(DbContextOptions options, string connectionString, DatabaseType dbType)
             : base(options)
         {
-
+            ConnectionString = connectionString;
+            DbType = dbType;
         }
+
+        public string ConnectionString { get; }
+
+        public DatabaseType DbType { get; }
 
         public IQueryable GetIQueryable(Type entityType)
         {

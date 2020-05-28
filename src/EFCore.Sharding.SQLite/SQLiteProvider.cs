@@ -11,7 +11,7 @@ namespace EFCore.Sharding.SQLite
 
         public override ModelBuilder GetModelBuilder() => new ModelBuilder(SqliteConventionSetBuilder.Build());
 
-        public override IRepository GetRepository(string conString) => new SQLiteRepository(conString);
+        public override IRepository GetRepository(BaseDbContext baseDbContext) => new SQLiteRepository(baseDbContext);
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {

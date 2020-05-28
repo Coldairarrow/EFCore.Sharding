@@ -24,9 +24,9 @@ namespace EFCore.Sharding
         /// <summary>
         /// 获取仓储接口
         /// </summary>
-        /// <param name="conString">完整数据库连接字符串</param>
+        /// <param name="baseDbContext">DbContext</param>
         /// <returns></returns>
-        public abstract IRepository GetRepository(string conString);
+        public abstract IRepository GetRepository(BaseDbContext baseDbContext);
 
         /// <summary>
         /// 提供工厂

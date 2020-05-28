@@ -1,6 +1,5 @@
 ﻿using EFCore.Sharding.Util;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -58,7 +57,6 @@ namespace EFCore.Sharding
 
             services.AddScoped(_ =>
             {
-                LoggerFactory = _.GetService<ILoggerFactory>();
                 return DbFactory.GetShardingRepository();
             });
 
@@ -73,7 +71,6 @@ namespace EFCore.Sharding
         internal static string KeyField { get; set; } = "Id";
         internal static string DeletedField { get; set; } = "Deleted";
         internal static IServiceCollection ServiceDescriptors;
-        internal static ILoggerFactory LoggerFactory = null;
         internal static List<string> AssemblyNames = new List<string>();
         internal static List<string> AssemblyPaths = new List<string>() { AppDomain.CurrentDomain.BaseDirectory };
         internal static void CheckInit()

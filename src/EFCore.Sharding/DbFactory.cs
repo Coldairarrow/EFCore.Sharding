@@ -39,10 +39,13 @@ namespace EFCore.Sharding
         /// </summary>
         /// <param name="conString">完整数据库链接字符串</param>
         /// <param name="dbType">数据库类型</param>
+        /// <param name="loggerFactory">日志工厂</param>
         /// <returns></returns>
-        public static IRepository GetRepository(string conString, DatabaseType dbType)
+        public static IRepository GetRepository(string conString, DatabaseType dbType, ILoggerFactory loggerFactory = null)
         {
-            return GetProvider(dbType).GetRepository(conString);
+            var dbContext = GetDbContext(conString, dbType, null, loggerFactory);
+
+            return GetProvider(dbType).GetRepository(dbContext);
         }
 
         /// <summary>
@@ -73,7 +76,7 @@ namespace EFCore.Sharding
             }
         }
 
-        internal static BaseDbContext GetDbContext(string conString, DatabaseType dbType, List<Type> entityTypes = null)
+        internal static BaseDbContext GetDbContext(string conString, DatabaseType dbType, List<Type> entityTypes = null, ILoggerFactory loggerFactory = null)
         {
             AbstractProvider provider = GetProvider(dbType);
 
@@ -91,9 +94,9 @@ namespace EFCore.Sharding
 
             builder.EnableSensitiveDataLogging();
             builder.UseModel(model);
-            builder.UseLoggerFactory(ShardingConfig.LoggerFactory ?? _loggerFactory);
+            builder.UseLoggerFactory(loggerFactory ?? _loggerFactory);
 
-            return new BaseDbContext(builder.Options);
+            return new BaseDbContext(builder.Options, conString, dbType);
         }
 
         private static ILoggerFactory _loggerFactory =
