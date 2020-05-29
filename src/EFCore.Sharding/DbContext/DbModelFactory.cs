@@ -106,7 +106,7 @@ namespace EFCore.Sharding
                 // 如果不是做HasQueryFilter的话。Include不会过滤Deleted的数据
                 if (ShardingConfig.LogicDelete)
                 {
-                    if (entityTypeBuilder.Metadata.FindProperty(ShardingConfig.DeletedField) == null)
+                    if (entityTypeBuilder.Metadata.FindProperty(ShardingConfig.DeletedField) != null)
                     {
                         var exp = DynamicExpressionParser.ParseLambda(x, typeof(bool), $"{ShardingConfig.DeletedField} == @0", false);
                         entityTypeBuilder.HasQueryFilter(exp);
