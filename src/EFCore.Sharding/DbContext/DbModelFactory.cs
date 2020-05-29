@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
+using System.Linq.Dynamic.Core;
 
 namespace EFCore.Sharding
 {
@@ -99,6 +100,17 @@ namespace EFCore.Sharding
                     {
                         entityTypeBuilder.HasIndex(aIndex.PropertyNames).IsUnique(aIndex.IsUnique);
                     });
+                }
+                // 如果是逻辑删除，那么可以在这里直接做查询过滤
+                // 这样的话。如果是在Bussiness层做Include的时候，也不会把Deleted的数据加载出来
+                // 如果不是做HasQueryFilter的话。Include不会过滤Deleted的数据
+                if (ShardingConfig.LogicDelete)
+                {
+                    if (entityTypeBuilder.Metadata.FindProperty(ShardingConfig.DeletedField) == null)
+                    {
+                        var exp = DynamicExpressionParser.ParseLambda(x, typeof(bool), $"{ShardingConfig.DeletedField} == @0", false);
+                        entityTypeBuilder.HasQueryFilter(exp);
+                    }
                 }
             });
             //支持IEntityTypeConfiguration配置
