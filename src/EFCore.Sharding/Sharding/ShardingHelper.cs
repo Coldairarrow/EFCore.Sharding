@@ -1,5 +1,6 @@
 ﻿using EFCore.Sharding.Util;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
@@ -30,6 +31,12 @@ namespace EFCore.Sharding
             config.FullName = $"EFCore.Sharding.{targetTableName}";
 
             return TypeBuilderHelper.BuildType(config);
+        }
+
+        public static List<string> FindTablesByTime(List<string> tables, Func<DateTime, string> dateToTable)
+        {
+
+            return tables;
         }
     }
 }

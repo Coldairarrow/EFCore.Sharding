@@ -27,13 +27,14 @@ namespace Demo.Performance
                     .SetShardingRule(new Base_UnitTestShardingRule());
             });
 
+            DateTime time1 = DateTime.Now;
+            DateTime time2 = DateTime.Now;
+
             var db = DbFactory.GetRepository(Config.ConString1, DatabaseType.SqlServer);
             Stopwatch watch = new Stopwatch();
             var q = db.GetIQueryable<Base_UnitTest>()
-                .Where(x => x.UserName.Contains("00001C22-8DD2-4D47-B500-407554B099AB"))
-                .OrderByDescending(x => x.Id)
-                .Skip(0)
-                .Take(30);
+                .Where(x => x.CreateTime == time1 && x.CreateTime >= time2)
+                ;
 
             q.ToList();
             q.ToSharding().ToList();
