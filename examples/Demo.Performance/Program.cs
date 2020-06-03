@@ -1,6 +1,7 @@
 ﻿using Demo.Common;
 using EFCore.Sharding;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -35,6 +36,8 @@ namespace Demo.Performance
             var q = db.GetIQueryable<Base_UnitTest>()
                 .Where(x => x.CreateTime == time1 && x.CreateTime >= time2)
                 ;
+            List<string> tables = new List<string> { "Base_UnitTest_202006032051" };
+            var resTables = ShardingHelper.FindTablesByTime(q, tables, time => $"Base_UnitTest_{time:yyyyMMddHHmm}");
 
             q.ToList();
             q.ToSharding().ToList();

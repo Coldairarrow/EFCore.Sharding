@@ -3,10 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace EFCore.Sharding
 {
-    internal static class ShardingHelper
+    public static class ShardingHelper
     {
         /// <summary>
         /// 映射物理表
@@ -33,10 +34,38 @@ namespace EFCore.Sharding
             return TypeBuilderHelper.BuildType(config);
         }
 
-        public static List<string> FindTablesByTime(List<string> tables, Func<DateTime, string> dateToTable)
+        public static List<string> FindTablesByTime(IQueryable queryable, List<string> tables, Func<DateTime, string> dateToTable)
         {
+            var visitor = new FindTablesByTimeVisitor(tables, dateToTable);
+            visitor.Visit(queryable.Expression);
 
-            return tables;
+            return visitor.ResTables;
+        }
+
+        class FindTablesByTimeVisitor : ExpressionVisitor
+        {
+            private readonly List<string> _allTables;
+            private readonly Func<DateTime, string> _dateToTable;
+            public FindTablesByTimeVisitor(List<string> allTables, Func<DateTime, string> dateToTable)
+            {
+                _allTables = allTables;
+                _dateToTable = dateToTable;
+            }
+
+            public List<string> ResTables { get; } = new List<string>();
+
+            protected override Expression VisitMethodCall(MethodCallExpression node)
+            {
+                if (node.Method.Name == "Where")
+                {
+                    var paramter = node.Arguments[0];
+                    var body = ((node.Arguments[1] as UnaryExpression).Operand as LambdaExpression).Body;
+
+                    string tmp = string.Empty;
+                }
+
+                return base.VisitMethodCall(node);
+            }
         }
     }
 }
