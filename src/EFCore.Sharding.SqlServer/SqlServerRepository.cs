@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EFCore.Sharding.SqlServer
 {
@@ -22,7 +23,7 @@ namespace EFCore.Sharding.SqlServer
 
         public override void BulkInsert<T>(List<T> entities)
         {
-            using (var bulkCopy = new SqlBulkCopy(ConnectionString))
+            using (var bulkCopy = GetSqlBulkCopy())
             {
                 bulkCopy.BatchSize = entities.Count;
                 var tableAttribute = (TableAttribute)typeof(T).GetCustomAttributes(typeof(TableAttribute), false).First();
@@ -68,5 +69,16 @@ namespace EFCore.Sharding.SqlServer
                 bulkCopy.WriteToServer(table);
             }
         }
+        
+         private SqlBulkCopy GetSqlBulkCopy()
+                {
+                    var defaultSqlCopy = new SqlBulkCopy(ConnectionString);
+                    
+                    if(!_openedTransaction) return defaultSqlCopy;
+        
+                    return !(_db.Database.CurrentTransaction.GetDbTransaction() is SqlTransaction sqlTransaction) ? 
+                        defaultSqlCopy : 
+                        new SqlBulkCopy(sqlTransaction.Connection, SqlBulkCopyOptions.Default, sqlTransaction);
+                }
     }
 }
