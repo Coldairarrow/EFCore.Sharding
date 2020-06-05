@@ -33,11 +33,13 @@ namespace Demo.Performance
 
             var db = DbFactory.GetRepository(Config.ConString1, DatabaseType.SqlServer);
             Stopwatch watch = new Stopwatch();
+
+            DateTime time = DateTime.Parse("2020-01-02");
             var q = db.GetIQueryable<Base_UnitTest>()
-                .Where(x => x.CreateTime == time1 && x.CreateTime >= time2)
+                .Where(x => /*x.CreateTime == time1 &&*/ x.CreateTime >= time)
                 ;
-            List<string> tables = new List<string> { "Base_UnitTest_202006032051" };
-            var resTables = ShardingHelper.FindTablesByTime(q, tables, time => $"Base_UnitTest_{time:yyyyMMddHHmm}");
+            List<string> tables = new List<string> { "Base_UnitTest_20200101", "Base_UnitTest_20200102", "Base_UnitTest_20200103" };
+            var resTables = ShardingHelper.FindTablesByTime(q, tables, "Base_UnitTest", "CreateTime");
 
             q.ToList();
             q.ToSharding().ToList();
