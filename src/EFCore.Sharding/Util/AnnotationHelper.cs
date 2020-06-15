@@ -8,6 +8,7 @@ namespace EFCore.Sharding.Util
     {
         public static string GetDbTableName(Type type)
         {
+            //表名
             var tableAttribute = type.GetCustomAttribute<TableAttribute>();
             string tableName;
             if (tableAttribute != null)
@@ -15,7 +16,18 @@ namespace EFCore.Sharding.Util
             else
                 tableName = type.Name;
 
+            //架构名
+
+
             return tableName;
+        }
+
+        public static string GetDbSchemaName(Type type)
+        {
+            //表名
+            var tableAttribute = type.GetCustomAttribute<TableAttribute>();
+
+            return tableAttribute.Schema;
         }
     }
 }

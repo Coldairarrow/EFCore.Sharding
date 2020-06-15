@@ -58,6 +58,18 @@ namespace EFCore.Sharding
         {
             return $"@{name}";
         }
+        protected abstract string GetSchema(string schema);
+        private string GetFormatedSchemaAndTableName(Type entityType)
+        {
+            string schema = AnnotationHelper.GetDbSchemaName(entityType);
+            schema = GetSchema(schema);
+            string table = AnnotationHelper.GetDbTableName(entityType);
+
+            if (schema.IsNullOrEmpty())
+                return FormatFieldName(table);
+            else
+                return $"{FormatFieldName(schema)}.{FormatFieldName(table)}";
+        }
         private (string sql, List<(string paramterName, object paramterValue)> paramters) GetWhereSql(IQueryable query)
         {
             List<(string paramterName, object paramterValue)> paramters =
@@ -96,9 +108,9 @@ namespace EFCore.Sharding
         }
         private (string sql, List<(string paramterName, object paramterValue)> paramters) GetDeleteSql(IQueryable iq)
         {
-            string tableName = AnnotationHelper.GetDbTableName(iq.ElementType);
+            string tableName = GetFormatedSchemaAndTableName(iq.ElementType);
             var whereSql = GetWhereSql(iq);
-            string sql = $"DELETE FROM {FormatFieldName(tableName)} WHERE {whereSql.sql}";
+            string sql = $"DELETE FROM {tableName} WHERE {whereSql.sql}";
 
             return (sql, whereSql.paramters);
         }
@@ -121,7 +133,7 @@ namespace EFCore.Sharding
         }
         private (string sql, List<(string paramterName, object paramterValue)> paramters) GetUpdateWhereSql(IQueryable iq, params (string field, UpdateType updateType, object value)[] values)
         {
-            string tableName = AnnotationHelper.GetDbTableName(iq.ElementType);
+            string tableName = GetFormatedSchemaAndTableName(iq.ElementType);
             var whereSql = GetWhereSql(iq);
 
             List<string> propertySetStr = new List<string>();
@@ -145,7 +157,7 @@ namespace EFCore.Sharding
 
                 propertySetStr.Add($" {formatedField} = {setValueBody} ");
             });
-            string sql = $"UPDATE {FormatFieldName(tableName)} SET {string.Join(",", propertySetStr)} WHERE {whereSql.sql}";
+            string sql = $"UPDATE {tableName} SET {string.Join(",", propertySetStr)} WHERE {whereSql.sql}";
 
             return (sql, whereSql.paramters);
         }

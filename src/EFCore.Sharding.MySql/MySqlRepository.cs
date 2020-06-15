@@ -74,5 +74,10 @@ namespace EFCore.Sharding.MySql
                 File.Delete(tmpPath);
             }
         }
+
+        protected override string GetSchema(string schema)
+        {
+            return null;
+        }
     }
 }

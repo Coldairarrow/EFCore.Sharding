@@ -19,5 +19,10 @@ namespace EFCore.Sharding.SQLite
         {
             return $"[{name}]";
         }
+
+        protected override string GetSchema(string schema)
+        {
+            return null;
+        }
     }
 }

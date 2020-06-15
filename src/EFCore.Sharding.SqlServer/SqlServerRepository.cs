@@ -1,5 +1,5 @@
-﻿using System;
-using EFCore.Sharding.Util;
+﻿using EFCore.Sharding.Util;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
@@ -67,6 +67,14 @@ namespace EFCore.Sharding.SqlServer
 
                 bulkCopy.WriteToServer(table);
             }
+        }
+
+        protected override string GetSchema(string schema)
+        {
+            if (schema.IsNullOrEmpty())
+                return "dbo";
+            else
+                return schema;
         }
     }
 }
