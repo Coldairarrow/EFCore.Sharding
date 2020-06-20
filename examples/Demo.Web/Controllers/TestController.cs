@@ -21,18 +21,6 @@ namespace Demo.Web.Controllers
         [HttpGet]
         public async Task<string> Get()
         {
-            //List<Base_UnitTest> insertList = new List<Base_UnitTest>();
-            //for (int i = 0; i < 100; i++)
-            //{
-            //    insertList.Add(new Base_UnitTest
-            //    {
-            //        Id = Guid.NewGuid().ToString(),
-            //        Age = i,
-            //        CreateTime = DateTime.Now,
-            //        UserName = Guid.NewGuid().ToString()
-            //    });
-            //}
-
             List<Base_UnitTest_LongKey> insertList = new List<Base_UnitTest_LongKey>();
             for (int i = 0; i < 100; i++)
             {

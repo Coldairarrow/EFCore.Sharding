@@ -36,7 +36,8 @@ namespace EFCore.Sharding
         private async Task<List<TResult>> GetStatisDataAsync<TResult>(Func<IQueryable, Task<TResult>> access, IQueryable newSource = null)
         {
             newSource = newSource ?? _source;
-            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName, _absDbName);
+            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName, _absDbName, _source);
+
             List<Task<TResult>> tasks = new List<Task<TResult>>();
             SynchronizedCollection<IRepository> dbs = new SynchronizedCollection<IRepository>();
             tasks = tables.Select(aTable =>
@@ -160,7 +161,7 @@ namespace EFCore.Sharding
                 noPaginSource = noPaginSource.Take(take.Value + skip.Value);
 
             //从各个分表获取数据
-            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName, _absDbName);
+            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName, _absDbName, _source);
             SynchronizedCollection<IRepository> dbs = new SynchronizedCollection<IRepository>();
             List<Task<List<T>>> tasks = tables.Select(aTable =>
             {

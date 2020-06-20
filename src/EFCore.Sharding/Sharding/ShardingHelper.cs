@@ -2,14 +2,14 @@
 using EFCore.Sharding.Util;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 
 namespace EFCore.Sharding
 {
-    public static class ShardingHelper
+    internal static class ShardingHelper
     {
         /// <summary>
         /// 映射物理表
@@ -36,6 +36,14 @@ namespace EFCore.Sharding
             return TypeBuilderHelper.BuildType(config);
         }
 
+        /// <summary>
+        /// 通过时间筛选分表
+        /// </summary>
+        /// <param name="queryable">查询源</param>
+        /// <param name="tables">所有分表名</param>
+        /// <param name="absTable">抽象表名</param>
+        /// <param name="shardingField">分表字段</param>
+        /// <returns></returns>
         public static List<string> FindTablesByTime(IQueryable queryable, List<string> tables, string absTable, string shardingField)
         {
             var visitor = new FindTablesByTimeVisitor(tables, absTable, shardingField, queryable.ElementType);
@@ -66,41 +74,15 @@ namespace EFCore.Sharding
 
             protected override Expression VisitMethodCall(MethodCallExpression node)
             {
-                if (node.Method.Name == "Where")
+                if (node.Method.Name == "Where"
+                    && node.Arguments[1] is UnaryExpression unaryExpression
+                    && unaryExpression.Operand is LambdaExpression lambdaExpression
+                    && lambdaExpression.Body is BinaryExpression binaryExpression
+                    )
                 {
-                    var paramter = node.Arguments[0];
-                    var body = ((node.Arguments[1] as UnaryExpression).Operand as LambdaExpression).Body as BinaryExpression;
-                    switch (body.NodeType)
-                    {
-                        case ExpressionType.GreaterThanOrEqual:
-                            {
-                                if (body.Left is MemberExpression member)
-                                {
-                                    if (member.Expression.Type == _absTableType && member.Member.Name == _shardingField)
-                                    {
-                                        if (body.Right is MemberExpression rightMember)
-                                        {
-                                            var time = (DateTime)Dynamic.InvokeGet((rightMember.Expression as ConstantExpression).Value, rightMember.Member.Name);
+                    var newWhere = GetWhere(binaryExpression);
 
-                                            string tableName = $"{_absTable}_{time:yyyyMMddHHmmss}";
-                                            var newTables = _allTables.Concat(new string[] { tableName }).OrderBy(x => x).ToList();
-                                            int index = newTables.IndexOf(tableName);
-                                            if (index == newTables.Count - 1)
-                                            {
-                                                _where = _where.And(x => false);
-                                            }
-                                            else
-                                            {
-                                                _where = _where.And(x => x >= index - 1);
-                                            }
-                                        }
-                                    }
-                                }
-                            }; break;
-                        default: break;
-                    }
-
-                    string tmp = string.Empty;
+                    _where = _where.And(newWhere);
                 }
 
                 return base.VisitMethodCall(node);
@@ -115,7 +97,7 @@ namespace EFCore.Sharding
                 if (binaryExpression.Left is BinaryExpression)
                     left = GetWhere(binaryExpression.Left as BinaryExpression);
                 if (binaryExpression.Right is BinaryExpression)
-                    left = GetWhere(binaryExpression.Right as BinaryExpression);
+                    right = GetWhere(binaryExpression.Right as BinaryExpression);
 
                 //组合
                 if (binaryExpression.NodeType == ExpressionType.AndAlso)
@@ -126,10 +108,86 @@ namespace EFCore.Sharding
                 {
                     return left.Or(right);
                 }
-
                 //单个
+                else
+                {
+                    bool paramterAtLeft;
+                    DateTime? value = null;
 
-                return x => true;
+                    if (IsParamter(binaryExpression.Left) && IsConstant(binaryExpression.Right))
+                    {
+                        paramterAtLeft = true;
+                        value = GetTime(binaryExpression.Right);
+                    }
+                    else if (IsConstant(binaryExpression.Left) && IsParamter(binaryExpression.Right))
+                    {
+                        paramterAtLeft = false;
+                        value = GetTime(binaryExpression.Left);
+                    }
+                    else
+                        return x => true;
+
+                    string op = binaryExpression.NodeType switch
+                    {
+                        ExpressionType.GreaterThan => paramterAtLeft ? ">" : "<",
+                        ExpressionType.GreaterThanOrEqual => paramterAtLeft ? ">=" : "<=",
+                        ExpressionType.LessThan => paramterAtLeft ? "<" : ">",
+                        ExpressionType.LessThanOrEqual => paramterAtLeft ? "<=" : ">=",
+                        ExpressionType.Equal => "==",
+                        ExpressionType.NotEqual => "!=",
+                        _ => null
+                    };
+
+                    if (op == null || value == null)
+                        return x => true;
+
+                    string tableName = $"{_absTable}_{value.Value:yyyyMMddHHmmss}";
+                    var newTables = _allTables.Concat(new string[] { tableName }).OrderBy(x => x).ToList();
+                    int index = newTables.IndexOf(tableName);
+
+                    if (binaryExpression.NodeType == ExpressionType.GreaterThan
+                        || binaryExpression.NodeType == ExpressionType.GreaterThanOrEqual
+                        || binaryExpression.NodeType == ExpressionType.Equal
+                        || binaryExpression.NodeType == ExpressionType.NotEqual
+                        )
+                    {
+                        index = index - 1;
+                    }
+
+                    var newWhere = DynamicExpressionParser.ParseLambda<int, bool>(
+                        ParsingConfig.Default, false, $@"it {op} @0", index);
+
+                    return newWhere;
+                }
+
+                bool IsParamter(Expression expression)
+                {
+                    return expression is MemberExpression member
+                        && member.Expression.Type == _absTableType
+                        && member.Member.Name == _shardingField;
+                }
+
+                bool IsConstant(Expression expression)
+                {
+                    return expression is ConstantExpression
+                        || (expression is MemberExpression member && member.Expression is ConstantExpression);
+                }
+
+                DateTime? GetTime(Expression expression)
+                {
+                    if (expression is ConstantExpression constant1)
+                    {
+                        return (DateTime?)constant1.Value;
+                    }
+                    else if (expression is MemberExpression member && member.Expression is ConstantExpression constant2)
+                    {
+                        return (DateTime?)Dynamic.InvokeGet(constant2.Value, member.Member.Name);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
             }
         }
     }

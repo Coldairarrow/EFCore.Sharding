@@ -93,14 +93,27 @@ namespace EFCore.Sharding
             string groupName = ShardingConfig.DefaultDbGourpName);
 
         /// <summary>
-        /// 设置分表规则
+        /// 设置分表规则(哈希取模)
         /// </summary>
         /// <typeparam name="TEntity">对应抽象表类型</typeparam>
-        /// <param name="shardingRule">具体分表规则</param>
+        /// <param name="shardingField">分表字段</param>
+        /// <param name="mod">取模</param>
         /// <param name="absDbName">抽象数据库名</param>
         /// <returns></returns>
-        IConfigInit SetShardingRule<TEntity>(
-            AbsShardingRule<TEntity> shardingRule,
+        IConfigInit SetHashModShardingRule<TEntity>(
+            string shardingField,
+            int mod,
+            string absDbName = ShardingConfig.DefaultAbsDbName);
+
+        /// <summary>
+        /// 设置分表规则(按日期)
+        /// </summary>
+        /// <typeparam name="TEntity">对应抽象表类型</typeparam>
+        /// <param name="shardingField">分表字段</param>
+        /// <param name="absDbName">抽象数据库名</param>
+        /// <returns></returns>
+        IConfigInit SetDateShardingRule<TEntity>(
+            string shardingField,
             string absDbName = ShardingConfig.DefaultAbsDbName);
 
         /// <summary>

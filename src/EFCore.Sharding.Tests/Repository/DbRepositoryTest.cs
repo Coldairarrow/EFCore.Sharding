@@ -1,5 +1,4 @@
-﻿using Coldairarrow.Util;
-using EFCore.Sharding.Tests.Util;
+﻿using EFCore.Sharding.Tests.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -609,8 +608,8 @@ namespace EFCore.Sharding.Tests
             {
                 var newData = _newData.DeepClone();
                 newData.Id = Guid.NewGuid().ToString();
-                newData.UserId = IdHelper.GetId();
-                newData.UserName = IdHelper.GetId();
+                newData.UserId = Guid.NewGuid().ToString();
+                newData.UserName = Guid.NewGuid().ToString();
                 _db.Insert(_newData);
                 _db.Insert(newData);
             }).Success;
@@ -626,8 +625,8 @@ namespace EFCore.Sharding.Tests
             {
                 var newData = _newData.DeepClone();
                 newData.Id = Guid.NewGuid().ToString();
-                newData.UserId = IdHelper.GetId();
-                newData.UserName = IdHelper.GetId();
+                newData.UserId = Guid.NewGuid().ToString();
+                newData.UserName = Guid.NewGuid().ToString();
                 await _db.InsertAsync(_newData);
                 await _db.InsertAsync(newData);
             })).Success;
@@ -646,7 +645,7 @@ namespace EFCore.Sharding.Tests
             var updateData = _newData.DeepClone();
             Task db2Task = new Task(() =>
             {
-                updateData.UserName = IdHelper.GetId();
+                updateData.UserName = Guid.NewGuid().ToString();
                 db2.Update(updateData);
             });
 

@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace EFCore.Sharding.Util
 {
-    public static partial class PublicExtention
+    internal static partial class Extention
     {
         private static readonly BindingFlags _bindingFlags
             = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;

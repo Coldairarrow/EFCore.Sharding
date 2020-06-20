@@ -1,5 +1,4 @@
-﻿using Coldairarrow.Util;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
@@ -17,7 +16,6 @@ namespace EFCore.Sharding.Tests
         [AssemblyInitialize]
         public static void Begin(TestContext context)
         {
-            InitId();
             ServiceCollection services = new ServiceCollection();
             services.UseEFCoreSharding(config =>
             {
@@ -29,7 +27,7 @@ namespace EFCore.Sharding.Tests
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
-                    .SetShardingRule(new Base_UnitTestShardingRule());
+                    .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });
 
             ServiceProvider = services.BuildServiceProvider();
@@ -45,10 +43,5 @@ namespace EFCore.Sharding.Tests
         }
 
         public static IServiceProvider ServiceProvider;
-
-        private static void InitId()
-        {
-            new IdHelperBootstrapper().SetWorkderId(1).Boot();
-        }
     }
 }

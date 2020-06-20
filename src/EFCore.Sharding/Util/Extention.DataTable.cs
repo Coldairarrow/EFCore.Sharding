@@ -4,7 +4,7 @@ using System.Text;
 
 namespace EFCore.Sharding.Util
 {
-    public static partial class PublicExtention
+    internal static partial class Extention
     {
         /// <summary>
         /// DataTable转List

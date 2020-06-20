@@ -168,7 +168,7 @@ namespace EFCore.Sharding.Util
     /// <summary>
     /// 类型配置
     /// </summary>
-    public class TypeConfig
+    internal class TypeConfig
     {
         /// <summary>
         /// 类型名
@@ -194,7 +194,7 @@ namespace EFCore.Sharding.Util
     /// <summary>
     /// 属性配置
     /// </summary>
-    public class PropertyConfig
+    internal class PropertyConfig
     {
         /// <summary>
         /// 属性名
@@ -215,7 +215,7 @@ namespace EFCore.Sharding.Util
     /// <summary>
     /// 特性配置
     /// </summary>
-    public class AttributeConfig
+    internal class AttributeConfig
     {
         /// <summary>
         /// 特性类型

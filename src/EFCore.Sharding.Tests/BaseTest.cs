@@ -1,15 +1,8 @@
-﻿using Coldairarrow.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace EFCore.Sharding.Tests
 {
-    class Base_UnitTestShardingRule : ModShardingRule<Base_UnitTest>
-    {
-        protected override string KeyField => "Id";
-        protected override int Mod => 3;
-    }
-
     public abstract class BaseTest : Startup
     {
         static BaseTest()
@@ -18,7 +11,7 @@ namespace EFCore.Sharding.Tests
             {
                 Base_UnitTest newData = new Base_UnitTest
                 {
-                    Id = IdHelper.GetId(),
+                    Id = Guid.NewGuid().ToString(),
                     Age = i,
                     UserId = "Admin" + i,
                     UserName = "超级管理员" + i

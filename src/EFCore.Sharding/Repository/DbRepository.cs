@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
-    public abstract class DbRepository : IRepository
+    internal abstract class DbRepository : IRepository
     {
         #region 构造函数
 

@@ -29,11 +29,11 @@ namespace Demo.Web
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
-                    .SetShardingRule(new Base_UnitTestShardingRule())
+                    .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3)
                     .AddPhysicTable<Base_UnitTest_LongKey>("Base_UnitTest_LongKey_0")
                     .AddPhysicTable<Base_UnitTest_LongKey>("Base_UnitTest_LongKey_1")
                     .AddPhysicTable<Base_UnitTest_LongKey>("Base_UnitTest_LongKey_2")
-                    .SetShardingRule(new Base_UnitTest_LongKeyShardingRule());
+                    .SetHashModShardingRule<Base_UnitTest_LongKey>(nameof(Base_UnitTest_LongKey.Id), 3);
             });
             services.AddControllers();
         }

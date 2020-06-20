@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace EFCore.Sharding.Util
 {
-    public static partial class PublicExtention
+    internal static partial class Extention
     {
         /// <summary>
         /// 给IEnumerable拓展ForEach方法

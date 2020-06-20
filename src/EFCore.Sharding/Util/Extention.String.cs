@@ -5,7 +5,7 @@ using System.Text;
 
 namespace EFCore.Sharding.Util
 {
-    public static partial class PublicExtention
+    internal static partial class Extention
     {
         /// <summary>
         /// 将Json字符串反序列化为对象
