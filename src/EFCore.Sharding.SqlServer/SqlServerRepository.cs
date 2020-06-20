@@ -1,11 +1,11 @@
 ﻿using EFCore.Sharding.Util;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EFCore.Sharding.SqlServer
 {
@@ -77,16 +77,16 @@ namespace EFCore.Sharding.SqlServer
             else
                 return schema;
         }
-        
-         private SqlBulkCopy GetSqlBulkCopy()
-                {
-                    var defaultSqlCopy = new SqlBulkCopy(ConnectionString);
-                    
-                    if(!_openedTransaction) return defaultSqlCopy;
-        
-                    return !(_db.Database.CurrentTransaction.GetDbTransaction() is SqlTransaction sqlTransaction) ? 
-                        defaultSqlCopy : 
-                        new SqlBulkCopy(sqlTransaction.Connection, SqlBulkCopyOptions.Default, sqlTransaction);
-                }
+
+        private SqlBulkCopy GetSqlBulkCopy()
+        {
+            var defaultSqlCopy = new SqlBulkCopy(ConnectionString);
+
+            if (!_openedTransaction) return defaultSqlCopy;
+
+            return !(_db.Database.CurrentTransaction.GetDbTransaction() is SqlTransaction sqlTransaction) ?
+                defaultSqlCopy :
+                new SqlBulkCopy(sqlTransaction.Connection, SqlBulkCopyOptions.Default, sqlTransaction);
+        }
     }
 }
