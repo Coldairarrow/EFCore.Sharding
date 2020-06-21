@@ -11,9 +11,8 @@ using System.Threading.Tasks;
 namespace EFCore.Sharding
 {
     /// <summary>
-    /// 业务数据库类,全局控制业务相关操作
+    /// 软删除访问接口
     /// 软删除:查询:获取Deleted=false,删除:更新Deleted=true
-    /// 其它:按照具体业务修改
     /// </summary>
     internal class LogicDeleteDbAccessor : IDbAccessor
     {
