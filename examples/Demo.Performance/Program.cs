@@ -1,7 +1,6 @@
-﻿using Demo.Common;
-using EFCore.Sharding;
+﻿using EFCore.Sharding;
+using EFCore.Sharding.Tests;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -14,18 +13,15 @@ namespace Demo.Performance
             ShardingConfig.Init(config =>
             {
                 config.AddAbsDb(DatabaseType.SqlServer)
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.ConString1)
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.CONSTRING1)
                     .AddPhysicDbGroup()
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
                     .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });
 
             DateTime time1 = DateTime.Now;
             DateTime time2 = DateTime.Now;
 
-            var db = DbFactory.GetRepository(Config.ConString1, DatabaseType.SqlServer);
+            var db = DbFactory.GetRepository(Config.CONSTRING1, DatabaseType.SqlServer);
             Stopwatch watch = new Stopwatch();
 
             var q = db.GetIQueryable<Base_UnitTest>()

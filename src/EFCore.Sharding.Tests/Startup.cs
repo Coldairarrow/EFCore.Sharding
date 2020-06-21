@@ -7,8 +7,6 @@ namespace EFCore.Sharding.Tests
     [TestClass]
     public class Startup
     {
-        protected const string CONNECTION_STRING = "DataSource=db.db";
-
         /// <summary>
         /// 所有单元测试开始前
         /// </summary>
@@ -19,14 +17,11 @@ namespace EFCore.Sharding.Tests
             ServiceCollection services = new ServiceCollection();
             services.UseEFCoreSharding(config =>
             {
-                config.UseDatabase(CONNECTION_STRING, DatabaseType.SQLite);
-                config.UseDatabase<ICustomRepository>(CONNECTION_STRING, DatabaseType.SQLite);
+                config.UseDatabase(Config.SQLITE1, DatabaseType.SQLite);
+                config.UseDatabase<ICustomRepository>(Config.SQLITE1, DatabaseType.SQLite);
                 config.AddAbsDb(DatabaseType.SQLite)
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, CONNECTION_STRING)
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.SQLITE1)
                     .AddPhysicDbGroup()
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
                     .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });
 

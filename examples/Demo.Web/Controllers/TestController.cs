@@ -1,6 +1,5 @@
-﻿using Coldairarrow.Util;
-using Demo.Common;
-using EFCore.Sharding;
+﻿using EFCore.Sharding;
+using EFCore.Sharding.Tests;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -21,12 +20,12 @@ namespace Demo.Web.Controllers
         [HttpGet]
         public async Task<string> Get()
         {
-            List<Base_UnitTest_LongKey> insertList = new List<Base_UnitTest_LongKey>();
+            List<Base_UnitTest> insertList = new List<Base_UnitTest>();
             for (int i = 0; i < 100; i++)
             {
-                insertList.Add(new Base_UnitTest_LongKey
+                insertList.Add(new Base_UnitTest
                 {
-                    Id = IdHelper.GetLongId(),
+                    Id = Guid.NewGuid().ToString(),
                     Age = i,
                     CreateTime = DateTime.Now,
                     UserName = Guid.NewGuid().ToString()

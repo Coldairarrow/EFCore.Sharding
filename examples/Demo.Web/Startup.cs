@@ -1,5 +1,5 @@
-using Demo.Common;
 using EFCore.Sharding;
+using EFCore.Sharding.Tests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -20,20 +20,12 @@ namespace Demo.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            string conString = "DataSource=db.db";
             services.UseEFCoreSharding(config =>
             {
                 config.AddAbsDb(DatabaseType.SQLite)
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, conString)
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.SQLITE1)
                     .AddPhysicDbGroup()
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
-                    .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3)
-                    .AddPhysicTable<Base_UnitTest_LongKey>("Base_UnitTest_LongKey_0")
-                    .AddPhysicTable<Base_UnitTest_LongKey>("Base_UnitTest_LongKey_1")
-                    .AddPhysicTable<Base_UnitTest_LongKey>("Base_UnitTest_LongKey_2")
-                    .SetHashModShardingRule<Base_UnitTest_LongKey>(nameof(Base_UnitTest_LongKey.Id), 3);
+                    .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });
             services.AddControllers();
         }

@@ -94,15 +94,20 @@ namespace EFCore.Sharding
 
         /// <summary>
         /// 设置分表规则(哈希取模)
+        /// 注:默认自动创建分表(若分表不存在)
         /// </summary>
         /// <typeparam name="TEntity">对应抽象表类型</typeparam>
         /// <param name="shardingField">分表字段</param>
         /// <param name="mod">取模</param>
+        /// <param name="createTable">是否自动建表,默认true</param>
+        /// <param name="groupName">数据库组名</param>
         /// <param name="absDbName">抽象数据库名</param>
         /// <returns></returns>
         IConfigInit SetHashModShardingRule<TEntity>(
             string shardingField,
             int mod,
+            bool createTable = true,
+            string groupName = "BaseDbGroup",
             string absDbName = ShardingConfig.DefaultAbsDbName);
 
         /// <summary>

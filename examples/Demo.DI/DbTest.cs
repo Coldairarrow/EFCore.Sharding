@@ -1,4 +1,4 @@
-﻿using Demo.Common;
+﻿using EFCore.Sharding.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

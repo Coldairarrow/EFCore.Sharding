@@ -1,5 +1,5 @@
-﻿using Demo.Common;
-using EFCore.Sharding;
+﻿using EFCore.Sharding;
+using EFCore.Sharding.Tests;
 using System;
 using System.Threading;
 
@@ -17,7 +17,7 @@ namespace Demo.AutoExpandByDate
             {
                 config.AddAbsDb(DatabaseType.SqlServer)//添加抽象数据库
                     .AddPhysicDbGroup()//添加物理数据库组
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.ConString1)//添加物理数据库1
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.CONSTRING1)//添加物理数据库1
                     .SetDateShardingRule<Base_UnitTest>(nameof(Base_UnitTest.CreateTime))//设置分表规则
                     .AutoExpandByDate<Base_UnitTest>(//设置为按时间自动分表
                         ExpandByDateMode.PerMinute,
@@ -50,8 +50,6 @@ namespace Demo.AutoExpandByDate
 
                 Thread.Sleep(50);
             }
-
-            Console.ReadLine();
         }
     }
 }

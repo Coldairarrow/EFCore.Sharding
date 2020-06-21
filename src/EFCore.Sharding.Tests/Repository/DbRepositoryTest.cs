@@ -638,8 +638,8 @@ namespace EFCore.Sharding.Tests
         [TestMethod]
         public void RunTransaction_isolationLevel()
         {
-            var db1 = DbFactory.GetRepository("DataSource=db.db", DatabaseType.SQLite);
-            var db2 = DbFactory.GetRepository("DataSource=db.db", DatabaseType.SQLite);
+            var db1 = DbFactory.GetRepository(Config.SQLITE1, DatabaseType.SQLite);
+            var db2 = DbFactory.GetRepository(Config.SQLITE1, DatabaseType.SQLite);
             db1.Insert(_newData);
 
             var updateData = _newData.DeepClone();
@@ -668,8 +668,8 @@ namespace EFCore.Sharding.Tests
         public void DistributedTransaction()
         {
             //失败事务
-            IRepository _db1 = DbFactory.GetRepository("DataSource=db.db", DatabaseType.SQLite);
-            IRepository _db2 = DbFactory.GetRepository("DataSource=db2.db", DatabaseType.SQLite);
+            IRepository _db1 = DbFactory.GetRepository(Config.SQLITE1, DatabaseType.SQLite);
+            IRepository _db2 = DbFactory.GetRepository(Config.SQLITE2, DatabaseType.SQLite);
             _db1.DeleteAll<Base_UnitTest>();
             _db2.DeleteAll<Base_UnitTest>();
             Base_UnitTest data1 = new Base_UnitTest
@@ -697,7 +697,7 @@ namespace EFCore.Sharding.Tests
                 transaction.AddRepository(_db1, _db2);
                 var succcess = transaction.RunTransaction(() =>
                     {
-                        _db1.ExecuteSql("insert into Base_UnitTest(Id) values('10') ");
+                        _db1.ExecuteSql("insert into Base_UnitTest(Id,CreateTime) values('10',@CreateTime) ", ("@CreateTime", DateTime.Now));
                         _db1.Insert(data1);
                         _db1.Insert(data2);
                         _db2.Insert(data1);
@@ -717,7 +717,7 @@ namespace EFCore.Sharding.Tests
                 var succcess = transaction
                     .RunTransaction(() =>
                     {
-                        _db1.ExecuteSql("insert into Base_UnitTest(Id) values('10') ");
+                        _db1.ExecuteSql("insert into Base_UnitTest(Id,CreateTime) values('10',@CreateTime) ", ("@CreateTime", DateTime.Now));
                         _db1.Insert(data1);
                         _db1.Insert(data3);
                         _db2.Insert(data1);

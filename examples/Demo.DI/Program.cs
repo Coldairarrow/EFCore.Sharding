@@ -1,4 +1,5 @@
 ﻿using EFCore.Sharding;
+using EFCore.Sharding.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -8,8 +9,6 @@ namespace Demo.DI
     {
         static void Main(string[] args)
         {
-            string conString = "DataSource=db.db";
-
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(config =>
                 {
@@ -20,9 +19,9 @@ namespace Demo.DI
                     services.AddHostedService<DbTest>();
                     services.UseEFCoreSharding(config =>
                     {
-                        config.UseDatabase(conString, DatabaseType.SQLite);
+                        config.UseDatabase(Config.SQLITE1, DatabaseType.SQLite);
                         //使用多个数据库
-                        config.UseDatabase<IMyRepository>(conString, DatabaseType.SQLite);
+                        config.UseDatabase<IMyRepository>(Config.SQLITE1, DatabaseType.SQLite);
                     });
                 })
                 .Build()

@@ -166,7 +166,12 @@ namespace EFCore.Sharding
             return this;
         }
 
-        public IConfigInit SetHashModShardingRule<TEntity>(string shardingField, int mod, string absDbName = "BaseDb")
+        public IConfigInit SetHashModShardingRule<TEntity>(
+            string shardingField,
+            int mod,
+            bool createTable = true,
+            string groupName = "BaseDbGroup",
+            string absDbName = "BaseDb")
         {
             string absTable = AnnotationHelper.GetDbTableName(typeof(TEntity));
             CheckRuleExists<TEntity>(absDbName);
@@ -198,6 +203,23 @@ namespace EFCore.Sharding
                 }
             });
 
+            //建表
+            var groupDbs = GetGroupDbs(groupName);
+            if (createTable)
+            {
+                for (int i = 0; i < mod; i++)
+                {
+                    string tableName = $"{absTable}_{i}";
+                    AddPhysicTable<TEntity>(tableName, groupName);
+
+                    groupDbs.ForEach(aDb =>
+                    {
+                        var entityType = ShardingHelper.MapTable(typeof(TEntity), tableName);
+                        DbFactory.CreateTable(aDb.ConString, aDb.DbType, entityType);
+                    });
+                }
+            }
+
             return this;
         }
 
@@ -205,6 +227,11 @@ namespace EFCore.Sharding
         {
             string absTable = AnnotationHelper.GetDbTableName(typeof(TEntity));
             CheckRuleExists<TEntity>(absDbName);
+
+            if (typeof(TEntity).GetProperty(shardingField)?.PropertyType != typeof(DateTime))
+            {
+                throw new Exception($"分表字段:{shardingField}类型必须为DateTime");
+            }
 
             _shardingRules.Add(new ShardingRule
             {
@@ -293,16 +320,6 @@ namespace EFCore.Sharding
                 return $"{absTableName}_{dateTime.ToString(GetDateFormat(expandByDateMode))}";
             }
 
-            List<(string ConString, DatabaseType DbType)> GetGroupDbs(string _groupName)
-            {
-                var q = from a in _physicDbs
-                        join b in _physicDbGroups on a.GroupName equals b.GroupName
-                        join c in _absDbs on b.AbsDbName equals c.Name
-                        where b.GroupName == _groupName
-                        select (a.ConString, c.DbType);
-
-                return q.ToList();
-            }
 
             string GetTheGroup(DateTime time)
             {
@@ -388,6 +405,16 @@ namespace EFCore.Sharding
             string absTable = AnnotationHelper.GetDbTableName(typeof(TEntity));
             if (_shardingRules.Any(x => x.AbsDb == absDb && x.AbsTable == absTable))
                 throw new Exception($"{absTable}已存在分表规则!");
+        }
+        private List<(string ConString, DatabaseType DbType)> GetGroupDbs(string groupName)
+        {
+            var q = from a in _physicDbs
+                    join b in _physicDbGroups on a.GroupName equals b.GroupName
+                    join c in _absDbs on b.AbsDbName equals c.Name
+                    where b.GroupName == groupName
+                    select (a.ConString, c.DbType);
+
+            return q.ToList();
         }
 
         #endregion
