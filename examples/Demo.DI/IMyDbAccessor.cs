@@ -2,7 +2,7 @@
 
 namespace Demo.DI
 {
-    public interface IMyRepository : IRepository
+    public interface IMyDbAccessor : IDbAccessor
     {
 
     }

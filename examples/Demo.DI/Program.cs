@@ -21,7 +21,7 @@ namespace Demo.DI
                     {
                         config.UseDatabase(Config.SQLITE1, DatabaseType.SQLite);
                         //使用多个数据库
-                        config.UseDatabase<IMyRepository>(Config.SQLITE1, DatabaseType.SQLite);
+                        config.UseDatabase<IMyDbAccessor>(Config.SQLITE1, DatabaseType.SQLite);
                     });
                 })
                 .Build()

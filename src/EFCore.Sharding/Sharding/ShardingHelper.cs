@@ -11,12 +11,6 @@ namespace EFCore.Sharding
 {
     internal static class ShardingHelper
     {
-        /// <summary>
-        /// 映射物理表
-        /// </summary>
-        /// <param name="absTable">抽象表类型</param>
-        /// <param name="targetTableName">目标物理表名</param>
-        /// <returns></returns>
         public static Type MapTable(Type absTable, string targetTableName)
         {
             var config = TypeBuilderHelper.GetConfig(absTable);
@@ -36,42 +30,68 @@ namespace EFCore.Sharding
             return TypeBuilderHelper.BuildType(config);
         }
 
-        /// <summary>
-        /// 通过时间筛选分表
-        /// </summary>
-        /// <param name="queryable">查询源</param>
-        /// <param name="tables">所有分表名</param>
-        /// <param name="absTable">抽象表名</param>
-        /// <param name="shardingField">分表字段</param>
-        /// <returns></returns>
-        public static List<string> FindTablesByTime(IQueryable queryable, List<string> tables, string absTable, string shardingField)
+        public static List<string> FilterTable(IQueryable queryable, List<string> tables, ShardingRule rule)
         {
-            var visitor = new FindTablesByTimeVisitor(tables, absTable, shardingField, queryable.ElementType);
+            FilterTableVisitor visitor = rule.ShardingType switch
+            {
+                ShardingType.HashMod => new FilterTableByHashModVisitor(tables, rule),
+                ShardingType.Date => new FilterTableByDateVisitor(tables, rule),
+                _ => throw new Exception("ShardingType无效")
+            };
+
             visitor.Visit(queryable.Expression);
 
             return visitor.GetResTables();
         }
 
-        class FindTablesByTimeVisitor : ExpressionVisitor
+        private abstract class FilterTableVisitor : ExpressionVisitor
         {
-            private readonly List<string> _allTables;
-            private readonly string _absTable;
-            private Expression<Func<int, bool>> _where = x => true;
-            private readonly string _shardingField;
-            private readonly Type _absTableType;
-            public FindTablesByTimeVisitor(List<string> allTables, string absTable, string shardingField, Type absTableType)
+            protected readonly List<string> _allTables;
+            protected readonly ShardingRule _rule;
+            public FilterTableVisitor(List<string> allTables, ShardingRule rule)
             {
                 _allTables = allTables;
-                _absTable = absTable;
-                _shardingField = shardingField;
-                _absTableType = absTableType;
+                _rule = rule;
             }
-
-            public List<string> GetResTables()
+            protected bool IsParamter(Expression expression)
+            {
+                return expression is MemberExpression member
+                    && member.Expression.Type == _rule.AbsTableType
+                    && member.Member.Name == _rule.ShardingField;
+            }
+            protected bool IsConstant(Expression expression)
+            {
+                return expression is ConstantExpression
+                    || (expression is MemberExpression member && member.Expression is ConstantExpression);
+            }
+            protected object GetFieldValue(Expression expression)
+            {
+                if (expression is ConstantExpression constant1)
+                {
+                    return constant1.Value;
+                }
+                else if (expression is MemberExpression member && member.Expression is ConstantExpression constant2)
+                {
+                    return Dynamic.InvokeGet(constant2.Value, member.Member.Name);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            public abstract List<string> GetResTables();
+        }
+        private class FilterTableByDateVisitor : FilterTableVisitor
+        {
+            private Expression<Func<int, bool>> _where = x => true;
+            public FilterTableByDateVisitor(List<string> allTables, ShardingRule rule)
+                : base(allTables, rule)
+            {
+            }
+            public override List<string> GetResTables()
             {
                 return _allTables.Where(x => _where.Compile()(_allTables.IndexOf(x))).ToList();
             }
-
             protected override Expression VisitMethodCall(MethodCallExpression node)
             {
                 if (node.Method.Name == "Where"
@@ -87,7 +107,6 @@ namespace EFCore.Sharding
 
                 return base.VisitMethodCall(node);
             }
-
             private Expression<Func<int, bool>> GetWhere(BinaryExpression binaryExpression)
             {
                 Expression<Func<int, bool>> left = x => true;
@@ -117,12 +136,12 @@ namespace EFCore.Sharding
                     if (IsParamter(binaryExpression.Left) && IsConstant(binaryExpression.Right))
                     {
                         paramterAtLeft = true;
-                        value = GetTime(binaryExpression.Right);
+                        value = (DateTime?)GetFieldValue(binaryExpression.Right);
                     }
                     else if (IsConstant(binaryExpression.Left) && IsParamter(binaryExpression.Right))
                     {
                         paramterAtLeft = false;
-                        value = GetTime(binaryExpression.Left);
+                        value = (DateTime?)GetFieldValue(binaryExpression.Left);
                     }
                     else
                         return x => true;
@@ -141,7 +160,7 @@ namespace EFCore.Sharding
                     if (op == null || value == null)
                         return x => true;
 
-                    string tableName = $"{_absTable}_{value.Value:yyyyMMddHHmmss}";
+                    string tableName = $"{_rule.AbsTable}_{value.Value:yyyyMMddHHmmss}";
                     var newTables = _allTables.Concat(new string[] { tableName }).OrderBy(x => x).ToList();
                     int index = newTables.IndexOf(tableName);
 
@@ -159,35 +178,83 @@ namespace EFCore.Sharding
 
                     return newWhere;
                 }
+            }
+        }
 
-                bool IsParamter(Expression expression)
+        private class FilterTableByHashModVisitor : FilterTableVisitor
+        {
+            private Expression<Func<string, bool>> _where = x => true;
+            public FilterTableByHashModVisitor(List<string> allTables, ShardingRule rule)
+                : base(allTables, rule)
+            {
+            }
+            public override List<string> GetResTables()
+            {
+                return _allTables.Where(_where.Compile()).ToList();
+            }
+            protected override Expression VisitMethodCall(MethodCallExpression node)
+            {
+                if (node.Method.Name == "Where"
+                    && node.Arguments[1] is UnaryExpression unaryExpression
+                    && unaryExpression.Operand is LambdaExpression lambdaExpression
+                    && lambdaExpression.Body is BinaryExpression binaryExpression
+                    )
                 {
-                    return expression is MemberExpression member
-                        && member.Expression.Type == _absTableType
-                        && member.Member.Name == _shardingField;
+                    var newWhere = GetWhere(binaryExpression);
+
+                    _where = _where.And(newWhere);
                 }
 
-                bool IsConstant(Expression expression)
-                {
-                    return expression is ConstantExpression
-                        || (expression is MemberExpression member && member.Expression is ConstantExpression);
-                }
+                return base.VisitMethodCall(node);
+            }
+            private Expression<Func<string, bool>> GetWhere(BinaryExpression binaryExpression)
+            {
+                Expression<Func<string, bool>> left = x => true;
+                Expression<Func<string, bool>> right = x => true;
 
-                DateTime? GetTime(Expression expression)
+                //递归获取
+                if (binaryExpression.Left is BinaryExpression)
+                    left = GetWhere(binaryExpression.Left as BinaryExpression);
+                if (binaryExpression.Right is BinaryExpression)
+                    right = GetWhere(binaryExpression.Right as BinaryExpression);
+
+                //组合
+                if (binaryExpression.NodeType == ExpressionType.AndAlso)
                 {
-                    if (expression is ConstantExpression constant1)
+                    return left.And(right);
+                }
+                else if (binaryExpression.NodeType == ExpressionType.OrElse)
+                {
+                    return left.Or(right);
+                }
+                //单个
+                else if (binaryExpression.NodeType == ExpressionType.Equal)
+                {
+                    object value = null;
+
+                    if (IsParamter(binaryExpression.Left) && IsConstant(binaryExpression.Right))
                     {
-                        return (DateTime?)constant1.Value;
+                        value = GetFieldValue(binaryExpression.Right);
                     }
-                    else if (expression is MemberExpression member && member.Expression is ConstantExpression constant2)
+                    else if (IsConstant(binaryExpression.Left) && IsParamter(binaryExpression.Right))
                     {
-                        return (DateTime?)Dynamic.InvokeGet(constant2.Value, member.Member.Name);
+                        value = GetFieldValue(binaryExpression.Left);
                     }
                     else
-                    {
-                        return null;
-                    }
+                        return x => true;
+
+                    if (value == null)
+                        return x => true;
+
+                    string tableName = _rule.GetTableNameByField(value);
+
+                    var newWhere = DynamicExpressionParser.ParseLambda<string, bool>(
+                        ParsingConfig.Default, false, $@"it == @0", tableName);
+
+                    return newWhere;
                 }
+                else
+                    return x => true;
             }
         }
     }

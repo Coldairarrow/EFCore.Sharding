@@ -26,7 +26,7 @@ namespace EFCore.Sharding
             return this;
         }
 
-        public IConfigInit UseDatabase<TRepository>(string conString, DatabaseType dbType) where TRepository : class, IRepository
+        public IConfigInit UseDatabase<TDbAccessor>(string conString, DatabaseType dbType) where TDbAccessor : class, IDbAccessor
         {
             if (ShardingConfig.ServiceDescriptors != null)
             {
@@ -34,14 +34,14 @@ namespace EFCore.Sharding
                 {
                     ILoggerFactory loggerFactory = _.GetService<ILoggerFactory>();
 
-                    IRepository repository = DbFactory.GetRepository(conString, dbType, loggerFactory);
+                    IDbAccessor repository = DbFactory.GetDbAccessor(conString, dbType, loggerFactory);
                     if (ShardingConfig.LogicDelete)
-                        repository = new LogicDeleteRepository(repository);
+                        repository = new LogicDeleteDbAccessor(repository);
 
-                    if (typeof(TRepository) == typeof(IRepository))
-                        return (TRepository)repository;
+                    if (typeof(TDbAccessor) == typeof(IDbAccessor))
+                        return (TDbAccessor)repository;
                     else
-                        return repository.ActLike<TRepository>();
+                        return repository.ActLike<TDbAccessor>();
                 });
             }
 
@@ -50,7 +50,7 @@ namespace EFCore.Sharding
 
         public IConfigInit UseDatabase(string conString, DatabaseType dbType)
         {
-            return UseDatabase<IRepository>(conString, dbType);
+            return UseDatabase<IDbAccessor>(conString, dbType);
         }
 
         public IConfigInit UseLogicDelete(string keyField = "Id", string deletedField = "Deleted")
@@ -76,16 +76,11 @@ namespace EFCore.Sharding
             var rule = GetShardingRule(absDbName, absTableName);
             var allTables = GetTargetTables(absTableName, ReadWriteType.Read, absDbName);
             var allTableNames = allTables.Select(x => x.tableName).ToList();
-            if (rule.ShardingType == ShardingType.Date)
-            {
-                var findTables = ShardingHelper.FindTablesByTime(source, allTableNames, absTableName, rule.ShardingField);
-                allTables = allTables.Where(x => findTables.Contains(x.tableName)).ToList();
-
+            var findTables = ShardingHelper.FilterTable(source, allTableNames, rule);
+            allTables = allTables.Where(x => findTables.Contains(x.tableName)).ToList();
 #if DEBUG
-                Console.WriteLine($"查询分表:{string.Join(",", findTables)}");
+            Console.WriteLine($"查询分表:{string.Join(",", findTables)}");
 #endif
-            }
-
             return allTables;
         }
 
@@ -173,35 +168,17 @@ namespace EFCore.Sharding
             string groupName = "BaseDbGroup",
             string absDbName = "BaseDb")
         {
-            string absTable = AnnotationHelper.GetDbTableName(typeof(TEntity));
-            CheckRuleExists<TEntity>(absDbName);
+            CheckRule<TEntity>(absDbName, ShardingType.HashMod, shardingField);
 
-            _shardingRules.Add(new ShardingRule
+            ShardingRule rule = new ShardingRule
             {
                 AbsDb = absDbName,
-                AbsTable = absTable,
+                AbsTableType = typeof(TEntity),
                 ShardingField = shardingField,
-                ShardingType = ShardingType.HashMod,
-                FindTable = obj =>
-                {
-                    var value = obj.GetPropertyValue(shardingField);
-                    long suffix;
-                    if (value.GetType() == typeof(int) || value.GetType() == typeof(long))
-                    {
-                        long longValue = (long)value;
-                        if (longValue < 0)
-                            throw new Exception($"字段{shardingField}不能小于0");
-
-                        suffix = longValue % mod;
-                    }
-                    else
-                    {
-                        suffix = Math.Abs(value.GetHashCode()) % mod;
-                    }
-
-                    return $"{absTable}_{suffix}";
-                }
-            });
+                Mod = mod,
+                ShardingType = ShardingType.HashMod
+            };
+            _shardingRules.Add(rule);
 
             //建表
             var groupDbs = GetGroupDbs(groupName);
@@ -209,7 +186,7 @@ namespace EFCore.Sharding
             {
                 for (int i = 0; i < mod; i++)
                 {
-                    string tableName = $"{absTable}_{i}";
+                    string tableName = $"{rule.AbsTable}_{i}";
                     AddPhysicTable<TEntity>(tableName, groupName);
 
                     groupDbs.ForEach(aDb =>
@@ -225,18 +202,12 @@ namespace EFCore.Sharding
 
         public IConfigInit SetDateShardingRule<TEntity>(string shardingField, string absDbName = "BaseDb")
         {
-            string absTable = AnnotationHelper.GetDbTableName(typeof(TEntity));
-            CheckRuleExists<TEntity>(absDbName);
-
-            if (typeof(TEntity).GetProperty(shardingField)?.PropertyType != typeof(DateTime))
-            {
-                throw new Exception($"分表字段:{shardingField}类型必须为DateTime");
-            }
+            CheckRule<TEntity>(absDbName, ShardingType.Date, shardingField);
 
             _shardingRules.Add(new ShardingRule
             {
                 AbsDb = absDbName,
-                AbsTable = absTable,
+                AbsTableType = typeof(TEntity),
                 ShardingField = shardingField,
                 ShardingType = ShardingType.Date
             });
@@ -260,7 +231,6 @@ namespace EFCore.Sharding
 
             //分表规则赋值
             shardingRule.ExpandByDateMode = expandByDateMode;
-            shardingRule.FindTable = obj => BuildTableName((DateTime)obj.GetPropertyValue(shardingRule.ShardingField));
 
             (string conExpression, TimeSpan leadTime) paramter =
                expandByDateMode switch
@@ -276,7 +246,7 @@ namespace EFCore.Sharding
             JobHelper.SetCronJob(() =>
             {
                 DateTime trueDate = DateTime.Now + paramter.leadTime;
-                string tableName = BuildTableName(trueDate);
+                string tableName = shardingRule.GetTableNameByField(trueDate);
                 string groupName = GetTheGroup(trueDate);
                 //自动创建数据库表
                 GetGroupDbs(groupName).ForEach(aDb =>
@@ -299,7 +269,7 @@ namespace EFCore.Sharding
 
             while (theTime <= endTime)
             {
-                string tableName = BuildTableName(theTime);
+                string tableName = shardingRule.GetTableNameByField(theTime);
                 string groupName = GetTheGroup(theTime);
                 AddPhysicTable<TEntity>(tableName, groupName);
                 //建表
@@ -315,12 +285,6 @@ namespace EFCore.Sharding
 
             return this;
 
-            string BuildTableName(DateTime dateTime)
-            {
-                return $"{absTableName}_{dateTime.ToString(GetDateFormat(expandByDateMode))}";
-            }
-
-
             string GetTheGroup(DateTime time)
             {
                 return ranges.Where(x => time >= x.startTime && time < x.endTime).FirstOrDefault().groupName;
@@ -331,29 +295,18 @@ namespace EFCore.Sharding
 
         #region 私有成员
 
-        private ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
-        private SynchronizedCollection<AbsDb> _absDbs { get; }
+        private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+        private readonly SynchronizedCollection<AbsDb> _absDbs
             = new SynchronizedCollection<AbsDb>();
-        private SynchronizedCollection<PhysicDbGroup> _physicDbGroups { get; }
+        private readonly SynchronizedCollection<PhysicDbGroup> _physicDbGroups
             = new SynchronizedCollection<PhysicDbGroup>();
-        private SynchronizedCollection<PhysicDb> _physicDbs { get; }
+        private readonly SynchronizedCollection<PhysicDb> _physicDbs
             = new SynchronizedCollection<PhysicDb>();
-        private SynchronizedCollection<PhysicTable> _physicTables { get; }
+        private readonly SynchronizedCollection<PhysicTable> _physicTables
             = new SynchronizedCollection<PhysicTable>();
-        private SynchronizedCollection<ShardingRule> _shardingRules
+        private readonly SynchronizedCollection<ShardingRule> _shardingRules
             = new SynchronizedCollection<ShardingRule>();
-        private string GetDateFormat(ExpandByDateMode expandByDateMode)
-        {
-            return expandByDateMode switch
-            {
-                ExpandByDateMode.PerMinute => "yyyyMMddHHmm",
-                ExpandByDateMode.PerHour => "yyyyMMddHH",
-                ExpandByDateMode.PerDay => "yyyyMMdd",
-                ExpandByDateMode.PerMonth => "yyyyMM",
-                ExpandByDateMode.PerYear => "yyyy",
-                _ => throw new Exception("ExpandByDateMode无效")
-            };
-        }
+
         private List<(string tableName, string conString, DatabaseType dbType)>
             GetTargetTables(string absTableName, ReadWriteType opType, string absDbName, object obj = null)
         {
@@ -379,7 +332,7 @@ namespace EFCore.Sharding
             //若为写操作则只获取特定表
             if (!obj.IsNullOrEmpty())
             {
-                string tableName = rule.FindTable(obj);
+                string tableName = rule.GetTableNameByEntity(obj);
                 groupList = groupList.Where(x => x.PhysicTableName == tableName).ToList();
             }
 
@@ -400,11 +353,25 @@ namespace EFCore.Sharding
         {
             return _shardingRules.Where(x => x.AbsDb == absDb && x.AbsTable == absTable).FirstOrDefault();
         }
-        private void CheckRuleExists<TEntity>(string absDb)
+        private void CheckRule<TEntity>(string absDb, ShardingType shardingType, string shardingField)
         {
             string absTable = AnnotationHelper.GetDbTableName(typeof(TEntity));
             if (_shardingRules.Any(x => x.AbsDb == absDb && x.AbsTable == absTable))
                 throw new Exception($"{absTable}已存在分表规则!");
+
+            Type fieldType = typeof(TEntity).GetProperty(shardingField)?.PropertyType;
+            if (fieldType == null)
+                throw new Exception($"不存在分表字段:{shardingField}");
+            if (fieldType.IsNullable())
+                throw new Exception($"分表字段:{shardingField}不能为可空类型");
+
+            if (shardingType == ShardingType.Date)
+            {
+                if (fieldType != typeof(DateTime))
+                {
+                    throw new Exception($"分表字段:{shardingField}类型必须为DateTime");
+                }
+            }
         }
         private List<(string ConString, DatabaseType DbType)> GetGroupDbs(string groupName)
         {

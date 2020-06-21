@@ -34,15 +34,15 @@ namespace EFCore.Sharding
         /// <summary>
         /// 使用数据库
         /// </summary>
-        /// <typeparam name="TRepository">自定义的IRepository</typeparam>
+        /// <typeparam name="TDbAccessor">自定义的IDbAccessor</typeparam>
         /// <param name="conString">连接字符串</param>
         /// <param name="dbType">数据库类型</param>
         /// <returns></returns>
-        IConfigInit UseDatabase<TRepository>(string conString, DatabaseType dbType) where TRepository : class, IRepository;
+        IConfigInit UseDatabase<TDbAccessor>(string conString, DatabaseType dbType) where TDbAccessor : class, IDbAccessor;
 
         /// <summary>
         /// 使用默认数据库
-        /// 注入IRepository
+        /// 注入IDbAccessor
         /// </summary>
         /// <param name="conString">连接字符串</param>
         /// <param name="dbType">数据库类型</param>

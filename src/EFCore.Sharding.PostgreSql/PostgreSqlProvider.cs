@@ -11,7 +11,7 @@ namespace EFCore.Sharding.PostgreSql
 
         public override ModelBuilder GetModelBuilder() => new ModelBuilder(NpgsqlConventionSetBuilder.Build());
 
-        public override IRepository GetRepository(BaseDbContext baseDbContext) => new PostgreSqlRepository(baseDbContext);
+        public override IDbAccessor GetDbAccessor(BaseDbContext baseDbContext) => new PostgreSqlDbAccessor(baseDbContext);
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {

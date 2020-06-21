@@ -27,8 +27,8 @@ namespace Demo.DI
                     {
                         using (var scop = _serviceProvider.CreateScope())
                         {
-                            var repository = scop.ServiceProvider.GetService<IMyRepository>();
-                            await repository.InsertAsync(new Base_UnitTest
+                            var db = scop.ServiceProvider.GetService<IMyDbAccessor>();
+                            await db.InsertAsync(new Base_UnitTest
                             {
                                 Id = Guid.NewGuid().ToString(),
                                 Age = 100,

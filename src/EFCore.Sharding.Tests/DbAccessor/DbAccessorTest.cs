@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace EFCore.Sharding.Tests
 {
     [TestClass]
-    public class DbRepositoryTest : BaseTest
+    public class DbAccessorTest : BaseTest
     {
         protected override void Clear()
         {
@@ -19,7 +19,7 @@ namespace EFCore.Sharding.Tests
 
         #region 私有成员
 
-        protected virtual IRepository _db { get; } = ServiceProvider.GetService<IRepository>();
+        protected virtual IDbAccessor _db { get; } = ServiceProvider.GetService<IDbAccessor>();
 
         #endregion
 
@@ -638,8 +638,8 @@ namespace EFCore.Sharding.Tests
         [TestMethod]
         public void RunTransaction_isolationLevel()
         {
-            var db1 = DbFactory.GetRepository(Config.SQLITE1, DatabaseType.SQLite);
-            var db2 = DbFactory.GetRepository(Config.SQLITE1, DatabaseType.SQLite);
+            var db1 = DbFactory.GetDbAccessor(Config.SQLITE1, DatabaseType.SQLite);
+            var db2 = DbFactory.GetDbAccessor(Config.SQLITE1, DatabaseType.SQLite);
             db1.Insert(_newData);
 
             var updateData = _newData.DeepClone();
@@ -668,8 +668,8 @@ namespace EFCore.Sharding.Tests
         public void DistributedTransaction()
         {
             //失败事务
-            IRepository _db1 = DbFactory.GetRepository(Config.SQLITE1, DatabaseType.SQLite);
-            IRepository _db2 = DbFactory.GetRepository(Config.SQLITE2, DatabaseType.SQLite);
+            IDbAccessor _db1 = DbFactory.GetDbAccessor(Config.SQLITE1, DatabaseType.SQLite);
+            IDbAccessor _db2 = DbFactory.GetDbAccessor(Config.SQLITE2, DatabaseType.SQLite);
             _db1.DeleteAll<Base_UnitTest>();
             _db2.DeleteAll<Base_UnitTest>();
             Base_UnitTest data1 = new Base_UnitTest
@@ -694,7 +694,7 @@ namespace EFCore.Sharding.Tests
             new Action(() =>
             {
                 var transaction = DistributedTransactionFactory.GetDistributedTransaction();
-                transaction.AddRepository(_db1, _db2);
+                transaction.AddDbAccessor(_db1, _db2);
                 var succcess = transaction.RunTransaction(() =>
                     {
                         _db1.ExecuteSql("insert into Base_UnitTest(Id,CreateTime) values('10',@CreateTime) ", ("@CreateTime", DateTime.Now));
@@ -712,7 +712,7 @@ namespace EFCore.Sharding.Tests
             new Action(() =>
             {
                 var transaction = DistributedTransactionFactory.GetDistributedTransaction();
-                transaction.AddRepository(_db1, _db2);
+                transaction.AddDbAccessor(_db1, _db2);
 
                 var succcess = transaction
                     .RunTransaction(() =>
@@ -736,8 +736,8 @@ namespace EFCore.Sharding.Tests
         {
             using (var scop = ServiceProvider.CreateScope())
             {
-                scop.ServiceProvider.GetService<IRepository>().Dispose();
-                scop.ServiceProvider.GetService<ICustomRepository>().Dispose();
+                scop.ServiceProvider.GetService<IDbAccessor>().Dispose();
+                scop.ServiceProvider.GetService<ICustomDbAccessor>().Dispose();
             }
         }
     }

@@ -10,7 +10,7 @@ namespace EFCore.Sharding
     /// <summary>
     /// 操作接口
     /// </summary>
-    public interface IRepository : IBaseRepository, ITransaction
+    public interface IDbAccessor : IBaseDbAccessor, ITransaction
     {
         #region 数据库相关
 
@@ -33,9 +33,9 @@ namespace EFCore.Sharding
         DatabaseType DbType { get; }
 
         /// <summary>
-        /// 获取完整Repository,通过此接口可以操作逻辑删除的数据
+        /// 获取完整DbAccessor,通过此接口可以操作逻辑删除的数据
         /// </summary>
-        IRepository FullRepository { get; }
+        IDbAccessor FullDbAccessor { get; }
 
         #endregion
 

@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 namespace EFCore.Sharding.Tests
 {
     [TestClass]
-    public class ShardingRepositoryTest : BaseTest
+    public class ShardingDbAccessorTest : BaseTest
     {
-        private IShardingRepository _db { get => ServiceProvider.GetService<IShardingRepository>(); }
+        private IShardingDbAccessor _db { get => ServiceProvider.GetService<IShardingDbAccessor>(); }
         protected override void Clear()
         {
             _db.DeleteAll<Base_UnitTest>();
@@ -346,8 +346,8 @@ namespace EFCore.Sharding.Tests
         [TestMethod]
         public void RunTransaction_isolationLevel()
         {
-            var db1 = DbFactory.GetShardingRepository();
-            var db2 = DbFactory.GetShardingRepository();
+            var db1 = DbFactory.GetShardingDbAccessor();
+            var db2 = DbFactory.GetShardingDbAccessor();
             db1.Insert(_newData);
 
             var updateData = _newData.DeepClone();

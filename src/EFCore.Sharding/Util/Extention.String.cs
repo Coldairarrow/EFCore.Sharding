@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Data;
-using System.Text;
 
 namespace EFCore.Sharding.Util
 {
@@ -37,16 +36,6 @@ namespace EFCore.Sharding.Util
         public static DataTable ToDataTable(this string jsonStr)
         {
             return jsonStr == null ? null : JsonConvert.DeserializeObject<DataTable>(jsonStr);
-        }
-
-        /// <summary>
-        /// 转为MurmurHash
-        /// </summary>
-        /// <param name="str">字符串</param>
-        /// <returns></returns>
-        public static uint ToMurmurHash(this string str)
-        {
-            return MurmurHash2.Hash(Encoding.UTF8.GetBytes(str));
         }
     }
 }

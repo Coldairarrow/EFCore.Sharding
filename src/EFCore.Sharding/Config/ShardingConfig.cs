@@ -57,7 +57,7 @@ namespace EFCore.Sharding
 
             services.AddScoped(_ =>
             {
-                return DbFactory.GetShardingRepository();
+                return DbFactory.GetShardingDbAccessor();
             });
 
             return services;

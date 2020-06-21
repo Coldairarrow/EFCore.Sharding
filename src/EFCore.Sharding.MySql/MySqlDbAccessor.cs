@@ -10,9 +10,9 @@ using System.Text;
 
 namespace EFCore.Sharding.MySql
 {
-    internal class MySqlRepository : DbRepository, IRepository
+    internal class MySqlDbAccessor : AbstractDbAccessor, IDbAccessor
     {
-        public MySqlRepository(BaseDbContext baseDbContext)
+        public MySqlDbAccessor(BaseDbContext baseDbContext)
             : base(baseDbContext)
         {
         }

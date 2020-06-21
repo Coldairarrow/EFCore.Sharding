@@ -4,8 +4,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace EFCore.Sharding.Tests
 {
     [TestClass]
-    public class CustomRepositoryTest : DbRepositoryTest
+    public class CustomDbAccessorTest : DbAccessorTest
     {
-        protected override IRepository _db => ServiceProvider.GetService<ICustomRepository>();
+        protected override IDbAccessor _db => ServiceProvider.GetService<ICustomDbAccessor>();
     }
 }

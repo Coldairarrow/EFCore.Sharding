@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace EFCore.Sharding.SQLite
 {
-    internal class SQLiteRepository : DbRepository, IRepository
+    internal class SQLiteDbAccessor : AbstractDbAccessor, IDbAccessor
     {
-        public SQLiteRepository(BaseDbContext baseDbContext)
+        public SQLiteDbAccessor(BaseDbContext baseDbContext)
             : base(baseDbContext)
         {
         }

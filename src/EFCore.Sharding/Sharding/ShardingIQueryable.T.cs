@@ -13,7 +13,7 @@ namespace EFCore.Sharding
     {
         #region 构造函数
 
-        public ShardingQueryable(IQueryable<T> source, ShardingRepository repository, string absDbName)
+        public ShardingQueryable(IQueryable<T> source, ShardingDbAccessor repository, string absDbName)
         {
             _source = source;
             _absTableName = AnnotationHelper.GetDbTableName(source.ElementType);
@@ -25,7 +25,7 @@ namespace EFCore.Sharding
 
         #region 私有成员
 
-        ShardingRepository _repository { get; }
+        ShardingDbAccessor _repository { get; }
         private string _absDbName { get; }
         private string _absTableName { get; }
         private IQueryable<T> _source { get; set; }
@@ -39,14 +39,14 @@ namespace EFCore.Sharding
             var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName, _absDbName, _source);
 
             List<Task<TResult>> tasks = new List<Task<TResult>>();
-            SynchronizedCollection<IRepository> dbs = new SynchronizedCollection<IRepository>();
+            SynchronizedCollection<IDbAccessor> dbs = new SynchronizedCollection<IDbAccessor>();
             tasks = tables.Select(aTable =>
             {
-                IRepository db;
+                IDbAccessor db;
                 if (_repository.OpenedTransaction)
-                    db = _repository.GetMapRepository(aTable.conString, aTable.dbType);
+                    db = _repository.GetMapDbAccessor(aTable.conString, aTable.dbType);
                 else
-                    db = DbFactory.GetRepository(aTable.conString, aTable.dbType);
+                    db = DbFactory.GetDbAccessor(aTable.conString, aTable.dbType);
 
                 dbs.Add(db);
                 var targetTable = MapTable(aTable.tableName);
@@ -162,15 +162,15 @@ namespace EFCore.Sharding
 
             //从各个分表获取数据
             var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName, _absDbName, _source);
-            SynchronizedCollection<IRepository> dbs = new SynchronizedCollection<IRepository>();
+            SynchronizedCollection<IDbAccessor> dbs = new SynchronizedCollection<IDbAccessor>();
             List<Task<List<T>>> tasks = tables.Select(aTable =>
             {
                 var targetTable = MapTable(aTable.tableName);
-                IRepository db;
+                IDbAccessor db;
                 if (_repository.OpenedTransaction)
-                    db = _repository.GetMapRepository(aTable.conString, aTable.dbType);
+                    db = _repository.GetMapDbAccessor(aTable.conString, aTable.dbType);
                 else
-                    db = DbFactory.GetRepository(aTable.conString, aTable.dbType);
+                    db = DbFactory.GetDbAccessor(aTable.conString, aTable.dbType);
                 dbs.Add(db);
 
                 var targetIQ = db.GetIQueryable(targetTable);

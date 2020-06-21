@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
-    internal class ShardingRepository : IShardingRepository
+    internal class ShardingDbAccessor : IShardingDbAccessor
     {
         #region 构造函数
 
-        public ShardingRepository(IRepository db, string absDbName)
+        public ShardingDbAccessor(IDbAccessor db, string absDbName)
         {
             _db = db;
             _absDbName = absDbName;
@@ -24,22 +24,22 @@ namespace EFCore.Sharding
         #region 私有成员
 
         private string _absDbName { get; }
-        private IRepository _db { get; }
+        private IDbAccessor _db { get; }
         private Type MapTable(string targetTableName)
         {
             return DbModelFactory.GetEntityType(targetTableName);
         }
-        private List<(string targetTableName, IRepository targetDb)> GetTargetDb(List<(string tableName, string conString, DatabaseType dbType)> configs)
+        private List<(string targetTableName, IDbAccessor targetDb)> GetTargetDb(List<(string tableName, string conString, DatabaseType dbType)> configs)
         {
             var resList = configs
-                .Select(x => (x.tableName, GetMapRepository(x.conString, x.dbType)))
+                .Select(x => (x.tableName, GetMapDbAccessor(x.conString, x.dbType)))
                 .ToList();
 
             return resList;
         }
-        private List<(object targetObj, IRepository targetDb)> GetMapConfigs<T>(List<T> entities)
+        private List<(object targetObj, IDbAccessor targetDb)> GetMapConfigs<T>(List<T> entities)
         {
-            List<(object targetObj, IRepository targetDb)> resList = new List<(object targetObj, IRepository targetDb)>();
+            List<(object targetObj, IDbAccessor targetDb)> resList = new List<(object targetObj, IDbAccessor targetDb)>();
             entities.ForEach(aEntity =>
             {
                 (string tableName, string conString, DatabaseType dbType) = ShardingConfig.ConfigProvider.GetTheWriteTable<T>(aEntity, _absDbName);
@@ -63,7 +63,7 @@ namespace EFCore.Sharding
             {
                 using (var transaction = DistributedTransactionFactory.GetDistributedTransaction())
                 {
-                    transaction.AddRepository(dbs);
+                    transaction.AddDbAccessor(dbs);
 
                     var (Success, ex) = await transaction.RunTransactionAsync(async () =>
                     {
@@ -77,13 +77,13 @@ namespace EFCore.Sharding
             }
             else
             {
-                _transaction.AddRepository(dbs);
+                _transaction.AddDbAccessor(dbs);
                 count = await access();
             }
 
             return count;
         }
-        private async Task<int> WriteTableAsync<T>(List<T> entities, Func<object, IRepository, Task<int>> accessDataAsync)
+        private async Task<int> WriteTableAsync<T>(List<T> entities, Func<object, IDbAccessor, Task<int>> accessDataAsync)
         {
             var configs = ShardingConfig.ConfigProvider.GetAllWriteTables<T>(_absDbName);
             var targetDbs = GetTargetDb(configs);
@@ -97,8 +97,8 @@ namespace EFCore.Sharding
             });
         }
         private DistributedTransaction _transaction { get; set; }
-        private ConcurrentDictionary<string, IRepository> _repositories { get; }
-            = new ConcurrentDictionary<string, IRepository>();
+        private ConcurrentDictionary<string, IDbAccessor> _repositories { get; }
+            = new ConcurrentDictionary<string, IDbAccessor>();
         private void ClearRepositories()
         {
             _repositories.ForEach(x => x.Value.Dispose());
@@ -111,15 +111,15 @@ namespace EFCore.Sharding
 
         public bool OpenedTransaction { get; set; } = false;
 
-        public IRepository GetMapRepository(string conString, DatabaseType dbType)
+        public IDbAccessor GetMapDbAccessor(string conString, DatabaseType dbType)
         {
             var dbId = GetDbId(conString, dbType);
             if (!_repositories.ContainsKey(dbId))
-                _repositories[dbId] = DbFactory.GetRepository(conString, dbType);
+                _repositories[dbId] = DbFactory.GetDbAccessor(conString, dbType);
 
             var db = _repositories[dbId];
             if (OpenedTransaction)
-                _transaction.AddRepository(db);
+                _transaction.AddDbAccessor(db);
 
             return _repositories[dbId];
         }

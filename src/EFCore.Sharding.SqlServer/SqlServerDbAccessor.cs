@@ -9,9 +9,9 @@ using System.Linq;
 
 namespace EFCore.Sharding.SqlServer
 {
-    internal class SqlServerRepository : DbRepository, IRepository
+    internal class SqlServerDbAccessor : AbstractDbAccessor, IDbAccessor
     {
-        public SqlServerRepository(BaseDbContext baseDbContext)
+        public SqlServerDbAccessor(BaseDbContext baseDbContext)
             : base(baseDbContext)
         {
         }

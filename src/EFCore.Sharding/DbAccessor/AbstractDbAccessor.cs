@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
-    internal abstract class DbRepository : IRepository
+    internal abstract class AbstractDbAccessor : IDbAccessor
     {
         #region 构造函数
 
@@ -23,7 +23,7 @@ namespace EFCore.Sharding
         /// 构造函数
         /// </summary>
         /// <param name="baseDbContext">BaseDbContext</param>
-        public DbRepository(BaseDbContext baseDbContext)
+        public AbstractDbAccessor(BaseDbContext baseDbContext)
         {
             _db = baseDbContext;
             _provider = DbFactory.GetProvider(DbType);
@@ -264,7 +264,7 @@ namespace EFCore.Sharding
             _openedTransaction = false;
         }
         public Action<string> HandleSqlLog { set => EFCoreSqlLogeerProvider.HandleSqlLog = value; }
-        public IRepository FullRepository { get; set; }
+        public IDbAccessor FullDbAccessor { get; set; }
 
         #endregion
 

@@ -2,6 +2,6 @@
 {
     public interface IDistributedTransaction : ITransaction
     {
-        void AddRepository(params IRepository[] repositories);
+        void AddDbAccessor(params IDbAccessor[] repositories);
     }
 }

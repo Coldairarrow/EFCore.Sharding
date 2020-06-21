@@ -21,11 +21,11 @@ namespace Demo.Performance
             DateTime time1 = DateTime.Now;
             DateTime time2 = DateTime.Now;
 
-            var db = DbFactory.GetRepository(Config.CONSTRING1, DatabaseType.SqlServer);
+            var db = DbFactory.GetDbAccessor(Config.CONSTRING1, DatabaseType.SqlServer);
             Stopwatch watch = new Stopwatch();
 
             var q = db.GetIQueryable<Base_UnitTest>()
-                .Where(x => x.UserName.Contains("aaa"))
+                .Where(x => x.UserName.Contains("1"))
                 ;
 
             q.ToList();

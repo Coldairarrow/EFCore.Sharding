@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 namespace EFCore.Sharding.PostgreSql
 {
-    internal class PostgreSqlRepository : DbRepository, IRepository
+    internal class PostgreSqlDbAccessor : AbstractDbAccessor, IDbAccessor
     {
-        public PostgreSqlRepository(BaseDbContext baseDbContext)
+        public PostgreSqlDbAccessor(BaseDbContext baseDbContext)
             : base(baseDbContext)
         {
         }

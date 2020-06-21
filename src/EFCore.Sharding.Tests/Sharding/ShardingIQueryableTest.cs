@@ -11,7 +11,7 @@ namespace EFCore.Sharding.Tests
     [TestClass]
     public class ShardingIQueryableTest : BaseTest
     {
-        private IShardingRepository _db { get => ServiceProvider.GetService<IShardingRepository>(); }
+        private IShardingDbAccessor _db { get => ServiceProvider.GetService<IShardingDbAccessor>(); }
         protected override void Clear()
         {
             _db.DeleteAll<Base_UnitTest>();

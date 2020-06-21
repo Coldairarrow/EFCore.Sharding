@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 namespace EFCore.Sharding
 {
     /// <summary>
-    /// 基数据仓储
+    /// 通用基接口
     /// </summary>
-    public interface IBaseRepository : ITransaction
+    public interface IBaseDbAccessor : ITransaction
     {
         #region 增加数据
 

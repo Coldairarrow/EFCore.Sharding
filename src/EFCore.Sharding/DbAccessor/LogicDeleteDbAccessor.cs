@@ -11,25 +11,25 @@ using System.Threading.Tasks;
 namespace EFCore.Sharding
 {
     /// <summary>
-    /// 业务仓储类,全局控制业务相关操作
+    /// 业务数据库类,全局控制业务相关操作
     /// 软删除:查询:获取Deleted=false,删除:更新Deleted=true
     /// 其它:按照具体业务修改
     /// </summary>
-    internal class LogicDeleteRepository : IRepository
+    internal class LogicDeleteDbAccessor : IDbAccessor
     {
-        public LogicDeleteRepository(IRepository db)
+        public LogicDeleteDbAccessor(IDbAccessor db)
         {
-            FullRepository = db;
+            FullDbAccessor = db;
         }
 
         bool NeedLogicDelete(Type entityType)
         {
             return ShardingConfig.LogicDelete && entityType.GetProperties().Any(x => x.Name == ShardingConfig.DeletedField);
         }
-        public Action<string> HandleSqlLog { set => FullRepository.HandleSqlLog = value; }
-        public string ConnectionString => FullRepository.ConnectionString;
-        public DatabaseType DbType => FullRepository.DbType;
-        public IRepository FullRepository { get; }
+        public Action<string> HandleSqlLog { set => FullDbAccessor.HandleSqlLog = value; }
+        public string ConnectionString => FullDbAccessor.ConnectionString;
+        public DatabaseType DbType => FullDbAccessor.DbType;
+        public IDbAccessor FullDbAccessor { get; }
         private T LogicDeleteFilter<T>(T data)
         {
             return LogicDeleteFilter(new List<T> { data }).FirstOrDefault();
@@ -50,7 +50,7 @@ namespace EFCore.Sharding
         }
         public IQueryable GetIQueryable(Type type)
         {
-            var q = FullRepository.GetIQueryable(type);
+            var q = FullDbAccessor.GetIQueryable(type);
             if (NeedLogicDelete(type))
             {
                 q = q.Where($"{ShardingConfig.DeletedField} = @0", false);
@@ -60,7 +60,7 @@ namespace EFCore.Sharding
         }
         public T GetEntity<T>(params object[] keyValue) where T : class, new()
         {
-            var obj = FullRepository.GetEntity<T>(keyValue);
+            var obj = FullDbAccessor.GetEntity<T>(keyValue);
             if (obj == null)
                 return null;
 
@@ -68,7 +68,7 @@ namespace EFCore.Sharding
         }
         public async Task<T> GetEntityAsync<T>(params object[] keyValue) where T : class, new()
         {
-            var obj = await FullRepository.GetEntityAsync<T>(keyValue);
+            var obj = await FullDbAccessor.GetEntityAsync<T>(keyValue);
 
             return LogicDeleteFilter(obj);
         }
@@ -207,14 +207,14 @@ namespace EFCore.Sharding
             if (NeedLogicDelete(source.ElementType))
                 return UpdateWhere_Sql(source, (ShardingConfig.DeletedField, UpdateType.Equal, true));
             else
-                return FullRepository.Delete_Sql(source);
+                return FullDbAccessor.Delete_Sql(source);
         }
         public async Task<int> Delete_SqlAsync(IQueryable source)
         {
             if (NeedLogicDelete(source.ElementType))
                 return await UpdateWhere_SqlAsync(source, (ShardingConfig.DeletedField, UpdateType.Equal, true));
             else
-                return await FullRepository.Delete_SqlAsync(source);
+                return await FullDbAccessor.Delete_SqlAsync(source);
         }
 
         #endregion
@@ -223,148 +223,148 @@ namespace EFCore.Sharding
 
         public void BulkInsert<T>(List<T> entities) where T : class, new()
         {
-            FullRepository.BulkInsert(entities);
+            FullDbAccessor.BulkInsert(entities);
         }
         public int UpdateWhere_Sql<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class, new()
         {
-            return FullRepository.UpdateWhere_Sql(where, values);
+            return FullDbAccessor.UpdateWhere_Sql(where, values);
         }
         public Task<int> UpdateWhere_SqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class, new()
         {
-            return FullRepository.UpdateWhere_SqlAsync(where, values);
+            return FullDbAccessor.UpdateWhere_SqlAsync(where, values);
         }
         public int UpdateWhere_Sql(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
         {
-            return FullRepository.UpdateWhere_Sql(entityType, where, paramters, values);
+            return FullDbAccessor.UpdateWhere_Sql(entityType, where, paramters, values);
         }
         public Task<int> UpdateWhere_SqlAsync(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
         {
-            return FullRepository.UpdateWhere_SqlAsync(entityType, where, paramters, values);
+            return FullDbAccessor.UpdateWhere_SqlAsync(entityType, where, paramters, values);
         }
         public DataTable GetDataTableWithSql(string sql, params (string paramterName, object value)[] parameters)
         {
-            return FullRepository.GetDataTableWithSql(sql, parameters);
+            return FullDbAccessor.GetDataTableWithSql(sql, parameters);
         }
         public Task<DataTable> GetDataTableWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
         {
-            return FullRepository.GetDataTableWithSqlAsync(sql, parameters);
+            return FullDbAccessor.GetDataTableWithSqlAsync(sql, parameters);
         }
         public List<T> GetListBySql<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class, new()
         {
-            return FullRepository.GetListBySql<T>(sqlStr, parameters);
+            return FullDbAccessor.GetListBySql<T>(sqlStr, parameters);
         }
         public Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class, new()
         {
-            return FullRepository.GetListBySqlAsync<T>(sqlStr, parameters);
+            return FullDbAccessor.GetListBySqlAsync<T>(sqlStr, parameters);
         }
         public int ExecuteSql(string sql, params (string paramterName, object paramterValue)[] paramters)
         {
-            return FullRepository.ExecuteSql(sql, paramters);
+            return FullDbAccessor.ExecuteSql(sql, paramters);
         }
         public Task<int> ExecuteSqlAsync(string sql, params (string paramterName, object paramterValue)[] paramters)
         {
-            return FullRepository.ExecuteSqlAsync(sql, paramters);
+            return FullDbAccessor.ExecuteSqlAsync(sql, paramters);
         }
         public int Insert<T>(T entity) where T : class, new()
         {
-            return FullRepository.Insert(entity);
+            return FullDbAccessor.Insert(entity);
         }
         public Task<int> InsertAsync<T>(T entity) where T : class, new()
         {
-            return FullRepository.InsertAsync(entity);
+            return FullDbAccessor.InsertAsync(entity);
         }
         public int Insert<T>(List<T> entities) where T : class, new()
         {
-            return FullRepository.Insert(entities);
+            return FullDbAccessor.Insert(entities);
         }
         public Task<int> InsertAsync<T>(List<T> entities) where T : class, new()
         {
-            return FullRepository.InsertAsync(entities);
+            return FullDbAccessor.InsertAsync(entities);
         }
         public int Update<T>(T entity) where T : class, new()
         {
-            return FullRepository.Update(entity);
+            return FullDbAccessor.Update(entity);
         }
         public Task<int> UpdateAsync<T>(T entity) where T : class, new()
         {
-            return FullRepository.UpdateAsync(entity);
+            return FullDbAccessor.UpdateAsync(entity);
         }
         public int Update<T>(List<T> entities) where T : class, new()
         {
-            return FullRepository.Update(entities);
+            return FullDbAccessor.Update(entities);
         }
         public Task<int> UpdateAsync<T>(List<T> entities) where T : class, new()
         {
-            return FullRepository.UpdateAsync(entities);
+            return FullDbAccessor.UpdateAsync(entities);
         }
         public int UpdateAny<T>(T entity, List<string> properties) where T : class, new()
         {
-            return FullRepository.UpdateAny(entity, properties);
+            return FullDbAccessor.UpdateAny(entity, properties);
         }
         public Task<int> UpdateAnyAsync<T>(T entity, List<string> properties) where T : class, new()
         {
-            return FullRepository.UpdateAnyAsync(entity, properties);
+            return FullDbAccessor.UpdateAnyAsync(entity, properties);
         }
         public int UpdateAny<T>(List<T> entities, List<string> properties) where T : class, new()
         {
-            return FullRepository.UpdateAny(entities, properties);
+            return FullDbAccessor.UpdateAny(entities, properties);
         }
         public Task<int> UpdateAnyAsync<T>(List<T> entities, List<string> properties) where T : class, new()
         {
-            return FullRepository.UpdateAnyAsync(entities, properties);
+            return FullDbAccessor.UpdateAnyAsync(entities, properties);
         }
         public int UpdateWhere<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class, new()
         {
-            return FullRepository.UpdateWhere(whereExpre, set);
+            return FullDbAccessor.UpdateWhere(whereExpre, set);
         }
         public Task<int> UpdateWhereAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class, new()
         {
-            return FullRepository.UpdateWhereAsync(whereExpre, set);
+            return FullDbAccessor.UpdateWhereAsync(whereExpre, set);
         }
         public (bool Success, Exception ex) RunTransaction(Action action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
-            return FullRepository.RunTransaction(action, isolationLevel);
+            return FullDbAccessor.RunTransaction(action, isolationLevel);
         }
         public int UpdateWhere_Sql(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
         {
-            return FullRepository.UpdateWhere_Sql(source, values);
+            return FullDbAccessor.UpdateWhere_Sql(source, values);
         }
         public Task<int> UpdateWhere_SqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
         {
-            return FullRepository.UpdateWhere_SqlAsync(source, values);
+            return FullDbAccessor.UpdateWhere_SqlAsync(source, values);
         }
         public void Dispose()
         {
-            FullRepository.Dispose();
+            FullDbAccessor.Dispose();
         }
         public Task<(bool Success, Exception ex)> RunTransactionAsync(Func<Task> action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
-            return FullRepository.RunTransactionAsync(action, isolationLevel);
+            return FullDbAccessor.RunTransactionAsync(action, isolationLevel);
         }
 
         public void BeginTransaction(IsolationLevel isolationLevel)
         {
-            FullRepository.BeginTransaction(isolationLevel);
+            FullDbAccessor.BeginTransaction(isolationLevel);
         }
 
         public Task BeginTransactionAsync(IsolationLevel isolationLevel)
         {
-            return FullRepository.BeginTransactionAsync(isolationLevel);
+            return FullDbAccessor.BeginTransactionAsync(isolationLevel);
         }
 
         public void CommitTransaction()
         {
-            FullRepository.CommitTransaction();
+            FullDbAccessor.CommitTransaction();
         }
 
         public void RollbackTransaction()
         {
-            FullRepository.RollbackTransaction();
+            FullDbAccessor.RollbackTransaction();
         }
 
         public void DisposeTransaction()
         {
-            FullRepository.DisposeTransaction();
+            FullDbAccessor.DisposeTransaction();
         }
 
         #endregion

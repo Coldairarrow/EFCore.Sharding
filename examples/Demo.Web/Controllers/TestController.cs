@@ -11,10 +11,10 @@ namespace Demo.Web.Controllers
     [Route("[controller]")]
     public class TestController : ControllerBase
     {
-        readonly IShardingRepository _shardingRepository;
-        public TestController(IShardingRepository shardingRepository)
+        readonly IShardingDbAccessor _shardingDbAccessor;
+        public TestController(IShardingDbAccessor shardingDbAccessor)
         {
-            _shardingRepository = shardingRepository;
+            _shardingDbAccessor = shardingDbAccessor;
         }
 
         [HttpGet]
@@ -32,7 +32,7 @@ namespace Demo.Web.Controllers
                 });
             }
 
-            await _shardingRepository.InsertAsync(insertList);
+            await _shardingDbAccessor.InsertAsync(insertList);
 
             return "成功";
         }

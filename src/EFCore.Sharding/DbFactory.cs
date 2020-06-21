@@ -41,25 +41,25 @@ namespace EFCore.Sharding
         /// <param name="dbType">数据库类型</param>
         /// <param name="loggerFactory">日志工厂</param>
         /// <returns></returns>
-        public static IRepository GetRepository(string conString, DatabaseType dbType, ILoggerFactory loggerFactory = null)
+        public static IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, ILoggerFactory loggerFactory = null)
         {
             var dbContext = GetDbContext(conString, dbType, null, loggerFactory);
 
-            return GetProvider(dbType).GetRepository(dbContext);
+            return GetProvider(dbType).GetDbAccessor(dbContext);
         }
 
         /// <summary>
-        /// 获取ShardingRepository
+        /// 获取ShardingDbAccessor
         /// </summary>
         /// <param name="absDbName">抽象数据库</param>
-        /// <returns>ShardingRepository</returns>
-        public static IShardingRepository GetShardingRepository(string absDbName = ShardingConfig.DefaultAbsDbName)
+        /// <returns>ShardingDbAccessor</returns>
+        public static IShardingDbAccessor GetShardingDbAccessor(string absDbName = ShardingConfig.DefaultAbsDbName)
         {
             ShardingConfig.CheckInit();
 
             var dbType = ShardingConfig.ConfigProvider.GetAbsDbType(absDbName);
 
-            return new ShardingRepository(GetRepository(string.Empty, dbType), absDbName);
+            return new ShardingDbAccessor(GetDbAccessor(string.Empty, dbType), absDbName);
         }
 
         internal static void CreateTable(string conString, DatabaseType dbType, Type tableEntityType)

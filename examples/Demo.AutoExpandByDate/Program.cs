@@ -24,7 +24,7 @@ namespace Demo.AutoExpandByDate
                         (startTime, endTime, ShardingConfig.DefaultDbGourpName)
                         );
             });
-            var db = DbFactory.GetShardingRepository();
+            var db = DbFactory.GetShardingDbAccessor();
             while (true)
             {
                 try

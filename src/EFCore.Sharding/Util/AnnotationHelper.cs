@@ -16,9 +16,6 @@ namespace EFCore.Sharding.Util
             else
                 tableName = type.Name;
 
-            //架构名
-
-
             return tableName;
         }
 
