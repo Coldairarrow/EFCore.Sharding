@@ -1,19 +1,17 @@
-<center> <font  size=5 >EFCore.Sharding(EFCore开源分表框架)</font></center>
-
-- [简介](#%e7%ae%80%e4%bb%8b)
-- [引言](#%e5%bc%95%e8%a8%80)
-- [开始](#%e5%bc%80%e5%a7%8b)
-  - [准备](#%e5%87%86%e5%a4%87)
-  - [配置](#%e9%85%8d%e7%bd%ae)
-  - [使用](#%e4%bd%bf%e7%94%a8)
-  - [按时间自动分表](#%e6%8c%89%e6%97%b6%e9%97%b4%e8%87%aa%e5%8a%a8%e5%88%86%e8%a1%a8)
-  - [性能测试](#%e6%80%a7%e8%83%bd%e6%b5%8b%e8%af%95)
-  - [其它简单操作(非Sharing)](#%e5%85%b6%e5%ae%83%e7%ae%80%e5%8d%95%e6%93%8d%e4%bd%9c%e9%9d%9esharing)
-- [常用配置](#%e5%b8%b8%e7%94%a8%e9%85%8d%e7%bd%ae)
-  - [多主键支持](#%e5%a4%9a%e4%b8%bb%e9%94%ae%e6%94%af%e6%8c%81)
-  - [索引支持](#%e7%b4%a2%e5%bc%95%e6%94%af%e6%8c%81)
-- [总结](#%e6%80%bb%e7%bb%93)
-
+- [简介](#简介)
+- [引言](#引言)
+- [开始](#开始)
+  - [准备](#准备)
+  - [配置](#配置)
+  - [使用](#使用)
+  - [按时间自动分表](#按时间自动分表)
+  - [性能测试](#性能测试)
+  - [其它简单操作(非Sharing)](#其它简单操作非sharing)
+- [常用配置](#常用配置)
+  - [多主键支持](#多主键支持)
+  - [索引支持](#索引支持)
+- [注意事项](#注意事项)
+- [总结](#总结)
 
 # 简介
 本框架旨在为EF Core提供**Sharding**(即读写分离分库分表)支持,不仅提供了一套强大的普通数据操作接口,并且降低了分表难度,支持按时间自动分表扩容,提供的操作接口简洁统一.
@@ -38,21 +36,13 @@
 
 ## 配置
 ```c#
-class Base_UnitTestShardingRule : ModShardingRule<Base_UnitTest>
-{
-    protected override string KeyField => "Id";
-    protected override int Mod => 3;
-}
 
 ShardingConfig.Init(config =>
 {
     config.AddAbsDb(DatabaseType.SQLite)
         .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, "DataSource=db.db")
         .AddPhysicDbGroup()
-        .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
-        .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
-        .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
-        .SetShardingRule(new Base_UnitTestShardingRule());
+        .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
 });
 ```
 上述代码中完成了Sharding配置
@@ -60,14 +50,14 @@ ShardingConfig.Init(config =>
 - **AddAbsDb**是指添加抽象数据库,抽象数据库就是将多个分库看成同一个数据库来进行操作
 - **AddPhysicDbGroup**是指添加物理数据库组,在同一组物理数据库中,它们数据库类型相同,拥有的表相同,每个数据库拥有的数据是一致的(之间通过主主复制或主从复制进行数据同步)
 - **AddPhysicTable**是指添加物理数据表,传入的Base_UnitTest是抽象数据表(即将Base_UnitTest拆分为Base_UnitTest_0~2)
-- **Base_UnitTestShardingRule**是采用的分表规则,上述代码中采用的是哈希取模的分表方式
+- **SetHashModShardingRule**是采用哈希取模的分表规则,分表字段为**Id**,取模值为**3**,会自动生成表Base_UnitTest_0,Base_UnitTest_1,Base_UnitTest_2
 
 ## 使用
 配置完成，下面开始使用，使用方式**非常简单**，与平常使用基本一致
-首先获取分片仓储接口IShardingRepository
+首先获取分片仓储接口IShardingDbAccessor
 
 ```c#
-using(IShardingRepository _db = DbFactory.GetShardingRepository())
+using(IShardingDbAccessor _db = DbFactory.GetShardingDbAccessor())
 {
 
 }
@@ -153,29 +143,16 @@ Assert.AreEqual(succcess, false);
 
 ```c#
 
-using Demo.Common;
 using EFCore.Sharding;
+using EFCore.Sharding.Tests;
 using System;
-using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Demo.AutoExpandByDate
 {
-    class Base_UnitTestShardingRule : AbsShardingRule<Base_UnitTest>
-    {
-        public override DateTime BuildDate(Base_UnitTest obj)
-        {
-            return obj.CreateTime;
-        }
-    }
-
     class Program
     {
-        /// <summary>
-        /// 表都在同一个数据库中
-        /// </summary>
-        public static void OneGroup()
+        static void Main(string[] args)
         {
             DateTime startTime = DateTime.Now.AddMinutes(-5);
             DateTime endTime = DateTime.MaxValue;
@@ -185,92 +162,39 @@ namespace Demo.AutoExpandByDate
             {
                 config.AddAbsDb(DatabaseType.SqlServer)//添加抽象数据库
                     .AddPhysicDbGroup()//添加物理数据库组
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.ConString1)//添加物理数据库1
-                    .SetShardingRule(new Base_UnitTestShardingRule())//设置分表规则
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.CONSTRING1)//添加物理数据库1
+                    .SetDateShardingRule<Base_UnitTest>(nameof(Base_UnitTest.CreateTime))//设置分表规则
                     .AutoExpandByDate<Base_UnitTest>(//设置为按时间自动分表
                         ExpandByDateMode.PerMinute,
                         (startTime, endTime, ShardingConfig.DefaultDbGourpName)
                         );
             });
-            var db = DbFactory.GetShardingRepository();
+            var db = DbFactory.GetShardingDbAccessor();
             while (true)
             {
-                db.Insert(new Base_UnitTest
+                try
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    Age = 1,
-                    UserName = Guid.NewGuid().ToString(),
-                    CreateTime = DateTime.Now
-                });
+                    db.Insert(new Base_UnitTest
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Age = 1,
+                        UserName = Guid.NewGuid().ToString(),
+                        CreateTime = DateTime.Now
+                    });
 
-                var count = db.GetIShardingQueryable<Base_UnitTest>().Count();
-                Console.WriteLine($"当前数据量:{count}");
+                    DateTime time = DateTime.Now.AddMinutes(-2);
+                    var count = db.GetIShardingQueryable<Base_UnitTest>()
+                        .Where(x => x.CreateTime >= time)
+                        .Count();
+                    Console.WriteLine($"当前数据量:{count}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
 
                 Thread.Sleep(50);
             }
-        }
-
-        /// <summary>
-        /// 表分布在两个数据库测试
-        /// </summary>
-        public static void TwoGroup()
-        {
-            DateTime startTime1 = DateTime.Now.AddMinutes(-5);
-            DateTime endTime1 = DateTime.Now.AddMinutes(5);
-            DateTime startTime2 = endTime1;
-            DateTime endTime2 = DateTime.MaxValue;
-
-            string group1 = "group1";
-            string group2 = "group2";
-
-            //配置初始化
-            ShardingConfig.Init(config =>
-            {
-                config.AddAbsDb(DatabaseType.SqlServer)//添加抽象数据库
-                    .AddPhysicDbGroup(group1)//添加物理数据库组1
-                    .AddPhysicDbGroup(group2)//添加物理数据库组2
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.ConString1, group1)//添加物理数据库1
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.ConString2, group2)//添加物理数据库2
-                    .SetShardingRule(new Base_UnitTestShardingRule())//设置分表规则
-                    .AutoExpandByDate<Base_UnitTest>(//设置为按时间自动分表
-                        ExpandByDateMode.PerMinute,
-                        (startTime1, endTime1, group1),
-                        (startTime2, endTime2, group2)
-                        );
-            });
-
-            List<Task> tasks = new List<Task>();
-            for (int i = 0; i < 4; i++)
-            {
-                tasks.Add(Task.Run(() =>
-                {
-                    var db = DbFactory.GetShardingRepository();
-                    while (true)
-                    {
-                        db.Insert(new Base_UnitTest
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            Age = 1,
-                            UserName = Guid.NewGuid().ToString(),
-                            CreateTime = DateTime.Now
-                        });
-
-                        var count = db.GetIShardingQueryable<Base_UnitTest>().Count();
-                        Console.WriteLine($"当前数据量:{count}");
-
-                        Thread.Sleep(50);
-                    }
-                }));
-            }
-
-            Console.ReadLine();
-        }
-
-        static void Main(string[] args)
-        {
-            OneGroup();
-
-            Console.ReadLine();
         }
     }
 }
@@ -286,20 +210,14 @@ namespace Demo.AutoExpandByDate
 
 ## 性能测试
 ```c#
-using Demo.Common;
 using EFCore.Sharding;
+using EFCore.Sharding.Tests;
 using System;
 using System.Diagnostics;
 using System.Linq;
 
 namespace Demo.Performance
 {
-    class Base_UnitTestShardingRule : ModShardingRule<Base_UnitTest>
-    {
-        protected override string KeyField => "Id";
-        protected override int Mod => 3;
-    }
-
     class Program
     {
         static void Main(string[] args)
@@ -307,16 +225,17 @@ namespace Demo.Performance
             ShardingConfig.Init(config =>
             {
                 config.AddAbsDb(DatabaseType.SqlServer)
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.ConString1)
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.CONSTRING1)
                     .AddPhysicDbGroup()
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
-                    .SetShardingRule(new Base_UnitTestShardingRule());
+                    .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });
 
-            var db = DbFactory.GetRepository(Config.ConString1, DatabaseType.SqlServer);
+            DateTime time1 = DateTime.Now;
+            DateTime time2 = DateTime.Now;
+
+            var db = DbFactory.GetDbAccessor(Config.CONSTRING1, DatabaseType.SqlServer);
             Stopwatch watch = new Stopwatch();
+
             var q = db.GetIQueryable<Base_UnitTest>()
                 .Where(x => x.UserName.Contains("00001C22-8DD2-4D47-B500-407554B099AB"))
                 .OrderByDescending(x => x.Id)
@@ -335,9 +254,12 @@ namespace Demo.Performance
             Console.WriteLine($"分表后耗时:{watch.ElapsedMilliseconds}ms");
 
             Console.WriteLine("完成");
+
+            Console.ReadLine();
         }
     }
 }
+
 ```
 
 分表Base_UnitTest_0-2各有100万数据,然后将这三张表的数据导入Base_UnitTest中(即Base_UnitTest表的数据与Base_UnitTest_0-2三张表总合数据一致) 
@@ -428,6 +350,11 @@ namespace Demo.Performance
     }
 
 ```
+
+# 注意事项
+
+- 查询尽量使用分表字段进行筛选，避免全表扫描
+
 # 总结
 这个简单实用强大的框架希望能够帮助到大家,力求为.NET生态贡献一份力,大家一起壮大.NET生态
 
@@ -440,7 +367,7 @@ Github欢迎星星:<https://github.com/Coldairarrow>
 博客园欢迎点赞：<https://www.cnblogs.com/coldairarrow/>
 
 QQ群3:940069478  
-个人QQ:862520575（**欢迎技术支持及商务合作，提供.NET Core + Linux + Nginx+ jenkins + git整套持续集成快速开发平台**）    
+个人QQ:862520575（**欢迎技术支持及商务合作**）    
 
 <center> 本人将会对这个快速开发框架不断完善与维护，希望能够帮助到各位<center/>
 <center> 若遇到任何问题或需要技术支持，请联系我<center/>

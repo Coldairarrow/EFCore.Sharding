@@ -25,8 +25,10 @@ namespace Demo.Performance
             Stopwatch watch = new Stopwatch();
 
             var q = db.GetIQueryable<Base_UnitTest>()
-                .Where(x => x.UserName.Contains("1"))
-                ;
+                .Where(x => x.UserName.Contains("00001C22-8DD2-4D47-B500-407554B099AB"))
+                .OrderByDescending(x => x.Id)
+                .Skip(0)
+                .Take(30);
 
             q.ToList();
             q.ToSharding().ToList();
