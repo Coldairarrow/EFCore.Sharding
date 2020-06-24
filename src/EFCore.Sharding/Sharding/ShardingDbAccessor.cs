@@ -92,7 +92,24 @@ namespace EFCore.Sharding
 
             return await PackAccessDataAsync(async () =>
             {
-                var tasks = mapConfigs.Select(aConfig => accessDataAsync(aConfig.targetObj, aConfig.targetDb));
+                //同一个IDbAccessor对象只能在一个线程中
+                List<Task<int>> tasks = new List<Task<int>>();
+                var dbs = mapConfigs.Select(x => x.targetDb).Distinct().ToList();
+                dbs.ForEach(aDb =>
+                {
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        int count = 0;
+                        var objs = mapConfigs.Where(x => x.targetDb == aDb).ToList();
+                        foreach (var aObj in objs)
+                        {
+                            count += await accessDataAsync(aObj.targetObj, aObj.targetDb);
+                        }
+
+                        return count;
+                    }));
+                });
+
                 return (await Task.WhenAll(tasks.ToArray())).Sum();
             });
         }
