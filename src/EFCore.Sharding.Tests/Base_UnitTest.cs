@@ -28,9 +28,13 @@ namespace EFCore.Sharding.Tests
         public String UserName { get; set; }
 
         /// <summary>
+        /// 创建时间
+        /// </summary>
+        public DateTime CreateTime { get; set; }
+
+        /// <summary>
         /// Age
         /// </summary>
         public Int32? Age { get; set; }
-
     }
 }

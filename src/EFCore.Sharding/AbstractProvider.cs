@@ -22,11 +22,11 @@ namespace EFCore.Sharding
         public abstract ModelBuilder GetModelBuilder();
 
         /// <summary>
-        /// 获取仓储接口
+        /// 获取数据库接口
         /// </summary>
-        /// <param name="conString">完整数据库连接字符串</param>
+        /// <param name="baseDbContext">DbContext</param>
         /// <returns></returns>
-        public abstract IRepository GetRepository(string conString);
+        public abstract IDbAccessor GetDbAccessor(BaseDbContext baseDbContext);
 
         /// <summary>
         /// 提供工厂

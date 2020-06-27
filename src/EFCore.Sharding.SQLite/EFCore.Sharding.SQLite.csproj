@@ -8,10 +8,10 @@
     <PackageProjectUrl>https://github.com/Coldairarrow/EFCore.Sharding</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Coldairarrow/EFCore.Sharding</RepositoryUrl>
     <RepositoryType>github</RepositoryType>
-    <Version>3.1.4</Version>
+    <Version>3.1.4.24</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EFCore.Sharding\EFCore.Sharding.csproj" />

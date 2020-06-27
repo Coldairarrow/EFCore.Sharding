@@ -1,5 +1,4 @@
-﻿using Coldairarrow.Util;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
@@ -8,8 +7,6 @@ namespace EFCore.Sharding.Tests
     [TestClass]
     public class Startup
     {
-        protected const string CONNECTION_STRING = "DataSource=db.db";
-
         /// <summary>
         /// 所有单元测试开始前
         /// </summary>
@@ -17,14 +14,13 @@ namespace EFCore.Sharding.Tests
         [AssemblyInitialize]
         public static void Begin(TestContext context)
         {
-            InitId();
             ServiceCollection services = new ServiceCollection();
             services.UseEFCoreSharding(config =>
             {
-                config.UseDatabase(CONNECTION_STRING, DatabaseType.SQLite);
-                config.UseDatabase<ICustomRepository>(CONNECTION_STRING, DatabaseType.SQLite);
+                config.UseDatabase(Config.SQLITE1, DatabaseType.SQLite);
+                config.UseDatabase<ICustomDbAccessor>(Config.SQLITE1, DatabaseType.SQLite);
                 config.AddAbsDb(DatabaseType.SQLite)
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, CONNECTION_STRING)
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.SQLITE1)
                     .AddPhysicDbGroup()
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
@@ -46,10 +42,5 @@ namespace EFCore.Sharding.Tests
         }
 
         public static IServiceProvider ServiceProvider;
-
-        private static void InitId()
-        {
-            new IdHelperBootstrapper().SetWorkderId(1).Boot();
-        }
     }
 }

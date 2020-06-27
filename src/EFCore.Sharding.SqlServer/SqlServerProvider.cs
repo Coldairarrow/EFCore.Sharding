@@ -11,7 +11,7 @@ namespace EFCore.Sharding.SqlServer
 
         public override ModelBuilder GetModelBuilder() => new ModelBuilder(SqlServerConventionSetBuilder.Build());
 
-        public override IRepository GetRepository(string conString) => new SqlServerRepository(conString);
+        public override IDbAccessor GetDbAccessor(BaseDbContext baseDbContext) => new SqlServerDbAccessor(baseDbContext);
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {

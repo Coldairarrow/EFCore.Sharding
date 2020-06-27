@@ -44,24 +44,27 @@ namespace EFCore.Sharding
         /// </summary>
         /// <param name="conString">完整数据库链接字符串</param>
         /// <param name="dbType">数据库类型</param>
+        /// <param name="loggerFactory">日志工厂</param>
         /// <returns></returns>
-        public static IRepository GetRepository(string conString, DatabaseType dbType)
+        public static IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, ILoggerFactory loggerFactory = null)
         {
-            return GetProvider(dbType).GetRepository(conString);
+            var dbContext = GetDbContext(conString, dbType, null, loggerFactory);
+
+            return GetProvider(dbType).GetDbAccessor(dbContext);
         }
 
         /// <summary>
-        /// 获取ShardingRepository
+        /// 获取ShardingDbAccessor
         /// </summary>
         /// <param name="absDbName">抽象数据库</param>
-        /// <returns>ShardingRepository</returns>
-        public static IShardingRepository GetShardingRepository(string absDbName = ShardingConfig.DefaultAbsDbName)
+        /// <returns>ShardingDbAccessor</returns>
+        public static IShardingDbAccessor GetShardingDbAccessor(string absDbName = ShardingConfig.DefaultAbsDbName)
         {
             ShardingConfig.CheckInit();
 
             var dbType = ShardingConfig.ConfigProvider.GetAbsDbType(absDbName);
 
-            return new ShardingRepository(GetRepository(string.Empty, dbType), absDbName);
+            return new ShardingDbAccessor(GetDbAccessor(string.Empty, dbType), absDbName);
         }
 
         internal static void CreateTable(string conString, DatabaseType dbType, Type tableEntityType)
@@ -78,7 +81,7 @@ namespace EFCore.Sharding
             }
         }
 
-        internal static BaseDbContext GetDbContext(string conString, DatabaseType dbType, List<Type> entityTypes = null)
+        internal static BaseDbContext GetDbContext(string conString, DatabaseType dbType, List<Type> entityTypes = null, ILoggerFactory loggerFactory = null)
         {
             AbstractProvider provider = GetProvider(dbType);
 
@@ -96,9 +99,9 @@ namespace EFCore.Sharding
 
             builder.EnableSensitiveDataLogging();
             builder.UseModel(model);
-            builder.UseLoggerFactory(_loggerFactory);
+            builder.UseLoggerFactory(loggerFactory ?? _loggerFactory);
 
-            return new BaseDbContext(builder.Options);
+            return new BaseDbContext(builder.Options, conString, dbType);
         }
 
         private static ILoggerFactory _loggerFactory =

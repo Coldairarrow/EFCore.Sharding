@@ -11,7 +11,7 @@ namespace EFCore.Sharding.Oracle
 
         public override ModelBuilder GetModelBuilder() => new ModelBuilder(OracleConventionSetBuilder.Build());
 
-        public override IRepository GetRepository(string conString) => new OracleRepository(conString);
+        public override IRepository GetRepository(BaseDbContext baseDbContext) => new OracleRepository(baseDbContext);
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {

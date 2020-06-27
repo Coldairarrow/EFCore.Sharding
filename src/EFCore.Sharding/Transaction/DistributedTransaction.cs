@@ -14,8 +14,8 @@ namespace EFCore.Sharding
         #region 内部成员
 
         private IsolationLevel _isolationLevel { get; set; }
-        private SynchronizedCollection<IRepository> _repositories { get; set; }
-            = new SynchronizedCollection<IRepository>();
+        private SynchronizedCollection<IDbAccessor> _repositories { get; set; }
+            = new SynchronizedCollection<IDbAccessor>();
 
         #endregion
 
@@ -23,7 +23,7 @@ namespace EFCore.Sharding
 
         public bool OpenTransaction { get; set; }
 
-        public void AddRepository(params IRepository[] repositories)
+        public void AddDbAccessor(params IDbAccessor[] repositories)
         {
             repositories.ForEach(aRepositroy =>
             {
@@ -41,23 +41,23 @@ namespace EFCore.Sharding
         {
             OpenTransaction = true;
             _isolationLevel = isolationLevel;
-            _repositories.ForEach(aRepository => aRepository.BeginTransaction(isolationLevel));
+            _repositories.ForEach(aDbAccessor => aDbAccessor.BeginTransaction(isolationLevel));
         }
 
         public async Task BeginTransactionAsync(IsolationLevel isolationLevel)
         {
             OpenTransaction = true;
             _isolationLevel = isolationLevel;
-            foreach (var aRepository in _repositories)
+            foreach (var aDbAccessor in _repositories)
             {
-                await aRepository.BeginTransactionAsync(isolationLevel);
+                await aDbAccessor.BeginTransactionAsync(isolationLevel);
             }
         }
 
         public (bool Success, Exception ex) RunTransaction(Action action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             if (_repositories.Count == 0)
-                throw new Exception("IRepository数量不能为0");
+                throw new Exception("IDbAccessor数量不能为0");
 
             bool isOK = true;
             Exception resEx = null;
@@ -102,7 +102,7 @@ namespace EFCore.Sharding
         public async Task<(bool Success, Exception ex)> RunTransactionAsync(Func<Task> action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             if (_repositories.Count == 0)
-                throw new Exception("IRepository数量不能为0");
+                throw new Exception("IDbAccessor数量不能为0");
 
             bool isOK = true;
             Exception resEx = null;

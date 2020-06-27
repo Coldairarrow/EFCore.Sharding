@@ -1,17 +1,11 @@
-﻿using Demo.Common;
-using EFCore.Sharding;
+﻿using EFCore.Sharding;
+using EFCore.Sharding.Tests;
 using System;
 using System.Diagnostics;
 using System.Linq;
 
 namespace Demo.Performance
 {
-    class Base_UnitTestShardingRule : ModShardingRule<Base_UnitTest>
-    {
-        protected override string KeyField => "Id";
-        protected override int Mod => 3;
-    }
-
     class Program
     {
         static void Main(string[] args)
@@ -19,16 +13,17 @@ namespace Demo.Performance
             ShardingConfig.Init(config =>
             {
                 config.AddAbsDb(DatabaseType.SqlServer)
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.ConString1)
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.CONSTRING1)
                     .AddPhysicDbGroup()
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
-                    .SetShardingRule(new Base_UnitTestShardingRule());
+                    .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });
 
-            var db = DbFactory.GetRepository(Config.ConString1, DatabaseType.SqlServer);
+            DateTime time1 = DateTime.Now;
+            DateTime time2 = DateTime.Now;
+
+            var db = DbFactory.GetDbAccessor(Config.CONSTRING1, DatabaseType.SqlServer);
             Stopwatch watch = new Stopwatch();
+
             var q = db.GetIQueryable<Base_UnitTest>()
                 .Where(x => x.UserName.Contains("00001C22-8DD2-4D47-B500-407554B099AB"))
                 .OrderByDescending(x => x.Id)

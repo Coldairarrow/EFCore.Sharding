@@ -5,14 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\EFCore.Sharding.SQLite\EFCore.Sharding.SQLite.csproj" />
-    <ProjectReference Include="..\..\src\EFCore.Sharding\EFCore.Sharding.csproj" />
-    <ProjectReference Include="..\Demo.Common\Demo.Common.csproj" />
+    <PackageReference Include="IdHelper" Version="1.4.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="db.db">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\..\src\EFCore.Sharding.SQLite\EFCore.Sharding.SQLite.csproj" />
+    <ProjectReference Include="..\..\src\EFCore.Sharding.Tests\EFCore.Sharding.Tests.csproj" />
+    <ProjectReference Include="..\..\src\EFCore.Sharding\EFCore.Sharding.csproj" />
   </ItemGroup>
 </Project>

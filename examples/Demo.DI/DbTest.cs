@@ -1,8 +1,11 @@
-﻿using Demo.Common;
+﻿using EFCore.Sharding;
+using EFCore.Sharding.Tests;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,29 +24,54 @@ namespace Demo.DI
         {
             Task.Factory.StartNew(async () =>
             {
-                try
+                while (true)
                 {
-                    while (true)
+                    try
                     {
                         using (var scop = _serviceProvider.CreateScope())
                         {
-                            var repository = scop.ServiceProvider.GetService<IMyRepository>();
-                            await repository.InsertAsync(new Base_UnitTest
+                            //单表
+                            var db = scop.ServiceProvider.GetService<IMyDbAccessor>();
+                            List<Base_UnitTest> insertList = new List<Base_UnitTest>();
+                            for (int i = 0; i < 100; i++)
+                            {
+                                insertList.Add(new Base_UnitTest
+                                {
+                                    Id = Guid.NewGuid().ToString(),
+                                    Age = i,
+                                    CreateTime = DateTime.Now,
+                                    UserName = Guid.NewGuid().ToString()
+                                });
+                            }
+
+                            var single = new Base_UnitTest
                             {
                                 Id = Guid.NewGuid().ToString(),
                                 Age = 100,
+                                CreateTime = DateTime.Now,
                                 UserName = Guid.NewGuid().ToString()
-                            });
+                            };
 
-                            _logger.LogInformation("插入数据成功");
+                            await db.InsertAsync(single);
+                            await db.InsertAsync(insertList);
+
+                            int count = await db.GetIQueryable<Base_UnitTest>().CountAsync();
+                            _logger.LogInformation("单表插入数据成功 当前数据量:{Count}", count);
+
+                            //分表
+                            var shardingDb = scop.ServiceProvider.GetService<IShardingDbAccessor>();
+                            await shardingDb.InsertAsync(single);
+                            await shardingDb.InsertAsync(insertList);
+                            count = await shardingDb.GetIShardingQueryable<Base_UnitTest>().CountAsync();
+                            _logger.LogInformation("分表插入数据成功 当前数据量:{Count}", count);
                         }
-
-                        await Task.Delay(1000);
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "");
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "");
+                    }
+
+                    await Task.Delay(2000);
                 }
 
             }, TaskCreationOptions.LongRunning);
