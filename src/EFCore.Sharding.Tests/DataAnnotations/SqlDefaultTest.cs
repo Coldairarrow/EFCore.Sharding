@@ -16,9 +16,9 @@ namespace EFCore.Sharding.Tests.DataAnnotations
         [TestMethod]
         public void SqlDefault()
         {
-            var rep = ServiceProvider.GetService<IRepository>();
+            var rep = ServiceProvider.GetService<IDbAccessor>();
 
-            var rep2 = rep as DbRepository;
+            var rep2 = rep as AbstractDbAccessor;
             var databaseCreator = rep2.DbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
 
             var sql = databaseCreator.GenerateCreateScript();

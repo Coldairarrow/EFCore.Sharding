@@ -24,9 +24,20 @@ namespace EFCore.Sharding.Tests
                     .AddPhysicDbGroup()
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_0")
                     .AddPhysicTable<Base_UnitTest>("Base_UnitTest_1")
-                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2")
-                    .SetShardingRule(new Base_UnitTestShardingRule())
-                    .AddPhysicTable<SqlDefaultTestModel>("sql_default_test");
+                    .AddPhysicTable<Base_UnitTest>("Base_UnitTest_2");
+                    //.SetShardingRule(new Base_UnitTestShardingRule())
+                    //.AddPhysicTable<SqlDefaultTestModel>("sql_default_test");
+
+                DateTime startTime = DateTime.Now.AddMinutes(-5);
+                DateTime endTime = DateTime.MaxValue;
+                config.AddAbsDb(DatabaseType.PostgreSql, absDbName: "postgres")
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, "server=localhost;uid=postgres;password=;database=test;port=5433;commandtimeout=1024;", groupName: "postgres")
+                    .AddPhysicDbGroup(groupName: "postgres", absDbName: "postgres")
+                    .SetDateShardingRule<SqlDefaultTestModel>(nameof(SqlDefaultTestModel.ModifiedOn), absDbName: "postgres")//设置分表规则
+                    .AutoExpandByDate<SqlDefaultTestModel>(//设置为按时间自动分表
+                        ExpandByDateMode.PerMonth,
+                        (startTime, endTime, groupName: "postgres")
+                        );
             });
 
             ServiceProvider = services.BuildServiceProvider();
