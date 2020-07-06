@@ -2,7 +2,7 @@
 using System;
 using System.Data;
 
-namespace EFCore.Sharding.Util
+namespace EFCore.Sharding
 {
     internal static partial class Extention
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace EFCore.Sharding.Util
+namespace EFCore.Sharding
 {
     internal static partial class Extention
     {

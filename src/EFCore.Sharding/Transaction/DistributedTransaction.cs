@@ -1,5 +1,4 @@
-﻿using EFCore.Sharding.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -56,9 +55,6 @@ namespace EFCore.Sharding
 
         public (bool Success, Exception ex) RunTransaction(Action action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
-            if (_repositories.Count == 0)
-                throw new Exception("IDbAccessor数量不能为0");
-
             bool isOK = true;
             Exception resEx = null;
             try
@@ -101,9 +97,6 @@ namespace EFCore.Sharding
 
         public async Task<(bool Success, Exception ex)> RunTransactionAsync(Func<Task> action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
-            if (_repositories.Count == 0)
-                throw new Exception("IDbAccessor数量不能为0");
-
             bool isOK = true;
             Exception resEx = null;
             try

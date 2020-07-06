@@ -5,7 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 
-namespace EFCore.Sharding.Util
+namespace EFCore.Sharding
 {
     internal static partial class Extention
     {

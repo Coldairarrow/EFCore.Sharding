@@ -1,5 +1,4 @@
-﻿using EFCore.Sharding.Util;
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -12,7 +11,7 @@ namespace EFCore.Sharding.MySql
 {
     internal class MySqlDbAccessor : AbstractDbAccessor, IDbAccessor
     {
-        public MySqlDbAccessor(BaseDbContext baseDbContext)
+        public MySqlDbAccessor(GenericDbContext baseDbContext)
             : base(baseDbContext)
         {
         }

@@ -1,5 +1,4 @@
-﻿using EFCore.Sharding.Util;
-using System;
+﻿using System;
 
 namespace EFCore.Sharding
 {
@@ -18,29 +17,21 @@ namespace EFCore.Sharding
             {
                 case ShardingType.HashMod:
                     {
-                        try
+                        long suffix;
+                        if (fieldValue.GetType() == typeof(int) || fieldValue.GetType() == typeof(long))
                         {
-                            long suffix;
-                            if (fieldValue.GetType() == typeof(int) || fieldValue.GetType() == typeof(long))
-                            {
-                                long longValue = (long)fieldValue;
-                                if (longValue < 0)
-                                    throw new Exception($"字段{ShardingField}不能小于0");
+                            long longValue = (long)fieldValue;
+                            if (longValue < 0)
+                                throw new Exception($"字段{ShardingField}不能小于0");
 
-                                suffix = longValue % Mod;
-                            }
-                            else
-                            {
-                                suffix = Math.Abs(fieldValue.GetHashCode()) % Mod;
-                            }
-
-                            return suffix.ToString();
+                            suffix = longValue % Mod;
                         }
-                        catch (Exception ex)
+                        else
                         {
-
-                            throw;
+                            suffix = Math.Abs(fieldValue.GetHashCode()) % Mod;
                         }
+
+                        return suffix.ToString();
                     };
                 case ShardingType.Date:
                     {
@@ -59,21 +50,11 @@ namespace EFCore.Sharding
                 default: throw new Exception("ShardingType无效");
             }
         }
-        public string GetTableNameByField(object fieldValue)
-        {
-            return $"{AbsTable}_{GetTableSuffixByField(fieldValue)}";
-        }
         public string GetTableSuffixByEntity(object entity)
         {
             var property = entity.GetPropertyValue(ShardingField);
 
             return GetTableSuffixByField(property);
-        }
-        public string GetTableNameByEntity(object entity)
-        {
-            var property = entity.GetPropertyValue(ShardingField);
-
-            return GetTableNameByField(property);
         }
     }
 }

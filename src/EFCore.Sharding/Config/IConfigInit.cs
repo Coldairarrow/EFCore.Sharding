@@ -37,8 +37,9 @@ namespace EFCore.Sharding
         /// <typeparam name="TDbAccessor">自定义的IDbAccessor</typeparam>
         /// <param name="conString">连接字符串</param>
         /// <param name="dbType">数据库类型</param>
+        /// <param name="entityNamespace">实体命名空间</param>
         /// <returns></returns>
-        IConfigInit UseDatabase<TDbAccessor>(string conString, DatabaseType dbType) where TDbAccessor : class, IDbAccessor;
+        IConfigInit UseDatabase<TDbAccessor>(string conString, DatabaseType dbType, string entityNamespace = null) where TDbAccessor : class, IDbAccessor;
 
         /// <summary>
         /// 使用默认数据库
@@ -46,8 +47,9 @@ namespace EFCore.Sharding
         /// </summary>
         /// <param name="conString">连接字符串</param>
         /// <param name="dbType">数据库类型</param>
+        /// <param name="entityNamespace">实体命名空间</param>
         /// <returns></returns>
-        IConfigInit UseDatabase(string conString, DatabaseType dbType);
+        IConfigInit UseDatabase(string conString, DatabaseType dbType, string entityNamespace = null);
 
         /// <summary>
         /// 添加抽象数据库
@@ -85,11 +87,11 @@ namespace EFCore.Sharding
         /// 添加物理数据表
         /// </summary>
         /// <typeparam name="TEntity">对应抽象表类型</typeparam>
-        /// <param name="physicTableName">物理表明</param>
+        /// <param name="physicTableSuffix">物理表明</param>
         /// <param name="groupName">数据库组名</param>
         /// <returns></returns>
         IConfigInit AddPhysicTable<TEntity>(
-            string physicTableName,
+            string physicTableSuffix,
             string groupName = ShardingConfig.DefaultDbGourpName);
 
         /// <summary>

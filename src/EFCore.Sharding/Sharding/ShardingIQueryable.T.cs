@@ -1,5 +1,4 @@
-﻿using EFCore.Sharding.Util;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,51 +12,46 @@ namespace EFCore.Sharding
     {
         #region 构造函数
 
-        public ShardingQueryable(IQueryable<T> source, ShardingDbAccessor repository, string absDbName)
+        public ShardingQueryable(IQueryable<T> source, ShardingDbAccessor shardingDb, string absDbName)
         {
             _source = source;
             _absTableName = AnnotationHelper.GetDbTableName(source.ElementType);
             _absDbName = absDbName;
-            _repository = repository;
+            _shardingDb = shardingDb;
         }
 
         #endregion
 
         #region 私有成员
 
-        ShardingDbAccessor _repository { get; }
+        ShardingDbAccessor _shardingDb { get; }
         private string _absDbName { get; }
         private string _absTableName { get; }
         private IQueryable<T> _source { get; set; }
-        private Type MapTable(string targetTableName)
-        {
-            return DbModelFactory.GetEntityType(targetTableName);
-        }
         private async Task<List<TResult>> GetStatisDataAsync<TResult>(Func<IQueryable, Task<TResult>> access, IQueryable newSource = null)
         {
             newSource = newSource ?? _source;
-            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName, _absDbName, _source);
+            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absDbName, _source);
 
             List<Task<TResult>> tasks = new List<Task<TResult>>();
             SynchronizedCollection<IDbAccessor> dbs = new SynchronizedCollection<IDbAccessor>();
             tasks = tables.Select(aTable =>
             {
                 IDbAccessor db;
-                if (_repository.OpenedTransaction)
-                    db = _repository.GetMapDbAccessor(aTable.conString, aTable.dbType);
+                if (_shardingDb.OpenedTransaction)
+                    db = _shardingDb.GetMapDbAccessor(aTable.conString, aTable.dbType, aTable.suffix);
                 else
-                    db = DbFactory.GetDbAccessor(aTable.conString, aTable.dbType);
+                    db = DbFactory.GetDbAccessor(aTable.conString, aTable.dbType, null, null, aTable.suffix);
 
                 dbs.Add(db);
-                var targetTable = MapTable(aTable.tableName);
-                var targetIQ = db.GetIQueryable(targetTable);
+                var targetIQ = db.GetIQueryable<T>();
                 var newQ = newSource.ChangeSource(targetIQ);
 
                 return access(newQ);
             }).ToList();
             var res = (await Task.WhenAll(tasks)).ToList();
 
-            if (!_repository.OpenedTransaction)
+            if (!_shardingDb.OpenedTransaction)
                 dbs.ForEach(x => x.Dispose());
 
             return res;
@@ -161,19 +155,18 @@ namespace EFCore.Sharding
                 noPaginSource = noPaginSource.Take(take.Value + skip.Value);
 
             //从各个分表获取数据
-            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absTableName, _absDbName, _source);
+            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absDbName, _source);
             SynchronizedCollection<IDbAccessor> dbs = new SynchronizedCollection<IDbAccessor>();
             List<Task<List<T>>> tasks = tables.Select(aTable =>
             {
-                var targetTable = MapTable(aTable.tableName);
                 IDbAccessor db;
-                if (_repository.OpenedTransaction)
-                    db = _repository.GetMapDbAccessor(aTable.conString, aTable.dbType);
+                if (_shardingDb.OpenedTransaction)
+                    db = _shardingDb.GetMapDbAccessor(aTable.conString, aTable.dbType, aTable.suffix);
                 else
-                    db = DbFactory.GetDbAccessor(aTable.conString, aTable.dbType);
+                    db = DbFactory.GetDbAccessor(aTable.conString, aTable.dbType, null, null, aTable.suffix);
                 dbs.Add(db);
 
-                var targetIQ = db.GetIQueryable(targetTable);
+                var targetIQ = db.GetIQueryable<T>();
                 var newQ = noPaginSource.ChangeSource(targetIQ);
                 return newQ
                     .Cast<object>()
@@ -183,7 +176,7 @@ namespace EFCore.Sharding
             List<T> all = new List<T>();
             (await Task.WhenAll(tasks.ToArray())).ToList().ForEach(x => all.AddRange(x));
 
-            if (!_repository.OpenedTransaction)
+            if (!_shardingDb.OpenedTransaction)
                 dbs.ForEach(x => x.Dispose());
             //合并数据
             var resList = all;

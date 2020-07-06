@@ -6,7 +6,7 @@ namespace EFCore.Sharding
     /// <summary>
     /// 数据库提供抽象类
     /// </summary>
-    public abstract class AbstractProvider
+    internal abstract class AbstractProvider
     {
         /// <summary>
         /// 使用某个数据库
@@ -26,7 +26,7 @@ namespace EFCore.Sharding
         /// </summary>
         /// <param name="baseDbContext">DbContext</param>
         /// <returns></returns>
-        public abstract IDbAccessor GetDbAccessor(BaseDbContext baseDbContext);
+        public abstract IDbAccessor GetDbAccessor(GenericDbContext baseDbContext);
 
         /// <summary>
         /// 提供工厂

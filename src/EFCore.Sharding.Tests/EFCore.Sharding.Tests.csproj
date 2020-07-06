@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EFCore.Sharding.SQLite\EFCore.Sharding.SQLite.csproj" />
+    <ProjectReference Include="..\EFCore.Sharding.SqlServer\EFCore.Sharding.SqlServer.csproj" />
     <ProjectReference Include="..\EFCore.Sharding\EFCore.Sharding.csproj" />
   </ItemGroup>
 

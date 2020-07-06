@@ -1,12 +1,11 @@
-﻿using EFCore.Sharding.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace EFCore.Sharding.PostgreSql
 {
     internal class PostgreSqlDbAccessor : AbstractDbAccessor, IDbAccessor
     {
-        public PostgreSqlDbAccessor(BaseDbContext baseDbContext)
+        public PostgreSqlDbAccessor(GenericDbContext baseDbContext)
             : base(baseDbContext)
         {
         }

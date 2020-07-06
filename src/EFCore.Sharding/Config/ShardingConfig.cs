@@ -1,5 +1,4 @@
-﻿using EFCore.Sharding.Util;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -72,7 +71,7 @@ namespace EFCore.Sharding
         internal static string DeletedField { get; set; } = "Deleted";
         internal static IServiceCollection ServiceDescriptors;
         internal static List<string> AssemblyNames = new List<string>();
-        internal static List<string> AssemblyPaths = new List<string>() { AppDomain.CurrentDomain.BaseDirectory };
+        internal static List<string> AssemblyPaths = new List<string>() { Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) };
         internal static void CheckInit()
         {
             if (!_inited)
@@ -108,6 +107,7 @@ namespace EFCore.Sharding
 
                                 where = where.And(tmpWhere);
                             }
+
                             AssemblyPaths.SelectMany(x => Directory.GetFiles(x, "*.dll"))
                                 .Where(x => where.Compile()(new FileInfo(x).Name))
                                 .Distinct()

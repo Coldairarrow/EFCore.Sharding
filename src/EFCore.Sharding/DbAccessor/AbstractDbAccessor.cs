@@ -1,5 +1,4 @@
-﻿using EFCore.Sharding.Util;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
@@ -23,7 +22,7 @@ namespace EFCore.Sharding
         /// 构造函数
         /// </summary>
         /// <param name="baseDbContext">BaseDbContext</param>
-        public AbstractDbAccessor(BaseDbContext baseDbContext)
+        public AbstractDbAccessor(GenericDbContext baseDbContext)
         {
             _db = baseDbContext;
             _provider = DbFactory.GetProvider(DbType);
@@ -34,7 +33,7 @@ namespace EFCore.Sharding
         #region 私有成员
 
         protected AbstractProvider _provider { get; }
-        protected BaseDbContext _db { get; }
+        protected GenericDbContext _db { get; }
         protected IDbContextTransaction _transaction { get; set; }
         protected static PropertyInfo GetKeyProperty(Type type)
         {
@@ -61,14 +60,21 @@ namespace EFCore.Sharding
         protected abstract string GetSchema(string schema);
         private string GetFormatedSchemaAndTableName(Type entityType)
         {
+            string fullName = string.Empty;
             string schema = AnnotationHelper.GetDbSchemaName(entityType);
             schema = GetSchema(schema);
             string table = AnnotationHelper.GetDbTableName(entityType);
+            if (!_db.Options.Suffix.IsNullOrEmpty())
+            {
+                table += $"_{_db.Options.Suffix}";
+            }
 
             if (schema.IsNullOrEmpty())
-                return FormatFieldName(table);
+                fullName = FormatFieldName(table);
             else
-                return $"{FormatFieldName(schema)}.{FormatFieldName(table)}";
+                fullName = $"{FormatFieldName(schema)}.{FormatFieldName(table)}";
+
+            return fullName;
         }
         private (string sql, List<(string paramterName, object paramterValue)> paramters) GetWhereSql(IQueryable query)
         {
@@ -247,8 +253,8 @@ namespace EFCore.Sharding
 
         #region 数据库相关
 
-        public string ConnectionString => _db.ConnectionString;
-        public DatabaseType DbType => _db.DbType;
+        public string ConnectionString => _db.Options.ConnectionString;
+        public DatabaseType DbType => _db.Options.DbType;
         public void CommitTransaction()
         {
             _transaction?.Commit();

@@ -5,13 +5,13 @@ using System.Data.SqlClient;
 
 namespace EFCore.Sharding.SqlServer
 {
-    public class SqlServerProvider : AbstractProvider
+    internal class SqlServerProvider : AbstractProvider
     {
         public override DbProviderFactory DbProviderFactory => SqlClientFactory.Instance;
 
         public override ModelBuilder GetModelBuilder() => new ModelBuilder(SqlServerConventionSetBuilder.Build());
 
-        public override IDbAccessor GetDbAccessor(BaseDbContext baseDbContext) => new SqlServerDbAccessor(baseDbContext);
+        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new SqlServerDbAccessor(baseDbContext);
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {

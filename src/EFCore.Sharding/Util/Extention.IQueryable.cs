@@ -1,19 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Query.Internal;
+﻿using Microsoft.EntityFrameworkCore.Query;
 #if EFCORE3
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 #endif
-using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using System.Reflection;
 
-namespace EFCore.Sharding.Util
+namespace EFCore.Sharding
 {
     /// <summary>
     /// IQueryable"T"的拓展操作
@@ -112,6 +108,11 @@ namespace EFCore.Sharding.Util
         {
             if (!(source is IQueryable && targetSource is IQueryable))
                 throw new Exception("仅支持EF的IQueryable!");
+
+            ReplaceQueryableVisitor replaceQueryableVisitor = new ReplaceQueryableVisitor(source, targetSource);
+            var newExpre = replaceQueryableVisitor.Visit(source.Expression);
+
+            return targetSource.Provider.CreateQuery(newExpre);
 
             Dictionary<Type, Type> typeMap = new Dictionary<Type, Type>();
             var oldQuery = source.GetObjQuery() as IQueryable;
@@ -287,6 +288,27 @@ namespace EFCore.Sharding.Util
         #endregion
 
         #region 自定义类
+
+        class ReplaceQueryableVisitor : ExpressionVisitor
+        {
+            private readonly IQueryable _oldQuery;
+            private readonly IQueryable _newQuery;
+            public ReplaceQueryableVisitor(IQueryable oldQuery, IQueryable newQuery)
+            {
+                _oldQuery = oldQuery;
+                _newQuery = newQuery;
+            }
+
+            protected override Expression VisitConstant(ConstantExpression node)
+            {
+                if (node.Value is IQueryable)
+                {
+                    return Expression.Constant(_newQuery);
+                }
+
+                return base.VisitConstant(node);
+            }
+        }
 
         class StatisVisitor : ExpressionVisitor
         {

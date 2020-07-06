@@ -564,7 +564,7 @@ namespace EFCore.Sharding.Tests
             var sql = "delete from Base_UnitTest where UserName like '%'+@name+'%'";
             _db.ExecuteSql(sql, ("@name", "管理员"));
             var count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(1, count);
+            Assert.AreEqual(0, count);
         }
 
         [TestMethod]
@@ -574,7 +574,7 @@ namespace EFCore.Sharding.Tests
             var sql = "delete from Base_UnitTest where UserName like '%'+@name+'%'";
             await _db.ExecuteSqlAsync(sql, ("@name", "管理员"));
             var count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(1, count);
+            Assert.AreEqual(0, count);
         }
 
         [TestMethod]

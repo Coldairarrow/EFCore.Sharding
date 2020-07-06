@@ -1,5 +1,4 @@
-﻿using EFCore.Sharding.Util;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
@@ -25,38 +24,13 @@ namespace EFCore.Sharding
 
         private string _absDbName { get; }
         private IDbAccessor _db { get; }
-        private Type MapTable(string targetTableName)
+        private string GetDbId(string conString, DatabaseType dbType, string suffix)
         {
-            return DbModelFactory.GetEntityType(targetTableName);
-        }
-        private List<(string targetTableName, IDbAccessor targetDb)> GetTargetDb(List<(string tableName, string conString, DatabaseType dbType)> configs)
-        {
-            var resList = configs
-                .Select(x => (x.tableName, GetMapDbAccessor(x.conString, x.dbType)))
-                .ToList();
-
-            return resList;
-        }
-        private List<(object targetObj, IDbAccessor targetDb)> GetMapConfigs<T>(List<T> entities)
-        {
-            List<(object targetObj, IDbAccessor targetDb)> resList = new List<(object targetObj, IDbAccessor targetDb)>();
-            entities.ForEach(aEntity =>
-            {
-                (string tableName, string conString, DatabaseType dbType) = ShardingConfig.ConfigProvider.GetTheWriteTable<T>(aEntity, _absDbName);
-                var targetDb = _repositories[GetDbId(conString, dbType)];
-                var targetObj = aEntity.ChangeType(MapTable(tableName));
-                resList.Add((targetObj, targetDb));
-            });
-
-            return resList;
-        }
-        private string GetDbId(string conString, DatabaseType dbType)
-        {
-            return $"{conString}{dbType.ToString()}";
+            return $"{conString}{dbType}{suffix}";
         }
         private async Task<int> PackAccessDataAsync(Func<Task<int>> access)
         {
-            var dbs = _repositories.Values.ToArray();
+            var dbs = _dbs.Values.ToArray();
 
             int count = 0;
             if (!OpenedTransaction)
@@ -72,7 +46,7 @@ namespace EFCore.Sharding
                     if (!Success)
                         throw ex;
                 }
-                ClearRepositories();
+                ClearDbs();
                 return count;
             }
             else
@@ -83,27 +57,32 @@ namespace EFCore.Sharding
 
             return count;
         }
-        private async Task<int> WriteTableAsync<T>(List<T> entities, Func<object, IDbAccessor, Task<int>> accessDataAsync)
+        private async Task<int> WriteTableAsync<T>(List<T> entities, Func<T, IDbAccessor, Task<int>> accessDataAsync)
         {
-            var configs = ShardingConfig.ConfigProvider.GetAllWriteTables<T>(_absDbName);
-            var targetDbs = GetTargetDb(configs);
-
-            var mapConfigs = GetMapConfigs(entities);
+            List<(T obj, IDbAccessor db)> targetDbs = entities
+                .Select(x => new
+                {
+                    Obj = x,
+                    Conifg = ShardingConfig.ConfigProvider.GetTheWriteTable(x, _absDbName)
+                })
+                .ToList()
+                .Select(x => (x.Obj, GetMapDbAccessor(x.Conifg.conString, x.Conifg.dbType, x.Conifg.suffix)))
+                .ToList();
 
             return await PackAccessDataAsync(async () =>
             {
                 //同一个IDbAccessor对象只能在一个线程中
                 List<Task<int>> tasks = new List<Task<int>>();
-                var dbs = mapConfigs.Select(x => x.targetDb).Distinct().ToList();
+                var dbs = targetDbs.Select(x => x.db).Distinct().ToList();
                 dbs.ForEach(aDb =>
                 {
                     tasks.Add(Task.Run(async () =>
                     {
                         int count = 0;
-                        var objs = mapConfigs.Where(x => x.targetDb == aDb).ToList();
+                        var objs = targetDbs.Where(x => x.db == aDb).ToList();
                         foreach (var aObj in objs)
                         {
-                            count += await accessDataAsync(aObj.targetObj, aObj.targetDb);
+                            count += await accessDataAsync(aObj.obj, aObj.db);
                         }
 
                         return count;
@@ -114,12 +93,12 @@ namespace EFCore.Sharding
             });
         }
         private DistributedTransaction _transaction { get; set; }
-        private ConcurrentDictionary<string, IDbAccessor> _repositories { get; }
+        private ConcurrentDictionary<string, IDbAccessor> _dbs { get; }
             = new ConcurrentDictionary<string, IDbAccessor>();
-        private void ClearRepositories()
+        private void ClearDbs()
         {
-            _repositories.ForEach(x => x.Value.Dispose());
-            _repositories.Clear();
+            _dbs.ForEach(x => x.Value.Dispose());
+            _dbs.Clear();
         }
 
         #endregion
@@ -128,17 +107,15 @@ namespace EFCore.Sharding
 
         public bool OpenedTransaction { get; set; } = false;
 
-        public IDbAccessor GetMapDbAccessor(string conString, DatabaseType dbType)
+        public IDbAccessor GetMapDbAccessor(string conString, DatabaseType dbType, string suffix)
         {
-            var dbId = GetDbId(conString, dbType);
-            if (!_repositories.ContainsKey(dbId))
-                _repositories[dbId] = DbFactory.GetDbAccessor(conString, dbType);
+            var dbId = GetDbId(conString, dbType, suffix);
+            IDbAccessor db = _dbs.GetOrAdd(dbId, key => DbFactory.GetDbAccessor(conString, dbType, null, null, suffix));
 
-            var db = _repositories[dbId];
             if (OpenedTransaction)
                 _transaction.AddDbAccessor(db);
 
-            return _repositories[dbId];
+            return db;
         }
 
         public int Insert<T>(T entity) where T : class, new()
@@ -164,10 +141,9 @@ namespace EFCore.Sharding
         public async Task<int> DeleteAllAsync<T>() where T : class, new()
         {
             var configs = ShardingConfig.ConfigProvider.GetAllWriteTables<T>(_absDbName);
-            var targetDbs = GetTargetDb(configs);
             return await PackAccessDataAsync(async () =>
             {
-                var tasks = targetDbs.Select(x => x.targetDb.DeleteAllAsync(MapTable(x.targetTableName)));
+                var tasks = configs.Select(x => GetMapDbAccessor(x.conString, x.dbType, x.suffix).DeleteAllAsync<T>());
                 return (await Task.WhenAll(tasks.ToArray())).Sum();
             });
         }
@@ -330,7 +306,7 @@ namespace EFCore.Sharding
         {
             OpenedTransaction = false;
             _transaction.DisposeTransaction();
-            ClearRepositories();
+            ClearDbs();
         }
 
         #endregion
@@ -345,7 +321,7 @@ namespace EFCore.Sharding
 
             _disposed = true;
             _transaction?.Dispose();
-            ClearRepositories();
+            ClearDbs();
         }
 
         #endregion

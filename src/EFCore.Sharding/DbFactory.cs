@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Reflection;
 
@@ -39,11 +37,22 @@ namespace EFCore.Sharding
         /// </summary>
         /// <param name="conString">完整数据库链接字符串</param>
         /// <param name="dbType">数据库类型</param>
+        /// <param name="entityNamespace">实体命名空间</param>
         /// <param name="loggerFactory">日志工厂</param>
+        /// <param name="suffix">表明后缀</param>
         /// <returns></returns>
-        public static IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, ILoggerFactory loggerFactory = null)
+        public static IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, string entityNamespace = null, ILoggerFactory loggerFactory = null, string suffix = null)
         {
-            var dbContext = GetDbContext(conString, dbType, null, loggerFactory);
+            GenericDbContextOptions options = new GenericDbContextOptions
+            {
+                ConnectionString = conString,
+                DbType = dbType,
+                EntityNamespace = entityNamespace,
+                LoggerFactory = loggerFactory,
+                Suffix = suffix
+            };
+
+            var dbContext = GetDbContext(options);
 
             return GetProvider(dbType).GetDbAccessor(dbContext);
         }
@@ -62,41 +71,48 @@ namespace EFCore.Sharding
             return new ShardingDbAccessor(GetDbAccessor(string.Empty, dbType), absDbName);
         }
 
-        internal static void CreateTable(string conString, DatabaseType dbType, Type tableEntityType)
+        internal static void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
         {
-            DbContext dbContext = GetDbContext(conString, dbType, new List<Type> { tableEntityType });
-            var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
-            try
+            GenericDbContextOptions options = new GenericDbContextOptions
             {
-                databaseCreator.CreateTables();
-            }
-            catch
-            {
+                ConnectionString = conString,
+                DbType = dbType,
+                EntityTypes = new Type[] { entityType },
+                Suffix = suffix
+            };
 
+            using (DbContext dbContext = GetDbContext(options))
+            {
+                var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
+                try
+                {
+                    databaseCreator.CreateTables();
+                }
+                catch
+                {
+
+                }
             }
         }
 
-        internal static BaseDbContext GetDbContext(string conString, DatabaseType dbType, List<Type> entityTypes = null, ILoggerFactory loggerFactory = null)
+        internal static GenericDbContext GetDbContext(GenericDbContextOptions options)
         {
-            AbstractProvider provider = GetProvider(dbType);
+            AbstractProvider provider = GetProvider(options.DbType);
 
             DbConnection dbConnection = provider.GetDbConnection();
-            dbConnection.ConnectionString = conString;
+            dbConnection.ConnectionString = options.ConnectionString;
 
-            IModel model;
-            if (entityTypes?.Count > 0)
-                model = DbModelFactory.BuildDbCompiledModel(dbType, entityTypes);
-            else
-                model = DbModelFactory.GetDbCompiledModel(conString, dbType);
             DbContextOptionsBuilder builder = new DbContextOptionsBuilder();
 
             provider.UseDatabase(builder, dbConnection);
+            builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();
 
             builder.EnableSensitiveDataLogging();
-            builder.UseModel(model);
-            builder.UseLoggerFactory(loggerFactory ?? _loggerFactory);
+            builder.UseLoggerFactory(options.LoggerFactory ?? _loggerFactory);
 
-            return new BaseDbContext(builder.Options, conString, dbType);
+            options.ContextOptions = builder.Options;
+
+            return new GenericDbContext(options);
         }
 
         private static ILoggerFactory _loggerFactory =

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EFCore.Sharding.Util
+namespace EFCore.Sharding
 {
     /// <summary>
     /// Random随机数帮助类

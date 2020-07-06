@@ -17,10 +17,10 @@ namespace EFCore.Sharding.Tests
             ServiceCollection services = new ServiceCollection();
             services.UseEFCoreSharding(config =>
             {
-                config.UseDatabase(Config.SQLITE1, DatabaseType.SQLite);
-                config.UseDatabase<ICustomDbAccessor>(Config.SQLITE1, DatabaseType.SQLite);
-                config.AddAbsDb(DatabaseType.SQLite)
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.SQLITE1)
+                config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
+                config.UseDatabase<ICustomDbAccessor>(Config.CONSTRING1, DatabaseType.SqlServer);
+                config.AddAbsDb(DatabaseType.SqlServer)
+                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.CONSTRING1)
                     .AddPhysicDbGroup()
                     .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });

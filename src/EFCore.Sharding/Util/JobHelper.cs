@@ -4,7 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
-namespace EFCore.Sharding.Util
+namespace EFCore.Sharding
 {
     /// <summary>
     /// 任务帮助类

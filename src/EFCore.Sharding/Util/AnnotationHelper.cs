@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 
-namespace EFCore.Sharding.Util
+namespace EFCore.Sharding
 {
     internal static class AnnotationHelper
     {

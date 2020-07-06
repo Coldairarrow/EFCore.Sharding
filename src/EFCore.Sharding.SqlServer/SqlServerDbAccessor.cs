@@ -1,5 +1,4 @@
-﻿using EFCore.Sharding.Util;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -11,7 +10,7 @@ namespace EFCore.Sharding.SqlServer
 {
     internal class SqlServerDbAccessor : AbstractDbAccessor, IDbAccessor
     {
-        public SqlServerDbAccessor(BaseDbContext baseDbContext)
+        public SqlServerDbAccessor(GenericDbContext baseDbContext)
             : base(baseDbContext)
         {
         }

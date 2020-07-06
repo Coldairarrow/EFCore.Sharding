@@ -5,7 +5,7 @@ namespace EFCore.Sharding
     /// <summary>
     /// 拓展
     /// </summary>
-    public static partial class Extention
+    public static partial class PublicExtention
     {
         /// <summary>
         /// 转为Sharding

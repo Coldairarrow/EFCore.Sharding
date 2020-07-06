@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace EFCore.Sharding.Util
+namespace EFCore.Sharding
 {
     /// <summary>
     /// 运行时创建类型
