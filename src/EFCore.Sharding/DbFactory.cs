@@ -108,15 +108,12 @@ namespace EFCore.Sharding
             builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();
 
             builder.EnableSensitiveDataLogging();
-            builder.UseLoggerFactory(options.LoggerFactory ?? _loggerFactory);
+            builder.UseLoggerFactory(options.LoggerFactory);
 
             options.ContextOptions = builder.Options;
 
             return new GenericDbContext(options);
         }
-
-        private static ILoggerFactory _loggerFactory =
-            new LoggerFactory(new ILoggerProvider[] { new EFCoreSqlLogeerProvider() });
 
         #endregion
     }

@@ -269,7 +269,7 @@ namespace EFCore.Sharding
             _transaction?.Dispose();
             _openedTransaction = false;
         }
-        public Action<string> HandleSqlLog { set => EFCoreSqlLogeerProvider.HandleSqlLog = value; }
+
         public IDbAccessor FullDbAccessor { get; set; }
 
         #endregion

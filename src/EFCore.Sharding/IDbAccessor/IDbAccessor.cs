@@ -15,14 +15,6 @@ namespace EFCore.Sharding
         #region 数据库相关
 
         /// <summary>
-        /// SQL日志处理方法
-        /// </summary>
-        /// <value>
-        /// The handle SQL log.
-        /// </value>
-        Action<string> HandleSqlLog { set; }
-
-        /// <summary>
         /// 连接字符串
         /// </summary>
         string ConnectionString { get; }

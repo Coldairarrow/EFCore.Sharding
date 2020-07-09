@@ -24,7 +24,6 @@ namespace EFCore.Sharding
         {
             return ShardingConfig.LogicDelete && entityType.GetProperties().Any(x => x.Name == ShardingConfig.DeletedField);
         }
-        public Action<string> HandleSqlLog { set => FullDbAccessor.HandleSqlLog = value; }
         public string ConnectionString => FullDbAccessor.ConnectionString;
         public DatabaseType DbType => FullDbAccessor.DbType;
         public IDbAccessor FullDbAccessor { get; }

@@ -9,6 +9,8 @@ namespace EFCore.Sharding
 {
     internal class ReadWriteDbAccessor : IDbAccessor
     {
+        #region 私有成员
+
         private readonly IServiceProvider _serviceProvider;
         private readonly (string connectionString, DatabaseType dbType)[] _dbs;
         private readonly string _entityNamespace;
@@ -18,50 +20,53 @@ namespace EFCore.Sharding
             _dbs = dbs;
             _entityNamespace = entityNamespace;
         }
-
         private IDbAccessor Db { get; }
+
+        #endregion
+
+        #region 事务
 
         public (bool Success, Exception ex) RunTransaction(Action action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             return Db.RunTransaction(action, isolationLevel);
         }
-
         public Task<(bool Success, Exception ex)> RunTransactionAsync(Func<Task> action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             return Db.RunTransactionAsync(action, isolationLevel);
         }
-
         public void BeginTransaction(IsolationLevel isolationLevel)
         {
             Db.BeginTransaction(isolationLevel);
         }
-
         public Task BeginTransactionAsync(IsolationLevel isolationLevel)
         {
             return Db.BeginTransactionAsync(isolationLevel);
         }
-
         public void RollbackTransaction()
         {
             Db.RollbackTransaction();
         }
-
-        public Action<string> HandleSqlLog { set => throw new Exception("读写分离模式不支持"); }
-
-        public string ConnectionString => throw new Exception("读写分离模式不支持");
-
-        public DatabaseType DbType => throw new Exception("读写分离模式不支持");
-
-        public IDbAccessor FullDbAccessor => throw new Exception("读写分离模式不支持");
-
-        public void BulkInsert<T>(List<T> entities) where T : class
-        {
-            Db.BulkInsert(entities);
-        }
-
         public void CommitTransaction()
         {
             Db.CommitTransaction();
+        }
+
+        #endregion
+
+        #region 外部属性
+
+        public string ConnectionString => throw new Exception("读写分离模式不支持");
+        public DatabaseType DbType => throw new Exception("读写分离模式不支持");
+        public IDbAccessor FullDbAccessor => throw new Exception("读写分离模式不支持");
+
+        #endregion
+
+        #region 增
+
+        #endregion
+        public void BulkInsert<T>(List<T> entities) where T : class
+        {
+            Db.BulkInsert(entities);
         }
 
         public int Delete(Type type, string key)
