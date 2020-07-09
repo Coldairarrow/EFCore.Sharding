@@ -1,5 +1,6 @@
 ﻿using EFCore.Sharding;
 using EFCore.Sharding.Tests;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -10,18 +11,22 @@ namespace Demo.Performance
     {
         static void Main(string[] args)
         {
-            ShardingConfig.Init(config =>
+            ServiceCollection services = new ServiceCollection();
+            services.UseEFCoreSharding(config =>
             {
+                config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
+
                 config.AddAbsDb(DatabaseType.SqlServer)
                     .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.CONSTRING1)
                     .AddPhysicDbGroup()
                     .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });
+            var serviceProvider = services.BuildServiceProvider();
 
             DateTime time1 = DateTime.Now;
             DateTime time2 = DateTime.Now;
 
-            var db = DbFactory.GetDbAccessor(Config.CONSTRING1, DatabaseType.SqlServer);
+            var db = serviceProvider.GetService<IDbAccessor>();
             Stopwatch watch = new Stopwatch();
 
             var q = db.GetIQueryable<Base_UnitTest>()

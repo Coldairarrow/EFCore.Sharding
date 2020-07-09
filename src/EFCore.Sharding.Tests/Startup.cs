@@ -18,6 +18,8 @@ namespace EFCore.Sharding.Tests
             services.UseEFCoreSharding(config =>
             {
                 config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
+                config.UseDatabase<ISQLiteDb1>(Config.SQLITE1, DatabaseType.SQLite);
+                config.UseDatabase<ISQLiteDb2>(Config.SQLITE2, DatabaseType.SQLite);
                 config.UseDatabase<ICustomDbAccessor>(Config.CONSTRING1, DatabaseType.SqlServer);
                 config.AddAbsDb(DatabaseType.SqlServer)
                     .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.CONSTRING1)

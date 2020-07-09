@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
-    internal class ShardingQueryable<T> : IShardingQueryable<T> where T : class, new()
+    internal class ShardingQueryable<T> : IShardingQueryable<T> where T : class
     {
         #region 构造函数
 
@@ -45,7 +45,7 @@ namespace EFCore.Sharding
 
                 dbs.Add(db);
                 var targetIQ = db.GetIQueryable<T>();
-                var newQ = newSource.ChangeSource(targetIQ);
+                var newQ = newSource.ReplaceQueryable(targetIQ);
 
                 return access(newQ);
             }).ToList();
@@ -167,7 +167,7 @@ namespace EFCore.Sharding
                 dbs.Add(db);
 
                 var targetIQ = db.GetIQueryable<T>();
-                var newQ = noPaginSource.ChangeSource(targetIQ);
+                var newQ = noPaginSource.ReplaceQueryable(targetIQ);
                 return newQ
                     .Cast<object>()
                     .Select(x => x.ChangeType<T>())

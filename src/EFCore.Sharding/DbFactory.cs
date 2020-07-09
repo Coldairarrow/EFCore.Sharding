@@ -11,11 +11,11 @@ namespace EFCore.Sharding
     /// <summary>
     /// 数据库工厂
     /// </summary>
-    public static class DbFactory
+    internal static class DbFactory
     {
         #region 外部接口
 
-        internal static AbstractProvider GetProvider(DatabaseType databaseType)
+        public static AbstractProvider GetProvider(DatabaseType databaseType)
         {
             string assemblyName = $"EFCore.Sharding.{databaseType}";
             try
@@ -71,7 +71,7 @@ namespace EFCore.Sharding
             return new ShardingDbAccessor(GetDbAccessor(string.Empty, dbType), absDbName);
         }
 
-        internal static void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
+        public static void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
         {
             GenericDbContextOptions options = new GenericDbContextOptions
             {
@@ -95,7 +95,7 @@ namespace EFCore.Sharding
             }
         }
 
-        internal static GenericDbContext GetDbContext(GenericDbContextOptions options)
+        public static GenericDbContext GetDbContext(GenericDbContextOptions options)
         {
             AbstractProvider provider = GetProvider(options.DbType);
 

@@ -9,7 +9,7 @@ namespace EFCore.Sharding
     /// IShardingQueryable
     /// </summary>
     /// <typeparam name="T">逻辑表泛型</typeparam>
-    public interface IShardingQueryable<T> where T : class, new()
+    public interface IShardingQueryable<T> where T : class
     {
         /// <summary>
         /// 筛选

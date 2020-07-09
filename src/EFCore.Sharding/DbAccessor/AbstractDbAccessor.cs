@@ -276,36 +276,36 @@ namespace EFCore.Sharding
 
         #region 增加数据
 
-        public int Insert<T>(T entity) where T : class, new()
+        public int Insert<T>(T entity) where T : class
         {
             return Insert(new List<T> { entity });
         }
-        public async Task<int> InsertAsync<T>(T entity) where T : class, new()
+        public async Task<int> InsertAsync<T>(T entity) where T : class
         {
             return await InsertAsync(new List<T> { entity });
         }
-        public int Insert<T>(List<T> entities) where T : class, new()
+        public int Insert<T>(List<T> entities) where T : class
         {
             _db.AddRange(entities);
             return _db.SaveChanges();
         }
-        public async Task<int> InsertAsync<T>(List<T> entities) where T : class, new()
+        public async Task<int> InsertAsync<T>(List<T> entities) where T : class
         {
             await _db.AddRangeAsync(entities);
 
             return await _db.SaveChangesAsync();
         }
-        public abstract void BulkInsert<T>(List<T> entities) where T : class, new();
+        public abstract void BulkInsert<T>(List<T> entities) where T : class;
 
         #endregion
 
         #region 删除数据
 
-        public int DeleteAll<T>() where T : class, new()
+        public int DeleteAll<T>() where T : class
         {
             return DeleteAll(typeof(T));
         }
-        public async Task<int> DeleteAllAsync<T>() where T : class, new()
+        public async Task<int> DeleteAllAsync<T>() where T : class
         {
             return await DeleteAllAsync(typeof(T));
         }
@@ -317,48 +317,48 @@ namespace EFCore.Sharding
         {
             return await Delete_SqlAsync(type, "true");
         }
-        public int Delete<T>(T entity) where T : class, new()
+        public int Delete<T>(T entity) where T : class
         {
             return Delete(new List<T> { entity });
         }
-        public async Task<int> DeleteAsync<T>(T entity) where T : class, new()
+        public async Task<int> DeleteAsync<T>(T entity) where T : class
         {
             return await DeleteAsync(new List<T> { entity });
         }
-        public int Delete<T>(List<T> entities) where T : class, new()
+        public int Delete<T>(List<T> entities) where T : class
         {
             _db.RemoveRange(entities);
             return _db.SaveChanges();
         }
-        public async Task<int> DeleteAsync<T>(List<T> entities) where T : class, new()
+        public async Task<int> DeleteAsync<T>(List<T> entities) where T : class
         {
             _db.RemoveRange(entities);
 
             return await _db.SaveChangesAsync();
         }
-        public int Delete<T>(Expression<Func<T, bool>> condition) where T : class, new()
+        public int Delete<T>(Expression<Func<T, bool>> condition) where T : class
         {
             var deleteList = GetIQueryable<T>().Where(condition).ToList();
             return Delete(deleteList);
         }
-        public async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class, new()
+        public async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class
         {
             var deleteList = await GetIQueryable<T>().Where(condition).ToListAsync();
             return await DeleteAsync(deleteList);
         }
-        public int Delete<T>(string key) where T : class, new()
+        public int Delete<T>(string key) where T : class
         {
             return Delete<T>(new List<string> { key });
         }
-        public async Task<int> DeleteAsync<T>(string key) where T : class, new()
+        public async Task<int> DeleteAsync<T>(string key) where T : class
         {
             return await DeleteAsync<T>(new List<string> { key });
         }
-        public int Delete<T>(List<string> keys) where T : class, new()
+        public int Delete<T>(List<string> keys) where T : class
         {
             return Delete(typeof(T), keys);
         }
-        public async Task<int> DeleteAsync<T>(List<string> keys) where T : class, new()
+        public async Task<int> DeleteAsync<T>(List<string> keys) where T : class
         {
             return await DeleteAsync(typeof(T), keys);
         }
@@ -378,13 +378,13 @@ namespace EFCore.Sharding
         {
             return await DeleteAsync(GetDeleteList(type, keys));
         }
-        public int Delete_Sql<T>(Expression<Func<T, bool>> where) where T : class, new()
+        public int Delete_Sql<T>(Expression<Func<T, bool>> where) where T : class
         {
             var iq = GetIQueryable<T>().Where(where);
 
             return Delete_Sql(iq);
         }
-        public async Task<int> Delete_SqlAsync<T>(Expression<Func<T, bool>> where) where T : class, new()
+        public async Task<int> Delete_SqlAsync<T>(Expression<Func<T, bool>> where) where T : class
         {
             var iq = GetIQueryable<T>().Where(where);
 
@@ -419,15 +419,15 @@ namespace EFCore.Sharding
 
         #region 更新数据
 
-        public int Update<T>(T entity) where T : class, new()
+        public int Update<T>(T entity) where T : class
         {
             return Update(new List<T> { entity });
         }
-        public async Task<int> UpdateAsync<T>(T entity) where T : class, new()
+        public async Task<int> UpdateAsync<T>(T entity) where T : class
         {
             return await UpdateAsync(new List<T> { entity });
         }
-        public int Update<T>(List<T> entities) where T : class, new()
+        public int Update<T>(List<T> entities) where T : class
         {
             entities.ForEach(aEntity =>
             {
@@ -435,7 +435,7 @@ namespace EFCore.Sharding
             });
             return _db.SaveChanges();
         }
-        public async Task<int> UpdateAsync<T>(List<T> entities) where T : class, new()
+        public async Task<int> UpdateAsync<T>(List<T> entities) where T : class
         {
             entities.ForEach(aEntity =>
             {
@@ -444,15 +444,15 @@ namespace EFCore.Sharding
 
             return await _db.SaveChangesAsync();
         }
-        public int UpdateAny<T>(T entity, List<string> properties) where T : class, new()
+        public int Update<T>(T entity, List<string> properties) where T : class
         {
-            return UpdateAny(new List<T> { entity }, properties);
+            return Update(new List<T> { entity }, properties);
         }
-        public async Task<int> UpdateAnyAsync<T>(T entity, List<string> properties) where T : class, new()
+        public async Task<int> UpdateAsync<T>(T entity, List<string> properties) where T : class
         {
-            return await UpdateAnyAsync(new List<T> { entity }, properties);
+            return await UpdateAsync(new List<T> { entity }, properties);
         }
-        public int UpdateAny<T>(List<T> entities, List<string> properties) where T : class, new()
+        public int Update<T>(List<T> entities, List<string> properties) where T : class
         {
             entities.ForEach(aEntity =>
             {
@@ -464,7 +464,7 @@ namespace EFCore.Sharding
 
             return _db.SaveChanges();
         }
-        public async Task<int> UpdateAnyAsync<T>(List<T> entities, List<string> properties) where T : class, new()
+        public async Task<int> UpdateAsync<T>(List<T> entities, List<string> properties) where T : class
         {
             entities.ForEach(aEntity =>
             {
@@ -476,49 +476,49 @@ namespace EFCore.Sharding
 
             return await _db.SaveChangesAsync();
         }
-        public int UpdateWhere<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class, new()
+        public int Update<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class
         {
             var list = GetIQueryable<T>().Where(whereExpre).ToList();
             list.ForEach(aData => set(aData));
             return Update(list);
         }
-        public async Task<int> UpdateWhereAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class, new()
+        public async Task<int> UpdateAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class
         {
             var list = GetIQueryable<T>().Where(whereExpre).ToList();
             list.ForEach(aData => set(aData));
             return await UpdateAsync(list);
         }
-        public int UpdateWhere_Sql<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class, new()
+        public int Update_Sql<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
         {
             var iq = GetIQueryable<T>().Where(where);
 
-            return UpdateWhere_Sql(iq, values);
+            return Update_Sql(iq, values);
         }
-        public async Task<int> UpdateWhere_SqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class, new()
+        public async Task<int> Update_SqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
         {
             var iq = GetIQueryable<T>().Where(where);
 
-            return await UpdateWhere_SqlAsync(iq, values);
+            return await Update_SqlAsync(iq, values);
         }
-        public int UpdateWhere_Sql(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
+        public int Update_Sql(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
         {
             var iq = GetIQueryable(entityType).Where(where, paramters);
 
-            return UpdateWhere_Sql(iq, values);
+            return Update_Sql(iq, values);
         }
-        public async Task<int> UpdateWhere_SqlAsync(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
+        public async Task<int> Update_SqlAsync(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
         {
             var iq = GetIQueryable(entityType).Where(where, paramters);
 
-            return await UpdateWhere_SqlAsync(iq, values);
+            return await Update_SqlAsync(iq, values);
         }
-        public int UpdateWhere_Sql(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
+        public int Update_Sql(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
         {
             var sql = GetUpdateWhereSql(source, values);
 
             return ExecuteSql(sql.sql, sql.paramters.ToArray());
         }
-        public async Task<int> UpdateWhere_SqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
+        public async Task<int> Update_SqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
         {
             var sql = GetUpdateWhereSql(source, values);
 
@@ -529,7 +529,7 @@ namespace EFCore.Sharding
 
         #region 查询数据
 
-        public T GetEntity<T>(params object[] keyValue) where T : class, new()
+        public T GetEntity<T>(params object[] keyValue) where T : class
         {
             var obj = _db.Set<T>().Find(keyValue);
             if (!obj.IsNullOrEmpty())
@@ -537,7 +537,7 @@ namespace EFCore.Sharding
 
             return obj;
         }
-        public async Task<T> GetEntityAsync<T>(params object[] keyValue) where T : class, new()
+        public async Task<T> GetEntityAsync<T>(params object[] keyValue) where T : class
         {
             var obj = await _db.Set<T>().FindAsync(keyValue);
             if (!obj.IsNullOrEmpty())
@@ -545,11 +545,11 @@ namespace EFCore.Sharding
 
             return obj;
         }
-        public List<T> GetList<T>() where T : class, new()
+        public List<T> GetList<T>() where T : class
         {
             return GetIQueryable<T>().ToList();
         }
-        public async Task<List<T>> GetListAsync<T>() where T : class, new()
+        public async Task<List<T>> GetListAsync<T>() where T : class
         {
             return await GetIQueryable<T>().ToListAsync();
         }
@@ -561,7 +561,7 @@ namespace EFCore.Sharding
         {
             return await GetIQueryable(type).Cast<object>().ToListAsync();
         }
-        public IQueryable<T> GetIQueryable<T>() where T : class, new()
+        public IQueryable<T> GetIQueryable<T>() where T : class
         {
             return GetIQueryable(typeof(T)) as IQueryable<T>;
         }
@@ -635,11 +635,11 @@ namespace EFCore.Sharding
                 }
             }
         }
-        public List<T> GetListBySql<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class, new()
+        public List<T> GetListBySql<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class
         {
             return GetDataTableWithSql(sqlStr, parameters).ToList<T>();
         }
-        public async Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class, new()
+        public async Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class
         {
             return (await GetDataTableWithSqlAsync(sqlStr, parameters)).ToList<T>();
         }

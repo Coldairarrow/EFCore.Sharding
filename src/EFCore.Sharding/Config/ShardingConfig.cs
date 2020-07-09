@@ -26,22 +26,6 @@ namespace EFCore.Sharding
         public const string DefaultDbGourpName = "BaseDbGroup";
 
         /// <summary>
-        /// 初始化,只需程序启动执行一次
-        /// </summary>
-        /// <param name="configInit">初始化操作</param>
-        public static void Init(Action<IConfigInit> configInit)
-        {
-            if (_inited)
-                throw new Exception("只能初始化一次");
-            _inited = true;
-
-            MemoryConfigProvider memoryConfigProvider = new MemoryConfigProvider();
-            configInit(memoryConfigProvider);
-
-            ConfigProvider = memoryConfigProvider;
-        }
-
-        /// <summary>
         /// 使用EFCoreSharding
         /// </summary>
         /// <param name="services">服务集合</param>
@@ -49,10 +33,20 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static IServiceCollection UseEFCoreSharding(this IServiceCollection services, Action<IConfigInit> configInit)
         {
+            if (_inited)
+                throw new Exception("只能初始化一次");
+            if (configInit == null)
+                throw new Exception("配置不能为null");
+
             if (ServiceDescriptors == null)
                 ServiceDescriptors = services;
-            if (configInit != null)
-                Init(configInit);
+
+            _inited = true;
+
+            MemoryConfigProvider memoryConfigProvider = new MemoryConfigProvider();
+            configInit(memoryConfigProvider);
+
+            ConfigProvider = memoryConfigProvider;
 
             services.AddScoped(_ =>
             {

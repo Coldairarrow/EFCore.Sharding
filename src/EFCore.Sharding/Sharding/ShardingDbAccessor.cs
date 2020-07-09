@@ -118,27 +118,27 @@ namespace EFCore.Sharding
             return db;
         }
 
-        public int Insert<T>(T entity) where T : class, new()
+        public int Insert<T>(T entity) where T : class
         {
             return Insert(new List<T> { entity });
         }
-        public async Task<int> InsertAsync<T>(T entity) where T : class, new()
+        public async Task<int> InsertAsync<T>(T entity) where T : class
         {
             return await InsertAsync(new List<T> { entity });
         }
-        public int Insert<T>(List<T> entities) where T : class, new()
+        public int Insert<T>(List<T> entities) where T : class
         {
             return AsyncHelper.RunSync(() => InsertAsync(entities));
         }
-        public async Task<int> InsertAsync<T>(List<T> entities) where T : class, new()
+        public async Task<int> InsertAsync<T>(List<T> entities) where T : class
         {
             return await WriteTableAsync(entities, (targetObj, targetDb) => targetDb.InsertAsync(targetObj));
         }
-        public int DeleteAll<T>() where T : class, new()
+        public int DeleteAll<T>() where T : class
         {
             return AsyncHelper.RunSync(() => DeleteAllAsync<T>());
         }
-        public async Task<int> DeleteAllAsync<T>() where T : class, new()
+        public async Task<int> DeleteAllAsync<T>() where T : class
         {
             var configs = ShardingConfig.ConfigProvider.GetAllWriteTables<T>(_absDbName);
             return await PackAccessDataAsync(async () =>
@@ -147,83 +147,83 @@ namespace EFCore.Sharding
                 return (await Task.WhenAll(tasks.ToArray())).Sum();
             });
         }
-        public int Delete<T>(T entity) where T : class, new()
+        public int Delete<T>(T entity) where T : class
         {
             return Delete(new List<T> { entity });
         }
-        public async Task<int> DeleteAsync<T>(T entity) where T : class, new()
+        public async Task<int> DeleteAsync<T>(T entity) where T : class
         {
             return await DeleteAsync(new List<T> { entity });
         }
-        public int Delete<T>(List<T> entities) where T : class, new()
+        public int Delete<T>(List<T> entities) where T : class
         {
             return AsyncHelper.RunSync(() => DeleteAsync(entities));
         }
-        public async Task<int> DeleteAsync<T>(List<T> entities) where T : class, new()
+        public async Task<int> DeleteAsync<T>(List<T> entities) where T : class
         {
             return await WriteTableAsync(entities, (targetObj, targetDb) => targetDb.DeleteAsync(targetObj));
         }
-        public int Delete<T>(Expression<Func<T, bool>> condition) where T : class, new()
+        public int Delete<T>(Expression<Func<T, bool>> condition) where T : class
         {
             return AsyncHelper.RunSync(() => DeleteAsync(condition));
         }
-        public async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class, new()
+        public async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class
         {
             var deleteList = GetIShardingQueryable<T>().Where(condition).ToList();
 
             return await DeleteAsync(deleteList);
         }
-        public int Update<T>(T entity) where T : class, new()
+        public int Update<T>(T entity) where T : class
         {
             return Update(new List<T> { entity });
         }
-        public async Task<int> UpdateAsync<T>(T entity) where T : class, new()
+        public async Task<int> UpdateAsync<T>(T entity) where T : class
         {
             return await UpdateAsync(new List<T> { entity });
         }
-        public int Update<T>(List<T> entities) where T : class, new()
+        public int Update<T>(List<T> entities) where T : class
         {
             return AsyncHelper.RunSync(() => UpdateAsync(entities));
         }
-        public async Task<int> UpdateAsync<T>(List<T> entities) where T : class, new()
+        public async Task<int> UpdateAsync<T>(List<T> entities) where T : class
         {
             return await WriteTableAsync(entities, (targetObj, targetDb) => targetDb.UpdateAsync(targetObj));
         }
-        public int UpdateAny<T>(T entity, List<string> properties) where T : class, new()
+        public int Update<T>(T entity, List<string> properties) where T : class
         {
-            return UpdateAny(new List<T> { entity }, properties);
+            return Update(new List<T> { entity }, properties);
         }
-        public async Task<int> UpdateAnyAsync<T>(T entity, List<string> properties) where T : class, new()
+        public async Task<int> UpdateAsync<T>(T entity, List<string> properties) where T : class
         {
-            return await UpdateAnyAsync(new List<T> { entity }, properties);
+            return await UpdateAsync(new List<T> { entity }, properties);
         }
-        public int UpdateAny<T>(List<T> entities, List<string> properties) where T : class, new()
+        public int Update<T>(List<T> entities, List<string> properties) where T : class
         {
-            return AsyncHelper.RunSync(() => UpdateAnyAsync(entities, properties));
+            return AsyncHelper.RunSync(() => UpdateAsync(entities, properties));
         }
-        public async Task<int> UpdateAnyAsync<T>(List<T> entities, List<string> properties) where T : class, new()
+        public async Task<int> UpdateAsync<T>(List<T> entities, List<string> properties) where T : class
         {
-            return await WriteTableAsync(entities, (targetObj, targetDb) => targetDb.UpdateAnyAsync(targetObj, properties));
+            return await WriteTableAsync(entities, (targetObj, targetDb) => targetDb.UpdateAsync(targetObj, properties));
         }
-        public int UpdateWhere<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class, new()
+        public int Update<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class
         {
-            return AsyncHelper.RunSync(() => UpdateWhereAsync(whereExpre, set));
+            return AsyncHelper.RunSync(() => UpdateAsync(whereExpre, set));
         }
-        public async Task<int> UpdateWhereAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class, new()
+        public async Task<int> UpdateAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class
         {
             var list = GetIShardingQueryable<T>().Where(whereExpre).ToList();
             list.ForEach(aData => set(aData));
             return await UpdateAsync(list);
         }
-        public IShardingQueryable<T> GetIShardingQueryable<T>() where T : class, new()
+        public IShardingQueryable<T> GetIShardingQueryable<T>() where T : class
         {
             return new ShardingQueryable<T>(_db.GetIQueryable<T>(), this, _absDbName);
         }
-        public List<T> GetList<T>() where T : class, new()
+        public List<T> GetList<T>() where T : class
         {
             return GetIShardingQueryable<T>().ToList();
         }
-        public async Task<List<T>> GetListAsync<T>() where T : class, new()
+        public async Task<List<T>> GetListAsync<T>() where T : class
         {
             return await GetIShardingQueryable<T>().ToListAsync();
         }

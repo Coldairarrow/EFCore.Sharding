@@ -177,7 +177,7 @@ namespace EFCore.Sharding.Tests
             newUpdateData.UserName = "普通管理员";
             newUpdateData.UserId = "xiaoming";
             newUpdateData.Age = 100;
-            _db.UpdateAny(newUpdateData, new List<string> { "UserName", "Age" });
+            _db.Update(newUpdateData, new List<string> { "UserName", "Age" });
             var dbSingleData = _db.GetIShardingQueryable<Base_UnitTest>().FirstOrDefault();
             newUpdateData.UserId = "Admin";
             Assert.AreEqual(newUpdateData.ToJson(), dbSingleData.ToJson());
@@ -191,7 +191,7 @@ namespace EFCore.Sharding.Tests
             newUpdateData.UserName = "普通管理员";
             newUpdateData.UserId = "xiaoming";
             newUpdateData.Age = 100;
-            await _db.UpdateAnyAsync(newUpdateData, new List<string> { "UserName", "Age" });
+            await _db.UpdateAsync(newUpdateData, new List<string> { "UserName", "Age" });
             var dbSingleData = _db.GetIShardingQueryable<Base_UnitTest>().FirstOrDefault();
             newUpdateData.UserId = "Admin";
             Assert.AreEqual(newUpdateData.ToJson(), dbSingleData.ToJson());
@@ -215,7 +215,7 @@ namespace EFCore.Sharding.Tests
                 aData.UserName = "测试";
             });
 
-            _db.UpdateAny(newList1, new List<string> { "UserName", "Age" });
+            _db.Update(newList1, new List<string> { "UserName", "Age" });
             var dbData = _db.GetList<Base_UnitTest>();
             Assert.AreEqual(newList2.OrderBy(x => x.Id).ToJson(), dbData.OrderBy(x => x.Id).ToJson());
         }
@@ -238,7 +238,7 @@ namespace EFCore.Sharding.Tests
                 aData.UserName = "测试";
             });
 
-            await _db.UpdateAnyAsync(newList1, new List<string> { "UserName", "Age" });
+            await _db.UpdateAsync(newList1, new List<string> { "UserName", "Age" });
             var dbData = _db.GetList<Base_UnitTest>();
             Assert.AreEqual(newList2.OrderBy(x => x.Id).ToJson(), dbData.OrderBy(x => x.Id).ToJson());
         }
@@ -247,7 +247,7 @@ namespace EFCore.Sharding.Tests
         public void UpdateWhere()
         {
             _db.Insert(_newData);
-            _db.UpdateWhere<Base_UnitTest>(x => x.UserId == "Admin", x =>
+            _db.Update<Base_UnitTest>(x => x.UserId == "Admin", x =>
             {
                 x.UserId = "Admin2";
             });
@@ -259,7 +259,7 @@ namespace EFCore.Sharding.Tests
         public async Task UpdateWhereAsync()
         {
             _db.Insert(_newData);
-            await _db.UpdateWhereAsync<Base_UnitTest>(x => x.UserId == "Admin", x =>
+            await _db.UpdateAsync<Base_UnitTest>(x => x.UserId == "Admin", x =>
             {
                 x.UserId = "Admin2";
             });
@@ -346,8 +346,8 @@ namespace EFCore.Sharding.Tests
         [TestMethod]
         public void RunTransaction_isolationLevel()
         {
-            var db1 = DbFactory.GetShardingDbAccessor();
-            var db2 = DbFactory.GetShardingDbAccessor();
+            var db1 = ServiceProvider.GetService<IShardingDbAccessor>();
+            var db2 = ServiceProvider.CreateScope().ServiceProvider.GetService<IShardingDbAccessor>();
             db1.Insert(_newData);
 
             var updateData = _newData.DeepClone();

@@ -1,5 +1,6 @@
 ﻿using EFCore.Sharding;
 using EFCore.Sharding.Tests;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
 
@@ -11,9 +12,9 @@ namespace Demo.AutoExpandByDate
         {
             DateTime startTime = DateTime.Now.AddMinutes(-5);
             DateTime endTime = DateTime.MaxValue;
-
+            ServiceCollection services = new ServiceCollection();
             //配置初始化
-            ShardingConfig.Init(config =>
+            services.UseEFCoreSharding(config =>
             {
                 config.AddAbsDb(DatabaseType.SqlServer)//添加抽象数据库
                     .AddPhysicDbGroup()//添加物理数据库组
@@ -24,7 +25,9 @@ namespace Demo.AutoExpandByDate
                         (startTime, endTime, ShardingConfig.DefaultDbGourpName)
                         );
             });
-            var db = DbFactory.GetShardingDbAccessor();
+            var serviceProvider = services.BuildServiceProvider();
+
+            var db = serviceProvider.GetService<IShardingDbAccessor>();
             while (true)
             {
                 try

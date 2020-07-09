@@ -12,7 +12,7 @@
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <returns></returns>
-        IShardingQueryable<T> GetIShardingQueryable<T>() where T : class, new();
+        IShardingQueryable<T> GetIShardingQueryable<T>() where T : class;
 
         #endregion
     }
