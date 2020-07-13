@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,6 +18,8 @@ namespace EFCore.Sharding
             Options = options;
         }
         public GenericDbContextOptions Options { get; }
+        private static readonly ValueConverter<DateTime, DateTime> _dateTimeConverter
+            = new ValueConverter<DateTime, DateTime>(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Local));
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             List<Type> entityTypes;
@@ -52,6 +55,15 @@ namespace EFCore.Sharding
                 }
             });
 
+            //DateTime默认为Local
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                        property.SetValueConverter(_dateTimeConverter);
+                }
+            }
         }
         public IQueryable GetIQueryable(Type entityType)
         {
