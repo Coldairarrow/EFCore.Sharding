@@ -42,6 +42,26 @@ namespace EFCore.Sharding
         IConfigInit UseDatabase<TDbAccessor>(string conString, DatabaseType dbType, string entityNamespace = null) where TDbAccessor : class, IDbAccessor;
 
         /// <summary>
+        /// 使用数据库
+        /// </summary>
+        /// <typeparam name="TDbAccessor">自定义的IDbAccessor</typeparam>
+        /// <param name="dbs">读写数据库配置</param>
+        /// <param name="dbType">数据库类型</param>
+        /// <param name="entityNamespace">实体命名空间</param>
+        /// <returns></returns>
+        IConfigInit UseDatabase<TDbAccessor>((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace = null) where TDbAccessor : class, IDbAccessor;
+
+        /// <summary>
+        /// 使用默认数据库
+        /// 注入IDbAccessor
+        /// </summary>
+        /// <param name="dbs">读写数据库配置</param>
+        /// <param name="dbType">数据库类型</param>
+        /// <param name="entityNamespace">实体命名空间</param>
+        /// <returns></returns>
+        IConfigInit UseDatabase((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace = null);
+
+        /// <summary>
         /// 使用默认数据库
         /// 注入IDbAccessor
         /// </summary>

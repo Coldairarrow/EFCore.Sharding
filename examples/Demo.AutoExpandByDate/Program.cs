@@ -14,7 +14,7 @@ namespace Demo.AutoExpandByDate
             DateTime endTime = DateTime.MaxValue;
             ServiceCollection services = new ServiceCollection();
             //配置初始化
-            services.UseEFCoreSharding(config =>
+            services.AddEFCoreSharding(config =>
             {
                 config.AddAbsDb(DatabaseType.SqlServer)//添加抽象数据库
                     .AddPhysicDbGroup()//添加物理数据库组

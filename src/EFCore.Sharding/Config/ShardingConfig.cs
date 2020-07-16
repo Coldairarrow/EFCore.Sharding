@@ -26,12 +26,12 @@ namespace EFCore.Sharding
         public const string DefaultDbGourpName = "BaseDbGroup";
 
         /// <summary>
-        /// 使用EFCoreSharding
+        /// 注入EFCoreSharding
         /// </summary>
         /// <param name="services">服务集合</param>
-        /// <param name="configInit">分表配置项</param>
+        /// <param name="configInit">配置项</param>
         /// <returns></returns>
-        public static IServiceCollection UseEFCoreSharding(this IServiceCollection services, Action<IConfigInit> configInit)
+        public static IServiceCollection AddEFCoreSharding(this IServiceCollection services, Action<IConfigInit> configInit)
         {
             if (_inited)
                 throw new Exception("只能初始化一次");

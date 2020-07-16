@@ -12,7 +12,7 @@ namespace Demo.Performance
         static void Main(string[] args)
         {
             ServiceCollection services = new ServiceCollection();
-            services.UseEFCoreSharding(config =>
+            services.AddEFCoreSharding(config =>
             {
                 config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
 

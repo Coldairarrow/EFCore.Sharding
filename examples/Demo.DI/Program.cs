@@ -11,7 +11,7 @@ namespace Demo.DI
         static void Main(string[] args)
         {
             ServiceCollection services = new ServiceCollection();
-            services.UseEFCoreSharding(config =>
+            services.AddEFCoreSharding(config =>
             {
                 //单表
                 config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer, "Demo.DI");

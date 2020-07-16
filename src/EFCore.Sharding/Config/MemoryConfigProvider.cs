@@ -25,6 +25,31 @@ namespace EFCore.Sharding
             return this;
         }
 
+        public IConfigInit UseDatabase((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace = null)
+        {
+            return UseDatabase<IDbAccessor>(dbs, dbType, entityNamespace);
+        }
+
+        public IConfigInit UseDatabase<TDbAccessor>((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace) where TDbAccessor : class, IDbAccessor
+        {
+            if (dbs.Any(x => !x.readWriteType.HasFlag(ReadWriteType.Read) || !x.readWriteType.HasFlag(ReadWriteType.Write)))
+                throw new Exception("dbs必须包含写库与读库");
+
+            ShardingConfig.ServiceDescriptors.AddScoped(_ =>
+            {
+                ILoggerFactory loggerFactory = _.GetService<ILoggerFactory>();
+
+                IDbAccessor db = new ReadWriteDbAccessor(dbs, dbType, entityNamespace, ShardingConfig.LogicDelete, loggerFactory);
+
+                if (typeof(TDbAccessor) == typeof(IDbAccessor))
+                    return (TDbAccessor)db;
+                else
+                    return db.ActLike<TDbAccessor>();
+            });
+
+            return this;
+        }
+
         public IConfigInit UseDatabase<TDbAccessor>(string conString, DatabaseType dbType, string entityNamespace) where TDbAccessor : class, IDbAccessor
         {
             if (ShardingConfig.ServiceDescriptors != null)
@@ -51,6 +76,7 @@ namespace EFCore.Sharding
         {
             return UseDatabase<IDbAccessor>(conString, dbType, entityNamespace);
         }
+
 
         public IConfigInit UseLogicDelete(string keyField = "Id", string deletedField = "Deleted")
         {
