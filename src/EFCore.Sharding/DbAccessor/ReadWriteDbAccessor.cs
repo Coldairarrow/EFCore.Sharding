@@ -411,6 +411,7 @@ namespace EFCore.Sharding
         #endregion
 
         #region Dispose
+
         private bool _disposed = false;
         public void Dispose()
         {

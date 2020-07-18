@@ -83,12 +83,17 @@ namespace EFCore.Sharding
         }
         private void AddPhysicTable<TEntity>(string suffix, string sourceName)
         {
-            _physicTables.Add(new PhysicTable
+            var entityType = typeof(TEntity);
+
+            if (!_physicTables.Any(x => x.EntityType == entityType && x.Suffix == suffix && x.DataSourceName == sourceName))
             {
-                DataSourceName = sourceName,
-                EntityType = typeof(TEntity),
-                Suffix = suffix
-            });
+                _physicTables.Add(new PhysicTable
+                {
+                    DataSourceName = sourceName,
+                    EntityType = entityType,
+                    Suffix = suffix
+                });
+            }
         }
         private void CreateTable<TEntity>(string sourceName, string suffix)
         {
