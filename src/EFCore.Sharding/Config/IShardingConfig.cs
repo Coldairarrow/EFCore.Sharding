@@ -12,7 +12,7 @@ namespace EFCore.Sharding
         string DeletedField { get; }
         List<Type> AllEntityTypes { get; }
         List<(string suffix, string conString, DatabaseType dbType)> GetReadTables<T>(IQueryable<T> source);
-        List<(string suffix, string conString, DatabaseType dbType)> GetAllWriteTables<T>();
+        List<(string suffix, string conString, DatabaseType dbType)> GetWriteTables<T>(IQueryable<T> source = null);
         (string suffix, string conString, DatabaseType dbType) GetTheWriteTable<T>(T obj);
     }
 }

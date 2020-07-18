@@ -109,7 +109,6 @@ namespace EFCore.Sharding
         #region 外部接口
 
         public bool OpenedTransaction { get; set; } = false;
-
         public IDbAccessor GetMapDbAccessor(string conString, DatabaseType dbType, string suffix)
         {
             var dbId = GetDbId(conString, dbType, suffix);
@@ -120,7 +119,6 @@ namespace EFCore.Sharding
 
             return db;
         }
-
         public int Insert<T>(T entity) where T : class
         {
             return Insert(new List<T> { entity });
@@ -143,7 +141,7 @@ namespace EFCore.Sharding
         }
         public async Task<int> DeleteAllAsync<T>() where T : class
         {
-            var configs = _shardingConfig.GetAllWriteTables<T>();
+            var configs = _shardingConfig.GetWriteTables<T>();
             return await PackAccessDataAsync(async () =>
             {
                 var tasks = configs.Select(x => GetMapDbAccessor(x.conString, x.dbType, x.suffix).DeleteAllAsync<T>());
@@ -175,6 +173,20 @@ namespace EFCore.Sharding
             var deleteList = GetIShardingQueryable<T>().Where(condition).ToList();
 
             return await DeleteAsync(deleteList);
+        }
+        public int Delete_Sql<T>(Expression<Func<T, bool>> where) where T : class
+        {
+            return AsyncHelper.RunSync(() => Delete_SqlAsync(where));
+        }
+        public async Task<int> Delete_SqlAsync<T>(Expression<Func<T, bool>> where) where T : class
+        {
+            var q = _db.GetIQueryable<T>().Where(where);
+            var configs = _shardingConfig.GetWriteTables<T>(q);
+            return await PackAccessDataAsync(async () =>
+            {
+                var tasks = configs.Select(x => GetMapDbAccessor(x.conString, x.dbType, x.suffix).Delete_SqlAsync<T>(where));
+                return (await Task.WhenAll(tasks.ToArray())).Sum();
+            });
         }
         public int Update<T>(T entity) where T : class
         {

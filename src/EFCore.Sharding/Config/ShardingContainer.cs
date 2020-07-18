@@ -103,14 +103,34 @@ namespace EFCore.Sharding
                 DbFactory.CreateTable(aDb.connectionString, theSource.DbType, typeof(TEntity), suffix);
             });
         }
+        private List<(string suffix, string conString, DatabaseType dbType)> FilterTable<T>(
+            List<(string suffix, string conString, DatabaseType dbType)> allTables, IQueryable<T> source)
+        {
+            var entityType = typeof(T);
+            string absTable = AnnotationHelper.GetDbTableName(source.ElementType);
+            var rule = _shardingRules.Where(x => x.EntityType == entityType).Single();
+            var allTableSuffixs = allTables.Select(x => x.suffix).ToList();
+            var findSuffixs = ShardingHelper.FilterTable(source, allTableSuffixs, rule);
+            allTables = allTables.Where(x => findSuffixs.Contains(x.suffix)).ToList();
+#if DEBUG
+            Console.WriteLine($"访问分表:{string.Join(",", findSuffixs.Select(x => $"{absTable}_{x}"))}");
+#endif
+            return allTables;
+        }
 
         #endregion
 
         #region 配置提供
 
-        public List<(string suffix, string conString, DatabaseType dbType)> GetAllWriteTables<T>()
+        public List<(string suffix, string conString, DatabaseType dbType)> GetWriteTables<T>(IQueryable<T> source = null)
         {
-            return GetTargetTables<T>(ReadWriteType.Write, null);
+            var tables = GetTargetTables<T>(ReadWriteType.Write, null);
+            if (source != null)
+            {
+                tables = FilterTable(tables, source);
+            }
+
+            return tables;
         }
         public (string suffix, string conString, DatabaseType dbType) GetTheWriteTable<T>(T obj)
         {
@@ -118,17 +138,9 @@ namespace EFCore.Sharding
         }
         public List<(string suffix, string conString, DatabaseType dbType)> GetReadTables<T>(IQueryable<T> source)
         {
-            var entityType = typeof(T);
-            string absTable = AnnotationHelper.GetDbTableName(source.ElementType);
-            var rule = _shardingRules.Where(x => x.EntityType == entityType).Single();
             var allTables = GetTargetTables<T>(ReadWriteType.Read);
-            var allTableSuffixs = allTables.Select(x => x.suffix).ToList();
-            var findSuffixs = ShardingHelper.FilterTable(source, allTableSuffixs, rule);
-            allTables = allTables.Where(x => findSuffixs.Contains(x.suffix)).ToList();
-#if DEBUG
-            Console.WriteLine($"查询分表:{string.Join(",", findSuffixs.Select(x => $"{absTable}_{x}"))}");
-#endif
-            return allTables;
+
+            return FilterTable(allTables, source);
         }
         public bool LogicDelete { get; set; } = false;
         public string KeyField { get; set; } = "Id";

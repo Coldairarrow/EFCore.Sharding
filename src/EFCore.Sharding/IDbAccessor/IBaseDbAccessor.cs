@@ -98,6 +98,26 @@ namespace EFCore.Sharding
         /// <param name="condition">筛选条件</param>
         Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class;
 
+        /// <summary>
+        /// 使用SQL语句按照条件删除数据
+        /// 用法:Delete_Sql"Base_User"(x=>x.Id == "Admin")
+        /// 注：生成的SQL类似于DELETE FROM [Base_User] WHERE [Name] = 'xxx' WHERE [Id] = 'Admin'
+        /// </summary>
+        /// <typeparam name="T">实体泛型</typeparam>
+        /// <param name="where">条件</param>
+        /// <returns>影响条数</returns>
+        int Delete_Sql<T>(Expression<Func<T, bool>> where) where T : class;
+
+        /// <summary>
+        /// 使用SQL语句按照条件删除数据
+        /// 用法:Delete_Sql"Base_User"(x=>x.Id == "Admin")
+        /// 注：生成的SQL类似于DELETE FROM [Base_User] WHERE [Name] = 'xxx' WHERE [Id] = 'Admin'
+        /// </summary>
+        /// <typeparam name="T">实体泛型</typeparam>
+        /// <param name="where">条件</param>
+        /// <returns>影响条数</returns>
+        Task<int> Delete_SqlAsync<T>(Expression<Func<T, bool>> where) where T : class;
+
         #endregion
 
         #region 更新数据
