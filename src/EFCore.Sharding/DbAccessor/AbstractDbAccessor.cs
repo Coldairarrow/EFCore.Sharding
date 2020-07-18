@@ -584,6 +584,10 @@ namespace EFCore.Sharding
                     cmd.Connection = conn;
                     cmd.CommandText = sql;
                     cmd.CommandTimeout = 5 * 60;
+                    if (_openedTransaction)
+                    {
+                        cmd.Transaction = _transaction.GetDbTransaction();
+                    }
 
                     if (parameters != null && parameters.Count() > 0)
                         cmd.Parameters.AddRange(CreateDbParamters(parameters.ToList()).ToArray());
@@ -617,6 +621,10 @@ namespace EFCore.Sharding
                     cmd.Connection = conn;
                     cmd.CommandText = sql;
                     cmd.CommandTimeout = 5 * 60;
+                    if (_openedTransaction)
+                    {
+                        cmd.Transaction = _transaction.GetDbTransaction();
+                    }
 
                     if (parameters != null && parameters.Count() > 0)
                         cmd.Parameters.AddRange(CreateDbParamters(parameters.ToList()).ToArray());
