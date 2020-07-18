@@ -21,10 +21,12 @@ namespace EFCore.Sharding.Tests
                 config.UseDatabase<ISQLiteDb1>(Config.SQLITE1, DatabaseType.SQLite);
                 config.UseDatabase<ISQLiteDb2>(Config.SQLITE2, DatabaseType.SQLite);
                 config.UseDatabase<ICustomDbAccessor>(Config.CONSTRING1, DatabaseType.SqlServer);
-                config.AddAbsDb(DatabaseType.SqlServer)
-                    .AddPhysicDb(ReadWriteType.Read | ReadWriteType.Write, Config.CONSTRING1)
-                    .AddPhysicDbGroup()
-                    .SetHashModShardingRule<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
+
+                //分表配置
+                //添加数据源
+                config.AddDataSource(Config.CONSTRING1, ReadWriteType.Read | ReadWriteType.Write, DatabaseType.SqlServer);
+                //设置分表规则
+                config.SetHashModSharding<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });
 
             ServiceProvider = services.BuildServiceProvider();

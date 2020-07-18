@@ -29,7 +29,7 @@ namespace EFCore.Sharding
             }
             else
             {
-                var q = ShardingConfig.AllEntityTypes.Where(x => x.GetCustomAttribute(typeof(TableAttribute), false) != null);
+                var q = Options.ShardingConfig.AllEntityTypes.Where(x => x.GetCustomAttribute(typeof(TableAttribute), false) != null);
 
                 //通过Namespace解决同表名问题
                 if (!Options.EntityNamespace.IsNullOrEmpty())

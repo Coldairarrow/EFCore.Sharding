@@ -15,14 +15,20 @@ namespace EFCore.Sharding
     /// </summary>
     internal class LogicDeleteDbAccessor : IDbAccessor
     {
-        public LogicDeleteDbAccessor(IDbAccessor db)
+        private bool _logicDelete;
+        private string _deletedField;
+        private string _keyField;
+        public LogicDeleteDbAccessor(IDbAccessor db, IShardingConfig shardingConfig)
         {
             FullDbAccessor = db;
+            _logicDelete = shardingConfig.LogicDelete;
+            _deletedField = shardingConfig.DeletedField;
+            _keyField = shardingConfig.KeyField;
         }
 
         bool NeedLogicDelete(Type entityType)
         {
-            return ShardingConfig.LogicDelete && entityType.GetProperties().Any(x => x.Name == ShardingConfig.DeletedField);
+            return _logicDelete && entityType.GetProperties().Any(x => x.Name == _deletedField);
         }
         public string ConnectionString => FullDbAccessor.ConnectionString;
         public DatabaseType DbType => FullDbAccessor.DbType;
@@ -34,7 +40,7 @@ namespace EFCore.Sharding
         private List<T> LogicDeleteFilter<T>(List<T> list)
         {
             if (NeedLogicDelete(typeof(T)))
-                return list.Where(x => !(bool)x.GetPropertyValue(ShardingConfig.DeletedField)).ToList();
+                return list.Where(x => !(bool)x.GetPropertyValue(_deletedField)).ToList();
             else
                 return list;
         }
@@ -50,7 +56,7 @@ namespace EFCore.Sharding
             var q = FullDbAccessor.GetIQueryable(type);
             if (NeedLogicDelete(type))
             {
-                q = q.Where($"{ShardingConfig.DeletedField} = @0", false);
+                q = q.Where($"{_deletedField} = @0", false);
             }
 
             return q;
@@ -95,13 +101,13 @@ namespace EFCore.Sharding
         }
         public int Delete(Type type, List<string> keys)
         {
-            var iq = GetIQueryable(type).Where($"@0.Contains({ShardingConfig.KeyField})", new object[] { keys });
+            var iq = GetIQueryable(type).Where($"@0.Contains({_keyField})", new object[] { keys });
 
             return Delete_Sql(iq);
         }
         public async Task<int> DeleteAsync(Type type, List<string> keys)
         {
-            var iq = GetIQueryable(type).Where($"@0.Contains({ShardingConfig.KeyField})", new object[] { keys });
+            var iq = GetIQueryable(type).Where($"@0.Contains({_keyField})", new object[] { keys });
 
             return await Delete_SqlAsync(iq);
         }
@@ -133,7 +139,7 @@ namespace EFCore.Sharding
         {
             if (entities?.Count > 0)
             {
-                var keys = entities.Select(x => x.GetPropertyValue(ShardingConfig.KeyField) as string).ToList();
+                var keys = entities.Select(x => x.GetPropertyValue(_keyField) as string).ToList();
                 return Delete(typeof(T), keys);
             }
             else
@@ -143,7 +149,7 @@ namespace EFCore.Sharding
         {
             if (entities?.Count > 0)
             {
-                var keys = entities.Select(x => x.GetPropertyValue(ShardingConfig.KeyField) as string).ToList();
+                var keys = entities.Select(x => x.GetPropertyValue(_keyField) as string).ToList();
                 return await DeleteAsync(typeof(T), keys);
             }
             else
@@ -202,14 +208,14 @@ namespace EFCore.Sharding
         public int Delete_Sql(IQueryable source)
         {
             if (NeedLogicDelete(source.ElementType))
-                return Update_Sql(source, (ShardingConfig.DeletedField, UpdateType.Equal, true));
+                return Update_Sql(source, (_deletedField, UpdateType.Equal, true));
             else
                 return FullDbAccessor.Delete_Sql(source);
         }
         public async Task<int> Delete_SqlAsync(IQueryable source)
         {
             if (NeedLogicDelete(source.ElementType))
-                return await Update_SqlAsync(source, (ShardingConfig.DeletedField, UpdateType.Equal, true));
+                return await Update_SqlAsync(source, (_deletedField, UpdateType.Equal, true));
             else
                 return await FullDbAccessor.Delete_SqlAsync(source);
         }

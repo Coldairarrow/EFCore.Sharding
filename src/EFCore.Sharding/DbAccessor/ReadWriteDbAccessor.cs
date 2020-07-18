@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -16,20 +15,24 @@ namespace EFCore.Sharding
         private readonly DatabaseType _dbType;
         private readonly string _entityNamespace;
         private readonly bool _logicDelete;
-        private readonly ILoggerFactory _loggerFactory;
+        private readonly IDbFactory _dbFactory;
+        private readonly IShardingConfig _shardingConfig;
         public ReadWriteDbAccessor(
             (string connectionString, ReadWriteType readWriteType)[] dbs,
             DatabaseType dbType,
             string entityNamespace,
-            bool logicDelete,
-            ILoggerFactory loggerFactory)
+            IDbFactory dbFactory,
+            IShardingConfig shardingConfig
+            )
         {
             _dbConfigs = dbs;
             _entityNamespace = entityNamespace;
             _dbType = dbType;
-            _logicDelete = logicDelete;
-            _loggerFactory = loggerFactory;
+            _logicDelete = shardingConfig.LogicDelete;
+            _dbFactory = dbFactory;
+            _shardingConfig = shardingConfig;
         }
+
         private (IDbAccessor db, ReadWriteType readWriteType)[] _allDbs;
         private (IDbAccessor db, ReadWriteType readWriteType)[] AllDbs
         {
@@ -38,7 +41,7 @@ namespace EFCore.Sharding
                 if (_allDbs == null)
                 {
                     _allDbs = _dbConfigs
-                        .Select(x => (DbFactory.GetDbAccessor(x.connectionString, _dbType, _entityNamespace, _loggerFactory), x.readWriteType))
+                        .Select(x => (_dbFactory.GetDbAccessor(x.connectionString, _dbType, _entityNamespace), x.readWriteType))
                         .ToArray();
                 }
 
@@ -52,7 +55,7 @@ namespace EFCore.Sharding
             var theDb = RandomHelper.Next(dbs).db;
 
             if (_logicDelete)
-                theDb = new LogicDeleteDbAccessor(theDb);
+                theDb = new LogicDeleteDbAccessor(theDb, _shardingConfig);
 
             return theDb;
         }

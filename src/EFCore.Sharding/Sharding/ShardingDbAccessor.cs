@@ -10,19 +10,22 @@ namespace EFCore.Sharding
 {
     internal class ShardingDbAccessor : IShardingDbAccessor
     {
+        private readonly IShardingConfig _shardingConfig;
+        private readonly IDbFactory _dbFactory;
+
         #region 构造函数
 
-        public ShardingDbAccessor(IDbAccessor db, string absDbName)
+        public ShardingDbAccessor(IShardingConfig shardingConfig, IDbFactory dbFactory)
         {
-            _db = db;
-            _absDbName = absDbName;
+            _shardingConfig = shardingConfig;
+            _dbFactory = dbFactory;
+            _db = _dbFactory.GetDbAccessor(string.Empty, shardingConfig.FindADbType());
         }
 
         #endregion
 
         #region 私有成员
 
-        private string _absDbName { get; }
         private IDbAccessor _db { get; }
         private string GetDbId(string conString, DatabaseType dbType, string suffix)
         {
@@ -63,7 +66,7 @@ namespace EFCore.Sharding
                 .Select(x => new
                 {
                     Obj = x,
-                    Conifg = ShardingConfig.ConfigProvider.GetTheWriteTable(x, _absDbName)
+                    Conifg = _shardingConfig.GetTheWriteTable(x)
                 })
                 .ToList()
                 .Select(x => (x.Obj, GetMapDbAccessor(x.Conifg.conString, x.Conifg.dbType, x.Conifg.suffix)))
@@ -110,7 +113,7 @@ namespace EFCore.Sharding
         public IDbAccessor GetMapDbAccessor(string conString, DatabaseType dbType, string suffix)
         {
             var dbId = GetDbId(conString, dbType, suffix);
-            IDbAccessor db = _dbs.GetOrAdd(dbId, key => DbFactory.GetDbAccessor(conString, dbType, null, null, suffix));
+            IDbAccessor db = _dbs.GetOrAdd(dbId, key => _dbFactory.GetDbAccessor(conString, dbType, null, suffix));
 
             if (OpenedTransaction)
                 _transaction.AddDbAccessor(db);
@@ -140,7 +143,7 @@ namespace EFCore.Sharding
         }
         public async Task<int> DeleteAllAsync<T>() where T : class
         {
-            var configs = ShardingConfig.ConfigProvider.GetAllWriteTables<T>(_absDbName);
+            var configs = _shardingConfig.GetAllWriteTables<T>();
             return await PackAccessDataAsync(async () =>
             {
                 var tasks = configs.Select(x => GetMapDbAccessor(x.conString, x.dbType, x.suffix).DeleteAllAsync<T>());
@@ -217,7 +220,7 @@ namespace EFCore.Sharding
         }
         public IShardingQueryable<T> GetIShardingQueryable<T>() where T : class
         {
-            return new ShardingQueryable<T>(_db.GetIQueryable<T>(), this, _absDbName);
+            return new ShardingQueryable<T>(_db.GetIQueryable<T>(), this, _shardingConfig, _dbFactory);
         }
         public List<T> GetList<T>() where T : class
         {

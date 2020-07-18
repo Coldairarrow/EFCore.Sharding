@@ -8,12 +8,32 @@ using System.Reflection;
 
 namespace EFCore.Sharding
 {
-    /// <summary>
-    /// 数据库工厂
-    /// </summary>
-    internal static class DbFactory
+    internal class DbFactory : IDbFactory
     {
-        #region 外部接口
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly IShardingConfig _shardingConfig;
+        public DbFactory(ILoggerFactory loggerFactory, IShardingConfig shardingConfig)
+        {
+            _loggerFactory = loggerFactory;
+            _shardingConfig = shardingConfig;
+        }
+
+        public IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, string entityNamespace = null, string suffix = null)
+        {
+            GenericDbContextOptions options = new GenericDbContextOptions
+            {
+                ConnectionString = conString,
+                DbType = dbType,
+                EntityNamespace = entityNamespace,
+                LoggerFactory = _loggerFactory,
+                Suffix = suffix,
+                ShardingConfig = _shardingConfig
+            };
+
+            var dbContext = GetDbContext(options);
+
+            return GetProvider(dbType).GetDbAccessor(dbContext);
+        }
 
         public static AbstractProvider GetProvider(DatabaseType databaseType)
         {
@@ -30,45 +50,6 @@ namespace EFCore.Sharding
             {
                 throw new Exception($"请安装nuget包:{assemblyName}");
             }
-        }
-
-        /// <summary>
-        /// 根据配置文件获取数据库类型，并返回对应的工厂接口
-        /// </summary>
-        /// <param name="conString">完整数据库链接字符串</param>
-        /// <param name="dbType">数据库类型</param>
-        /// <param name="entityNamespace">实体命名空间</param>
-        /// <param name="loggerFactory">日志工厂</param>
-        /// <param name="suffix">表明后缀</param>
-        /// <returns></returns>
-        public static IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, string entityNamespace = null, ILoggerFactory loggerFactory = null, string suffix = null)
-        {
-            GenericDbContextOptions options = new GenericDbContextOptions
-            {
-                ConnectionString = conString,
-                DbType = dbType,
-                EntityNamespace = entityNamespace,
-                LoggerFactory = loggerFactory,
-                Suffix = suffix
-            };
-
-            var dbContext = GetDbContext(options);
-
-            return GetProvider(dbType).GetDbAccessor(dbContext);
-        }
-
-        /// <summary>
-        /// 获取ShardingDbAccessor
-        /// </summary>
-        /// <param name="absDbName">抽象数据库</param>
-        /// <returns>ShardingDbAccessor</returns>
-        public static IShardingDbAccessor GetShardingDbAccessor(string absDbName = ShardingConfig.DefaultAbsDbName)
-        {
-            ShardingConfig.CheckInit();
-
-            var dbType = ShardingConfig.ConfigProvider.GetAbsDbType(absDbName);
-
-            return new ShardingDbAccessor(GetDbAccessor(string.Empty, dbType), absDbName);
         }
 
         public static void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
@@ -114,7 +95,5 @@ namespace EFCore.Sharding
 
             return new GenericDbContext(options);
         }
-
-        #endregion
     }
 }

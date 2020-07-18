@@ -35,7 +35,7 @@ namespace EFCore.Sharding
             protected bool IsParamter(Expression expression)
             {
                 return expression is MemberExpression member
-                    && member.Expression.Type == _rule.AbsTableType
+                    && member.Expression.Type == _rule.EntityType
                     && member.Member.Name == _rule.ShardingField;
             }
             protected bool IsConstant(Expression expression)

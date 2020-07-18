@@ -13,5 +13,6 @@ namespace EFCore.Sharding
         public Type[] EntityTypes { get; set; }
         public string Suffix { get; set; }
         public ILoggerFactory LoggerFactory { get; set; }
+        public IShardingConfig ShardingConfig { get; set; }
     }
 }

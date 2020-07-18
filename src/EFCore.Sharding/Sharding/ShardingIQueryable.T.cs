@@ -10,14 +10,18 @@ namespace EFCore.Sharding
 {
     internal class ShardingQueryable<T> : IShardingQueryable<T> where T : class
     {
+        private readonly IShardingConfig _shardingConfig;
+        private readonly IDbFactory _dbFactory;
+
         #region 构造函数
 
-        public ShardingQueryable(IQueryable<T> source, ShardingDbAccessor shardingDb, string absDbName)
+        public ShardingQueryable(IQueryable<T> source, ShardingDbAccessor shardingDb, IShardingConfig shardingConfig, IDbFactory dbFactory)
         {
             _source = source;
             _absTableName = AnnotationHelper.GetDbTableName(source.ElementType);
-            _absDbName = absDbName;
+            _shardingConfig = shardingConfig;
             _shardingDb = shardingDb;
+            _dbFactory = dbFactory;
         }
 
         #endregion
@@ -31,7 +35,7 @@ namespace EFCore.Sharding
         private async Task<List<TResult>> GetStatisDataAsync<TResult>(Func<IQueryable, Task<TResult>> access, IQueryable newSource = null)
         {
             newSource = newSource ?? _source;
-            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absDbName, _source);
+            var tables = _shardingConfig.GetReadTables(_source);
 
             List<Task<TResult>> tasks = new List<Task<TResult>>();
             SynchronizedCollection<IDbAccessor> dbs = new SynchronizedCollection<IDbAccessor>();
@@ -41,7 +45,7 @@ namespace EFCore.Sharding
                 if (_shardingDb.OpenedTransaction)
                     db = _shardingDb.GetMapDbAccessor(aTable.conString, aTable.dbType, aTable.suffix);
                 else
-                    db = DbFactory.GetDbAccessor(aTable.conString, aTable.dbType, null, null, aTable.suffix);
+                    db = _dbFactory.GetDbAccessor(aTable.conString, aTable.dbType, null, aTable.suffix);
 
                 dbs.Add(db);
                 var targetIQ = db.GetIQueryable<T>();
@@ -155,7 +159,7 @@ namespace EFCore.Sharding
                 noPaginSource = noPaginSource.Take(take.Value + skip.Value);
 
             //从各个分表获取数据
-            var tables = ShardingConfig.ConfigProvider.GetReadTables(_absDbName, _source);
+            var tables = _shardingConfig.GetReadTables(_source);
             SynchronizedCollection<IDbAccessor> dbs = new SynchronizedCollection<IDbAccessor>();
             List<Task<List<T>>> tasks = tables.Select(aTable =>
             {
@@ -163,7 +167,7 @@ namespace EFCore.Sharding
                 if (_shardingDb.OpenedTransaction)
                     db = _shardingDb.GetMapDbAccessor(aTable.conString, aTable.dbType, aTable.suffix);
                 else
-                    db = DbFactory.GetDbAccessor(aTable.conString, aTable.dbType, null, null, aTable.suffix);
+                    db = _dbFactory.GetDbAccessor(aTable.conString, aTable.dbType, null, aTable.suffix);
                 dbs.Add(db);
 
                 var targetIQ = db.GetIQueryable<T>();
