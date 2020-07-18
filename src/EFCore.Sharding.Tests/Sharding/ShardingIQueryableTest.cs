@@ -223,5 +223,23 @@ namespace EFCore.Sharding.Tests
             var db = await _db.GetIShardingQueryable<Base_UnitTest>().SumAsync(x => x.Age);
             Assert.AreEqual(local, db);
         }
+
+        [TestMethod]
+        public void Distinct()
+        {
+            _db.Insert(_dataList);
+            var local = _dataList.Select(x => x.UserName).Distinct().ToList().OrderBy(x => x);
+            var db = _db.GetIShardingQueryable<Base_UnitTest>().Distinct(x => x.UserName).OrderBy(x => x);
+            Assert.AreEqual(local.ToJson(), db.ToJson());
+        }
+
+        [TestMethod]
+        public async Task DistinctAsync()
+        {
+            _db.Insert(_dataList);
+            var local = _dataList.Select(x => x.UserName).Distinct().ToList().OrderBy(x => x);
+            var db = (await _db.GetIShardingQueryable<Base_UnitTest>().DistinctAsync(x => x.UserName)).OrderBy(x => x);
+            Assert.AreEqual(local.ToJson(), db.ToJson());
+        }
     }
 }

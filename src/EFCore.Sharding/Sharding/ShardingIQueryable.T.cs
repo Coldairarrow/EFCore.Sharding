@@ -212,6 +212,22 @@ namespace EFCore.Sharding
 
             return q.FirstOrDefault();
         }
+        public List<TResult> Distinct<TResult>(Expression<Func<T, TResult>> selector)
+        {
+            return AsyncHelper.RunSync(() => DistinctAsync(selector));
+        }
+        public async Task<List<TResult>> DistinctAsync<TResult>(Expression<Func<T, TResult>> selector)
+        {
+            var newSource = _source.Select(selector);
+
+            var results = await GetStatisDataAsync<List<TResult>>(x =>
+            {
+                var q = Queryable.Distinct((dynamic)x);
+                return EntityFrameworkQueryableExtensions.ToListAsync(q);
+            }, newSource);
+
+            return results.SelectMany(x => x).Distinct().ToList();
+        }
         public TResult Max<TResult>(Expression<Func<T, TResult>> selector)
         {
             return AsyncHelper.RunSync(() => MaxAsync(selector));
