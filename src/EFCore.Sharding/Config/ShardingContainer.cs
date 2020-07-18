@@ -263,7 +263,8 @@ namespace EFCore.Sharding
         }
         public IShardingBuilder UseDatabase<TDbAccessor>((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace) where TDbAccessor : class, IDbAccessor
         {
-            if (dbs.Any(x => !x.readWriteType.HasFlag(ReadWriteType.Read) || !x.readWriteType.HasFlag(ReadWriteType.Write)))
+            if (!(dbs.Any(x => x.readWriteType.HasFlag(ReadWriteType.Read))
+                && dbs.Any(x => x.readWriteType.HasFlag(ReadWriteType.Write))))
                 throw new Exception("dbs必须包含写库与读库");
 
             _services.AddScoped(_ =>

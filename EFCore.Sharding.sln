@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.DateSharding", "exampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.ModSharding", "examples\Demo.ModSharding\Demo.ModSharding.csproj", "{DE52D2B9-9A6E-41E8-8DA4-576F34EFFFFC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.ReadWrite", "examples\Demo.ReadWrite\Demo.ReadWrite.csproj", "{35C78CEB-C398-4FA8-885E-CC926F897924}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{DE52D2B9-9A6E-41E8-8DA4-576F34EFFFFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE52D2B9-9A6E-41E8-8DA4-576F34EFFFFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE52D2B9-9A6E-41E8-8DA4-576F34EFFFFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35C78CEB-C398-4FA8-885E-CC926F897924}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35C78CEB-C398-4FA8-885E-CC926F897924}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35C78CEB-C398-4FA8-885E-CC926F897924}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35C78CEB-C398-4FA8-885E-CC926F897924}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -88,6 +94,7 @@ Global
 		{5E7C953F-88C0-4408-A1F6-4E36FE94791A} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
 		{24489CA3-CF39-4B95-828E-BE95258251EB} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
 		{DE52D2B9-9A6E-41E8-8DA4-576F34EFFFFC} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
+		{35C78CEB-C398-4FA8-885E-CC926F897924} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {777B6C86-08A0-4823-83C5-4DE00B557828}
