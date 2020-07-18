@@ -8,6 +8,8 @@
   - [性能测试](#性能测试)
   - [其它简单操作(非Sharing)](#其它简单操作非sharing)
 - [高级配置](#高级配置)
+  - [多主键等配置](#多主键等配置)
+  - [读写分离](#读写分离)
 - [注意事项](#注意事项)
 - [总结](#总结)
 
@@ -293,9 +295,79 @@ namespace Demo.Performance
 详细使用方式参考 [链接](https://github.com/Coldairarrow/EFCore.Sharding/blob/master/src/EFCore.Sharding.Tests/DbAccessor/DbAccessorTest.cs)
 
 # 高级配置
+## 多主键等配置
+
 多主键、索引等高级配置请使用**IEntityTypeConfiguration**
 参考[fluentApi](https://www.learnentityframeworkcore.com/configuration/fluent-api)
 
+## 读写分离
+数据库读写分离在大型项目中十分常见,通常在数据库层完成自动读写分离  
+- MySQL可以使用ProxySQL完成全自动读写分离集群  
+- PostgreSQL可以使用Pgool完成全自动读写分离集群  
+- SQLServer可以使用AlwaysOn,但是需要在连接字符串中加上 ApplicationIntent=ReadOnly,因此只是**半自动**的  
+本框架支持将半自动读写分离升级成全自动,即在代码层无需感知读写分离切换,代码层只需跟普通一样使用IDbAccessor即可  
+代码如下([链接](https://github.com/Coldairarrow/EFCore.Sharding/blob/master/examples/Demo.ReadWrite/Program.cs))  
+```c#
+using EFCore.Sharding;
+using EFCore.Sharding.Tests;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
+
+namespace Demo.ReadWrite
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            ServiceCollection services = new ServiceCollection();
+            services.AddLogging(config =>
+            {
+                config.AddConsole();
+            });
+            services.AddEFCoreSharding(config =>
+            {
+                config.SetEntityAssembly("EFCore.Sharding");
+
+                //SQLITE1作为主库(写库)
+                //SQLITE2作为从库(读库)
+                config.UseDatabase(new (string, ReadWriteType)[]
+                {
+                    (Config.SQLITE1, ReadWriteType.Write),
+                    (Config.SQLITE2, ReadWriteType.Read)
+                }, DatabaseType.SQLite);
+            });
+            var serviceProvider = services.BuildServiceProvider();
+
+            using var scop = serviceProvider.CreateScope();
+            //拿到注入的IDbAccessor即可进行所有数据库操作
+            var db = scop.ServiceProvider.GetService<IDbAccessor>();
+            var logger = scop.ServiceProvider.GetService<ILogger<Program>>();
+            while (true)
+            {
+                await db.InsertAsync(new Base_UnitTest
+                {
+                    Age = 100,
+                    CreateTime = DateTime.Now,
+                    Id = Guid.NewGuid().ToString(),
+                    UserId = Guid.NewGuid().ToString(),
+                    UserName = Guid.NewGuid().ToString()
+                });
+                var count = await db.GetIQueryable<Base_UnitTest>().CountAsync();
+
+                //注意:这里数量始终为0,因为SQLITE1与SQLITE2没有开启主从复制
+                //在实际使用中应在数据库层开启主从复制
+                logger.LogWarning("当前数量:{Count}", count);
+
+                await Task.Delay(1000);
+            }
+        }
+    }
+}
+
+```
 # 注意事项
 
 - 查询尽量使用分表字段进行筛选，避免全表扫描
