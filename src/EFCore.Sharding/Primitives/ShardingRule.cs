@@ -5,7 +5,6 @@ namespace EFCore.Sharding
     internal class ShardingRule
     {
         public Type EntityType { get; set; }
-        public string TableName { get => AnnotationHelper.GetDbTableName(EntityType); }
         public ShardingType ShardingType { get; set; }
         public string ShardingField { get; set; }
         public int Mod { get; set; }

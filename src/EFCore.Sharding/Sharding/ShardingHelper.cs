@@ -127,9 +127,9 @@ namespace EFCore.Sharding
 
                     string op = binaryExpression.NodeType switch
                     {
-                        ExpressionType.GreaterThan => paramterAtLeft ? ">" : "<",
+                        ExpressionType.GreaterThan => paramterAtLeft ? ">=" : "<=",
                         ExpressionType.GreaterThanOrEqual => paramterAtLeft ? ">=" : "<=",
-                        ExpressionType.LessThan => paramterAtLeft ? "<" : ">",
+                        ExpressionType.LessThan => paramterAtLeft ? "<=" : ">=",
                         ExpressionType.LessThanOrEqual => paramterAtLeft ? "<=" : ">=",
                         ExpressionType.Equal => "==",
                         ExpressionType.NotEqual => "!=",
@@ -139,17 +139,22 @@ namespace EFCore.Sharding
                     if (op == null || value == null)
                         return x => true;
 
-                    string tableSuffix = value.Value.ToString("yyyyMMddHHmmss");
-                    var newTableSuffixs = _allTableSuffixs.Concat(new string[] { tableSuffix }).OrderBy(x => x).ToList();
-                    int index = newTableSuffixs.IndexOf(tableSuffix);
+                    string realSuffix = _rule.GetTableSuffixByField(value.Value);
+                    int index = _allTableSuffixs.IndexOf(realSuffix);
 
-                    if (binaryExpression.NodeType == ExpressionType.GreaterThan
-                        || binaryExpression.NodeType == ExpressionType.GreaterThanOrEqual
-                        || binaryExpression.NodeType == ExpressionType.Equal
-                        || binaryExpression.NodeType == ExpressionType.NotEqual
-                        )
+                    //超出范围
+                    if (index == -1)
                     {
-                        index = index - 1;
+                        string fullSuffix = value.Value.ToString("yyyyMMddHHmmss");
+                        var newTableSuffixs = _allTableSuffixs.Concat(new string[] { fullSuffix }).OrderBy(x => x).ToList();
+                        int fullIndex = newTableSuffixs.IndexOf(fullSuffix);
+
+                        if (fullIndex == 0 && (op == ">=" || op == "!="))
+                            return x => true;
+                        else if (fullIndex == newTableSuffixs.Count - 1 && (op == "<=" || op == "!="))
+                            return x => true;
+                        else
+                            return x => false;
                     }
 
                     var newWhere = DynamicExpressionParser.ParseLambda<int, bool>(

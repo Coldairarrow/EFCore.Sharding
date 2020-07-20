@@ -9,7 +9,7 @@
     <PackageProjectUrl>https://github.com/Coldairarrow/EFCore.Sharding</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Coldairarrow/EFCore.Sharding</RepositoryUrl>
     <RepositoryType>github</RepositoryType>
-    <Version>3.1.6.1</Version>
+    <Version>3.1.6.2</Version>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
