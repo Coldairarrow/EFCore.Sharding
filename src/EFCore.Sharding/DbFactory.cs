@@ -88,7 +88,6 @@ namespace EFCore.Sharding
             provider.UseDatabase(builder, dbConnection);
             builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();
 
-            builder.EnableSensitiveDataLogging();
             builder.UseLoggerFactory(options.LoggerFactory);
 
             options.ContextOptions = builder.Options;
