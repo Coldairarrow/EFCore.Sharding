@@ -21,13 +21,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding.Tests", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Performance", "examples\Demo.Performance\Demo.Performance.csproj", "{E47126C7-7B5B-4889-972E-3B6B4DB0335A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.HelloWorld", "examples\Demo.HelloWorld\Demo.HelloWorld.csproj", "{5E7C953F-88C0-4408-A1F6-4E36FE94791A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.HelloWorld", "examples\Demo.HelloWorld\Demo.HelloWorld.csproj", "{5E7C953F-88C0-4408-A1F6-4E36FE94791A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.DateSharding", "examples\Demo.DateSharding\Demo.DateSharding.csproj", "{24489CA3-CF39-4B95-828E-BE95258251EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.DateSharding", "examples\Demo.DateSharding\Demo.DateSharding.csproj", "{24489CA3-CF39-4B95-828E-BE95258251EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.ModSharding", "examples\Demo.ModSharding\Demo.ModSharding.csproj", "{DE52D2B9-9A6E-41E8-8DA4-576F34EFFFFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.ModSharding", "examples\Demo.ModSharding\Demo.ModSharding.csproj", "{DE52D2B9-9A6E-41E8-8DA4-576F34EFFFFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.ReadWrite", "examples\Demo.ReadWrite\Demo.ReadWrite.csproj", "{35C78CEB-C398-4FA8-885E-CC926F897924}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.ReadWrite", "examples\Demo.ReadWrite\Demo.ReadWrite.csproj", "{35C78CEB-C398-4FA8-885E-CC926F897924}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

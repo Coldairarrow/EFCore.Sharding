@@ -43,7 +43,11 @@ namespace EFCore.Sharding
             //支持IEntityTypeConfiguration配置
             entityTypes.Select(x => x.Assembly).Distinct().ToList().ForEach(aAssembly =>
             {
-                modelBuilder.ApplyConfigurationsFromAssembly(aAssembly);
+                modelBuilder.ApplyConfigurationsFromAssembly(aAssembly, x =>
+                {
+                    //仅加载对应实体配置
+                    return entityTypes.Any(y => typeof(IEntityTypeConfiguration<>).MakeGenericType(y).IsAssignableFrom(x));
+                });
             });
 
             entityTypes.ForEach(aEntity =>
