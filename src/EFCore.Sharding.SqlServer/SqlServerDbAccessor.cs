@@ -24,6 +24,8 @@ namespace EFCore.Sharding.SqlServer
         {
             using (var bulkCopy = GetSqlBulkCopy())
             {
+                bulkCopy.BulkCopyTimeout = 0;
+
                 bulkCopy.BatchSize = entities.Count;
                 if (tableName.IsNullOrEmpty())
                 {
