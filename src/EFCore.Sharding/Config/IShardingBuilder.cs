@@ -21,6 +21,13 @@ namespace EFCore.Sharding
         IShardingBuilder SetEntityAssembly(params string[] entityAssemblyNames);
 
         /// <summary>
+        /// 设置SQL执行超时时间(单位秒,默认30)
+        /// </summary>
+        /// <param name="timeout">超时时间</param>
+        /// <returns></returns>
+        IShardingBuilder SetCommandTimeout(int timeout);
+
+        /// <summary>
         /// 使用逻辑删除
         /// </summary>
         /// <param name="keyField">主键字段,字段类型为string</param>

@@ -11,6 +11,7 @@ namespace EFCore.Sharding
         string KeyField { get; }
         string DeletedField { get; }
         List<Type> AllEntityTypes { get; }
+        public int CommandTimeout { get; }
         List<(string suffix, string conString, DatabaseType dbType)> GetReadTables<T>(IQueryable<T> source);
         List<(string suffix, string conString, DatabaseType dbType)> GetWriteTables<T>(IQueryable<T> source = null);
         (string suffix, string conString, DatabaseType dbType) GetTheWriteTable<T>(T obj);

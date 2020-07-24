@@ -210,6 +210,7 @@ namespace EFCore.Sharding
                 return _allEntityTypes;
             }
         }
+        public int CommandTimeout { get; set; } = 30;
 
         #endregion
 
@@ -224,6 +225,12 @@ namespace EFCore.Sharding
         public IShardingBuilder SetEntityAssembly(params string[] entityAssemblyNames)
         {
             AssemblyNames.AddRange(entityAssemblyNames);
+
+            return this;
+        }
+        public IShardingBuilder SetCommandTimeout(int timeout)
+        {
+            CommandTimeout = timeout;
 
             return this;
         }

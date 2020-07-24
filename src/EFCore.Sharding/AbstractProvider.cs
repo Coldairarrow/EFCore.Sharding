@@ -3,58 +3,15 @@ using System.Data.Common;
 
 namespace EFCore.Sharding
 {
-    /// <summary>
-    /// 数据库提供抽象类
-    /// </summary>
     internal abstract class AbstractProvider
     {
-        /// <summary>
-        /// 使用某个数据库
-        /// </summary>
-        /// <param name="dbContextOptionsBuilder">dbContextOptionsBuilder</param>
-        /// <param name="dbConnection">连接字符串</param>
-        public abstract void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection);
-
-        /// <summary>
-        /// 获取ModelBuilder
-        /// </summary>
-        /// <returns></returns>
+        public abstract void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection, GenericDbContextOptions options);
         public abstract ModelBuilder GetModelBuilder();
-
-        /// <summary>
-        /// 获取数据库接口
-        /// </summary>
-        /// <param name="baseDbContext">DbContext</param>
-        /// <returns></returns>
         public abstract IDbAccessor GetDbAccessor(GenericDbContext baseDbContext);
-
-        /// <summary>
-        /// 提供工厂
-        /// </summary>
         public abstract DbProviderFactory DbProviderFactory { get; }
-
-        /// <summary>
-        /// 获取DbConnection
-        /// </summary>
-        /// <returns></returns>
         public DbConnection GetDbConnection() => DbProviderFactory.CreateConnection();
-
-        /// <summary>
-        /// 获取DbCommand
-        /// </summary>
-        /// <returns></returns>
         public DbCommand GetDbCommand() => DbProviderFactory.CreateCommand();
-
-        /// <summary>
-        /// 获取DbParameter
-        /// </summary>
-        /// <returns></returns>
         public DbParameter GetDbParameter() => DbProviderFactory.CreateParameter();
-
-        /// <summary>
-        /// 获取DataAdapter
-        /// </summary>
-        /// <returns></returns>
         public DataAdapter GetDataAdapter() => DbProviderFactory.CreateDataAdapter();
     }
 }

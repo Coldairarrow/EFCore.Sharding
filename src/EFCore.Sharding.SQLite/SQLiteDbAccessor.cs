@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EFCore.Sharding.SQLite
+﻿namespace EFCore.Sharding.SQLite
 {
     internal class SQLiteDbAccessor : AbstractDbAccessor, IDbAccessor
     {

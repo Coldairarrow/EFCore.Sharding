@@ -586,7 +586,7 @@ namespace EFCore.Sharding
                 {
                     cmd.Connection = conn;
                     cmd.CommandText = sql;
-                    cmd.CommandTimeout = 5 * 60;
+                    cmd.CommandTimeout = _db.Options.ShardingConfig.CommandTimeout;
                     if (_openedTransaction)
                     {
                         cmd.Transaction = _transaction.GetDbTransaction();
