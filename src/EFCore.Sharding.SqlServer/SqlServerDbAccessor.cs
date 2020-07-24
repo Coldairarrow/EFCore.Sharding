@@ -20,13 +20,16 @@ namespace EFCore.Sharding.SqlServer
             return $"[{name}]";
         }
 
-        public override void BulkInsert<T>(List<T> entities)
+        public override void BulkInsert<T>(List<T> entities, string tableName = null)
         {
             using (var bulkCopy = GetSqlBulkCopy())
             {
                 bulkCopy.BatchSize = entities.Count;
-                var tableAttribute = (TableAttribute)typeof(T).GetCustomAttributes(typeof(TableAttribute), false).First();
-                var tableName = tableAttribute.Name;
+                if (tableName.IsNullOrEmpty())
+                {
+                    var tableAttribute = (TableAttribute)typeof(T).GetCustomAttributes(typeof(TableAttribute), false).First();
+                    tableName = tableAttribute.Name;
+                }
                 bulkCopy.DestinationTableName = tableName;
 
                 var table = new DataTable();

@@ -21,7 +21,7 @@ namespace EFCore.Sharding.MySql
             return $"`{name}`";
         }
 
-        public override void BulkInsert<T>(List<T> entities)
+        public override void BulkInsert<T>(List<T> entities, string tableName)
         {
             DataTable dt = entities.ToDataTable();
             using (MySqlConnection conn = new MySqlConnection())
@@ -32,12 +32,14 @@ namespace EFCore.Sharding.MySql
                     conn.Open();
                 }
 
-                string tableName = string.Empty;
-                var tableAttribute = typeof(T).GetCustomAttributes(typeof(TableAttribute), true).FirstOrDefault();
-                if (tableAttribute != null)
-                    tableName = ((TableAttribute)tableAttribute).Name;
-                else
-                    tableName = typeof(T).Name;
+                if (tableName.IsNullOrEmpty())
+                {
+                    var tableAttribute = typeof(T).GetCustomAttributes(typeof(TableAttribute), true).FirstOrDefault();
+                    if (tableAttribute != null)
+                        tableName = ((TableAttribute)tableAttribute).Name;
+                    else
+                        tableName = typeof(T).Name;
+                }
 
                 int insertCount = 0;
                 string tmpPath = Path.Combine(Path.GetTempPath(), DateTime.Now.Ticks.ToString() + "_" + Guid.NewGuid().ToString() + ".tmp");

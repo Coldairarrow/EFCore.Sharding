@@ -10,11 +10,6 @@ namespace EFCore.Sharding.SQLite
         {
         }
 
-        public override void BulkInsert<T>(List<T> entities)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override string FormatFieldName(string name)
         {
             return $"[{name}]";

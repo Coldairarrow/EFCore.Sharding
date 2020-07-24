@@ -38,7 +38,8 @@ namespace EFCore.Sharding
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entities">实体集合</param>
-        void BulkInsert<T>(List<T> entities) where T : class;
+        /// <param name="tableName">自定义表名</param>
+        void BulkInsert<T>(List<T> entities, string tableName = null) where T : class;
 
         #endregion
 

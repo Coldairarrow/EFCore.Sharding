@@ -150,9 +150,9 @@ namespace EFCore.Sharding
 
         #region 增
 
-        public void BulkInsert<T>(List<T> entities) where T : class
+        public void BulkInsert<T>(List<T> entities, string tableName = null) where T : class
         {
-            WriteDb.BulkInsert(entities);
+            WriteDb.BulkInsert(entities, tableName);
         }
         public int Insert<T>(T entity) where T : class
         {

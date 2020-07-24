@@ -224,9 +224,9 @@ namespace EFCore.Sharding
 
         #region 忽略
 
-        public void BulkInsert<T>(List<T> entities) where T : class
+        public void BulkInsert<T>(List<T> entities, string tableName = null) where T : class
         {
-            FullDbAccessor.BulkInsert(entities);
+            FullDbAccessor.BulkInsert(entities, tableName);
         }
         public int Update_Sql<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
         {

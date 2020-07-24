@@ -295,7 +295,10 @@ namespace EFCore.Sharding
 
             return await _db.SaveChangesAsync();
         }
-        public abstract void BulkInsert<T>(List<T> entities) where T : class;
+        public virtual void BulkInsert<T>(List<T> entities, string tableName = null) where T : class
+        {
+            throw new NotImplementedException("暂不支持");
+        }
 
         #endregion
 
