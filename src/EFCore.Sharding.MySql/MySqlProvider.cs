@@ -13,9 +13,9 @@ namespace EFCore.Sharding.MySql
 
         public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new MySqlDbAccessor(baseDbContext);
 
-        public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection, GenericDbContextOptions options)
+        public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            dbContextOptionsBuilder.UseMySql(dbConnection, config => config.CommandTimeout(options.ShardingConfig?.CommandTimeout ?? 30));
+            dbContextOptionsBuilder.UseMySql(dbConnection);
         }
     }
 }

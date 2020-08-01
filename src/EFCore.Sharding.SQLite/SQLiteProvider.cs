@@ -13,9 +13,9 @@ namespace EFCore.Sharding.SQLite
 
         public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new SQLiteDbAccessor(baseDbContext);
 
-        public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection, GenericDbContextOptions options)
+        public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            dbContextOptionsBuilder.UseSqlite(dbConnection, config => config.CommandTimeout(options.ShardingConfig?.CommandTimeout ?? 30));
+            dbContextOptionsBuilder.UseSqlite(dbConnection);
         }
     }
 }

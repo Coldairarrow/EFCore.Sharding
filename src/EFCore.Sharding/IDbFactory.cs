@@ -1,4 +1,6 @@
-﻿namespace EFCore.Sharding
+﻿using System;
+
+namespace EFCore.Sharding
 {
     public interface IDbFactory
     {

@@ -13,9 +13,9 @@ namespace EFCore.Sharding.PostgreSql
 
         public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new PostgreSqlDbAccessor(baseDbContext);
 
-        public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection, GenericDbContextOptions options)
+        public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            dbContextOptionsBuilder.UseNpgsql(dbConnection, config => config.CommandTimeout(options.ShardingConfig?.CommandTimeout ?? 30));
+            dbContextOptionsBuilder.UseNpgsql(dbConnection);
         }
     }
 }

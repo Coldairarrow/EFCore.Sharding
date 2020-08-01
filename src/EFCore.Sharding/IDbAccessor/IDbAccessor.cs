@@ -29,6 +29,20 @@ namespace EFCore.Sharding
         /// </summary>
         IDbAccessor FullDbAccessor { get; }
 
+        /// <summary>
+        /// 保存修改到数据库(需要GetIQueryable开启实体追踪)
+        /// </summary>
+        /// <param name="tracking">是否开启实体追踪</param>
+        /// <returns></returns>
+        int SaveChanges(bool tracking = true);
+
+        /// <summary>
+        /// 保存修改到数据库(需要GetIQueryable开启实体追踪)
+        /// </summary>
+        /// <param name="tracking">是否开启实体追踪</param>
+        /// <returns></returns>
+        Task<int> SaveChangesAsync(bool tracking = true);
+
         #endregion
 
         #region 增加数据
@@ -120,7 +134,7 @@ namespace EFCore.Sharding
         /// <param name="where">动态where</param>
         /// <param name="paramters">where参数</param>
         /// <returns></returns>
-        int Delete_Sql(Type entityType, string where, params object[] paramters);
+        int DeleteSql(Type entityType, string where, params object[] paramters);
 
         /// <summary>
         /// 使用SQL语句按照条件删除数据
@@ -129,21 +143,21 @@ namespace EFCore.Sharding
         /// <param name="where">动态where</param>
         /// <param name="paramters">where参数</param>
         /// <returns></returns>
-        Task<int> Delete_SqlAsync(Type entityType, string where, params object[] paramters);
+        Task<int> DeleteSqlAsync(Type entityType, string where, params object[] paramters);
 
         /// <summary>
         /// 删除指定数据源
         /// </summary>
         /// <param name="source">数据源</param>
         /// <returns></returns>
-        int Delete_Sql(IQueryable source);
+        int DeleteSql(IQueryable source);
 
         /// <summary>
         /// 删除指定数据源
         /// </summary>
         /// <param name="source">数据源</param>
         /// <returns></returns>
-        Task<int> Delete_SqlAsync(IQueryable source);
+        Task<int> DeleteSqlAsync(IQueryable source);
 
         #endregion
 
@@ -158,7 +172,7 @@ namespace EFCore.Sharding
         /// <param name="where">筛选条件</param>
         /// <param name="values">字段值设置</param>
         /// <returns>影响条数</returns>
-        int Update_Sql<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class;
+        int UpdateSql<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class;
 
         /// <summary>
         /// 使用SQL语句按照条件更新
@@ -169,7 +183,7 @@ namespace EFCore.Sharding
         /// <param name="where">筛选条件</param>
         /// <param name="values">字段值设置</param>
         /// <returns>影响条数</returns>
-        Task<int> Update_SqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class;
+        Task<int> UpdateSqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class;
 
         /// <summary>
         /// 使用SQL语句按照条件更新
@@ -181,7 +195,7 @@ namespace EFCore.Sharding
         /// <param name="paramters">参数</param>
         /// <param name="values">字段值设置</param>
         /// <returns>影响条数</returns>
-        int Update_Sql(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values);
+        int UpdateSql(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values);
 
         /// <summary>
         /// 使用SQL语句按照条件更新
@@ -193,7 +207,7 @@ namespace EFCore.Sharding
         /// <param name="paramters">参数</param>
         /// <param name="values">字段值设置</param>
         /// <returns>影响条数</returns>
-        Task<int> Update_SqlAsync(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values);
+        Task<int> UpdateSqlAsync(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values);
 
         /// <summary>
         /// 使用SQL语句按照条件更新
@@ -203,7 +217,7 @@ namespace EFCore.Sharding
         /// <param name="source">数据源</param>
         /// <param name="values">字段值设置</param>
         /// <returns>影响条数</returns>
-        int Update_Sql(IQueryable source, params (string field, UpdateType updateType, object value)[] values);
+        int UpdateSql(IQueryable source, params (string field, UpdateType updateType, object value)[] values);
 
         /// <summary>
         /// 使用SQL语句按照条件更新
@@ -213,7 +227,7 @@ namespace EFCore.Sharding
         /// <param name="source">数据源</param>
         /// <param name="values">字段值设置</param>
         /// <returns>影响条数</returns>
-        Task<int> Update_SqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values);
+        Task<int> UpdateSqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values);
 
         #endregion
 
@@ -254,16 +268,18 @@ namespace EFCore.Sharding
         /// 注:默认取消实体追踪
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
+        /// <param name="tracking">是否开启实体追踪</param>
         /// <returns></returns>
-        IQueryable<T> GetIQueryable<T>() where T : class;
+        IQueryable<T> GetIQueryable<T>(bool tracking = false) where T : class;
 
         /// <summary>
         /// 获取IQueryable
         /// 注:默认取消实体追踪
         /// </summary>
         /// <param name="type">实体泛型</param>
+        /// <param name="tracking">是否开启实体追踪</param>
         /// <returns></returns>
-        IQueryable GetIQueryable(Type type);
+        IQueryable GetIQueryable(Type type, bool tracking = false);
 
         /// <summary>
         /// 通过SQL获取DataTable

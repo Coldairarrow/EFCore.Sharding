@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace EFCore.Sharding.Oracle
 {
-    internal class OracleRepository : DbRepository, IRepository
+    internal class OracleDbAccessor : AbstractDbAccessor, IDbAccessor
     {
-        public OracleRepository(BaseDbContext baseDbContext)
+        public OracleDbAccessor(GenericDbContext baseDbContext)
             : base(baseDbContext)
         {
         }
@@ -20,9 +19,9 @@ namespace EFCore.Sharding.Oracle
             return $":{name}";
         }
 
-        public override void BulkInsert<T>(List<T> entities)
+        protected override string GetSchema(string schema)
         {
-            throw new Exception("暂不支持");
+            return _db.Database.GetDbConnection().Database;
         }
     }
 }

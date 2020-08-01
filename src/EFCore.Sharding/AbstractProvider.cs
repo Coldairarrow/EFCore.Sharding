@@ -5,7 +5,7 @@ namespace EFCore.Sharding
 {
     internal abstract class AbstractProvider
     {
-        public abstract void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection, GenericDbContextOptions options);
+        public abstract void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection);
         public abstract ModelBuilder GetModelBuilder();
         public abstract IDbAccessor GetDbAccessor(GenericDbContext baseDbContext);
         public abstract DbProviderFactory DbProviderFactory { get; }

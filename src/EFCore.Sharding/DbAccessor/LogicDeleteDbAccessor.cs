@@ -18,12 +18,12 @@ namespace EFCore.Sharding
         private bool _logicDelete;
         private string _deletedField;
         private string _keyField;
-        public LogicDeleteDbAccessor(IDbAccessor db, IShardingConfig shardingConfig)
+        public LogicDeleteDbAccessor(IDbAccessor db)
         {
             FullDbAccessor = db;
-            _logicDelete = shardingConfig.LogicDelete;
-            _deletedField = shardingConfig.DeletedField;
-            _keyField = shardingConfig.KeyField;
+            _logicDelete = Constant.LogicDelete;
+            _deletedField = Constant.DeletedField;
+            _keyField = Constant.KeyField;
         }
 
         bool NeedLogicDelete(Type entityType)
@@ -47,13 +47,13 @@ namespace EFCore.Sharding
 
         #region 重写
 
-        public IQueryable<T> GetIQueryable<T>() where T : class
+        public IQueryable<T> GetIQueryable<T>(bool tracking = false) where T : class
         {
-            return GetIQueryable(typeof(T)) as IQueryable<T>;
+            return GetIQueryable(typeof(T), tracking) as IQueryable<T>;
         }
-        public IQueryable GetIQueryable(Type type)
+        public IQueryable GetIQueryable(Type type, bool tracking = false)
         {
-            var q = FullDbAccessor.GetIQueryable(type);
+            var q = FullDbAccessor.GetIQueryable(type, tracking);
             if (NeedLogicDelete(type))
             {
                 q = q.Where($"{_deletedField} = @0", false);
@@ -103,13 +103,13 @@ namespace EFCore.Sharding
         {
             var iq = GetIQueryable(type).Where($"@0.Contains({_keyField})", new object[] { keys });
 
-            return Delete_Sql(iq);
+            return DeleteSql(iq);
         }
         public async Task<int> DeleteAsync(Type type, List<string> keys)
         {
             var iq = GetIQueryable(type).Where($"@0.Contains({_keyField})", new object[] { keys });
 
-            return await Delete_SqlAsync(iq);
+            return await DeleteSqlAsync(iq);
         }
         public int Delete<T>(string key) where T : class
         {
@@ -157,15 +157,15 @@ namespace EFCore.Sharding
         }
         public int Delete<T>(Expression<Func<T, bool>> condition) where T : class
         {
-            return Delete_Sql(condition);
+            return DeleteSql(condition);
         }
         public async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class
         {
-            return await Delete_SqlAsync(condition);
+            return await DeleteSqlAsync(condition);
         }
         public int DeleteAll(Type type)
         {
-            return Delete_Sql(type, "true");
+            return DeleteSql(type, "true");
             //if (NeedLogicDelete(type))
             //    return UpdateWhere_Sql(type, "true", null, (Deleted, UpdateType.Equal, true));
             //else
@@ -173,7 +173,7 @@ namespace EFCore.Sharding
         }
         public async Task<int> DeleteAllAsync(Type type)
         {
-            return await Delete_SqlAsync(type, "true");
+            return await DeleteSqlAsync(type, "true");
         }
         public int DeleteAll<T>() where T : class
         {
@@ -183,41 +183,41 @@ namespace EFCore.Sharding
         {
             return await DeleteAllAsync(typeof(T));
         }
-        public int Delete_Sql<T>(Expression<Func<T, bool>> where) where T : class
+        public int DeleteSql<T>(Expression<Func<T, bool>> where) where T : class
         {
             var iq = GetIQueryable<T>().Where(where);
-            return Delete_Sql(iq);
+            return DeleteSql(iq);
         }
-        public async Task<int> Delete_SqlAsync<T>(Expression<Func<T, bool>> where) where T : class
+        public async Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where) where T : class
         {
             var iq = GetIQueryable<T>().Where(where);
-            return await Delete_SqlAsync(iq);
+            return await DeleteSqlAsync(iq);
         }
-        public int Delete_Sql(Type entityType, string where, params object[] paramters)
+        public int DeleteSql(Type entityType, string where, params object[] paramters)
         {
             var iq = GetIQueryable(entityType).Where(where, paramters);
 
-            return Delete_Sql(iq);
+            return DeleteSql(iq);
         }
-        public async Task<int> Delete_SqlAsync(Type entityType, string where, params object[] paramters)
+        public async Task<int> DeleteSqlAsync(Type entityType, string where, params object[] paramters)
         {
             var iq = GetIQueryable(entityType).Where(where, paramters);
 
-            return await Delete_SqlAsync(iq);
+            return await DeleteSqlAsync(iq);
         }
-        public int Delete_Sql(IQueryable source)
+        public int DeleteSql(IQueryable source)
         {
             if (NeedLogicDelete(source.ElementType))
-                return Update_Sql(source, (_deletedField, UpdateType.Equal, true));
+                return UpdateSql(source, (_deletedField, UpdateType.Equal, true));
             else
-                return FullDbAccessor.Delete_Sql(source);
+                return FullDbAccessor.DeleteSql(source);
         }
-        public async Task<int> Delete_SqlAsync(IQueryable source)
+        public async Task<int> DeleteSqlAsync(IQueryable source)
         {
             if (NeedLogicDelete(source.ElementType))
-                return await Update_SqlAsync(source, (_deletedField, UpdateType.Equal, true));
+                return await UpdateSqlAsync(source, (_deletedField, UpdateType.Equal, true));
             else
-                return await FullDbAccessor.Delete_SqlAsync(source);
+                return await FullDbAccessor.DeleteSqlAsync(source);
         }
 
         #endregion
@@ -228,21 +228,21 @@ namespace EFCore.Sharding
         {
             FullDbAccessor.BulkInsert(entities, tableName);
         }
-        public int Update_Sql<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
+        public int UpdateSql<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
         {
-            return FullDbAccessor.Update_Sql(where, values);
+            return FullDbAccessor.UpdateSql(where, values);
         }
-        public Task<int> Update_SqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
+        public Task<int> UpdateSqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
         {
-            return FullDbAccessor.Update_SqlAsync(where, values);
+            return FullDbAccessor.UpdateSqlAsync(where, values);
         }
-        public int Update_Sql(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
+        public int UpdateSql(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
         {
-            return FullDbAccessor.Update_Sql(entityType, where, paramters, values);
+            return FullDbAccessor.UpdateSql(entityType, where, paramters, values);
         }
-        public Task<int> Update_SqlAsync(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
+        public Task<int> UpdateSqlAsync(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
         {
-            return FullDbAccessor.Update_SqlAsync(entityType, where, paramters, values);
+            return FullDbAccessor.UpdateSqlAsync(entityType, where, paramters, values);
         }
         public DataTable GetDataTableWithSql(string sql, params (string paramterName, object value)[] parameters)
         {
@@ -328,13 +328,13 @@ namespace EFCore.Sharding
         {
             return FullDbAccessor.RunTransaction(action, isolationLevel);
         }
-        public int Update_Sql(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
+        public int UpdateSql(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
         {
-            return FullDbAccessor.Update_Sql(source, values);
+            return FullDbAccessor.UpdateSql(source, values);
         }
-        public Task<int> Update_SqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
+        public Task<int> UpdateSqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
         {
-            return FullDbAccessor.Update_SqlAsync(source, values);
+            return FullDbAccessor.UpdateSqlAsync(source, values);
         }
         public void Dispose()
         {
@@ -368,6 +368,16 @@ namespace EFCore.Sharding
         public void DisposeTransaction()
         {
             FullDbAccessor.DisposeTransaction();
+        }
+
+        public int SaveChanges(bool tracking = true)
+        {
+            return FullDbAccessor.SaveChanges(tracking);
+        }
+
+        public Task<int> SaveChangesAsync(bool tracking = true)
+        {
+            return FullDbAccessor.SaveChangesAsync(tracking);
         }
 
         #endregion

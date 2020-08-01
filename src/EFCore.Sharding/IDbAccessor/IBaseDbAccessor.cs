@@ -106,7 +106,7 @@ namespace EFCore.Sharding
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="where">条件</param>
         /// <returns>影响条数</returns>
-        int Delete_Sql<T>(Expression<Func<T, bool>> where) where T : class;
+        int DeleteSql<T>(Expression<Func<T, bool>> where) where T : class;
 
         /// <summary>
         /// 使用SQL语句按照条件删除数据
@@ -116,7 +116,7 @@ namespace EFCore.Sharding
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="where">条件</param>
         /// <returns>影响条数</returns>
-        Task<int> Delete_SqlAsync<T>(Expression<Func<T, bool>> where) where T : class;
+        Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where) where T : class;
 
         #endregion
 

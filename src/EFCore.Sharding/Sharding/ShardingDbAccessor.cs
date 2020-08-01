@@ -174,17 +174,17 @@ namespace EFCore.Sharding
 
             return await DeleteAsync(deleteList);
         }
-        public int Delete_Sql<T>(Expression<Func<T, bool>> where) where T : class
+        public int DeleteSql<T>(Expression<Func<T, bool>> where) where T : class
         {
-            return AsyncHelper.RunSync(() => Delete_SqlAsync(where));
+            return AsyncHelper.RunSync(() => DeleteSqlAsync(where));
         }
-        public async Task<int> Delete_SqlAsync<T>(Expression<Func<T, bool>> where) where T : class
+        public async Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where) where T : class
         {
             var q = _db.GetIQueryable<T>().Where(where);
             var configs = _shardingConfig.GetWriteTables<T>(q);
             return await PackAccessDataAsync(async () =>
             {
-                var tasks = configs.Select(x => GetMapDbAccessor(x.conString, x.dbType, x.suffix).Delete_SqlAsync<T>(where));
+                var tasks = configs.Select(x => GetMapDbAccessor(x.conString, x.dbType, x.suffix).DeleteSqlAsync<T>(where));
                 return (await Task.WhenAll(tasks.ToArray())).Sum();
             });
         }

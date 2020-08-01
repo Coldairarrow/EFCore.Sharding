@@ -1,10 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 
 namespace EFCore.Sharding
 {
@@ -22,11 +19,6 @@ namespace EFCore.Sharding
 
         #region 私有成员
 
-        private List<string> AssemblyNames = new List<string>();
-        private List<string> AssemblyPaths
-            = new List<string>() { Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) };
-        private List<Type> _allEntityTypes;
-        private object _entityLock = new object();
         private readonly SynchronizedCollection<DataSource> _dataSources
             = new SynchronizedCollection<DataSource>();
         private readonly SynchronizedCollection<ShardingRule> _shardingRules
@@ -142,75 +134,10 @@ namespace EFCore.Sharding
 
             return FilterTable(allTables, source);
         }
-        public bool LogicDelete { get; set; } = false;
-        public string KeyField { get; set; } = "Id";
-        public string DeletedField { get; set; } = "Deleted";
         public DatabaseType FindADbType()
         {
             return _dataSources.FirstOrDefault().DbType;
         }
-        public List<Type> AllEntityTypes
-        {
-            get
-            {
-                if (_allEntityTypes == null)
-                {
-                    lock (_entityLock)
-                    {
-                        if (_allEntityTypes == null)
-                        {
-                            _allEntityTypes = new List<Type>();
-
-                            Expression<Func<string, bool>> where = x => true;
-                            where = where.And(x =>
-                                  !x.Contains("System.")
-                                  && !x.Contains("Microsoft."));
-                            if (AssemblyNames.Count > 0)
-                            {
-                                Expression<Func<string, bool>> tmpWhere = x => false;
-                                AssemblyNames.ToList().ForEach(aAssembly =>
-                                {
-                                    tmpWhere = tmpWhere.Or(x => x.Contains(aAssembly));
-                                });
-
-                                where = where.And(tmpWhere);
-                            }
-
-                            AssemblyPaths.SelectMany(x => Directory.GetFiles(x, "*.dll"))
-                                .Where(x => where.Compile()(new FileInfo(x).Name))
-                                .Distinct()
-                                .Select(x =>
-                                {
-                                    try
-                                    {
-                                        return Assembly.LoadFrom(x);
-                                    }
-                                    catch
-                                    {
-                                        return null;
-                                    }
-                                })
-                                .Where(x => x != null && !x.IsDynamic)
-                                .ForEach(aAssembly =>
-                                {
-                                    try
-                                    {
-                                        _allEntityTypes.AddRange(aAssembly.GetTypes());
-                                    }
-
-                                    catch
-                                    {
-
-                                    }
-                                });
-                        }
-                    }
-                }
-
-                return _allEntityTypes;
-            }
-        }
-        public int CommandTimeout { get; set; } = 30;
 
         #endregion
 
@@ -218,27 +145,27 @@ namespace EFCore.Sharding
 
         public IShardingBuilder SetEntityAssemblyPath(params string[] entityAssemblyPaths)
         {
-            AssemblyPaths.AddRange(entityAssemblyPaths);
+            Constant.AssemblyPaths.AddRange(entityAssemblyPaths);
 
             return this;
         }
         public IShardingBuilder SetEntityAssembly(params string[] entityAssemblyNames)
         {
-            AssemblyNames.AddRange(entityAssemblyNames);
+            Constant.AssemblyNames.AddRange(entityAssemblyNames);
 
             return this;
         }
         public IShardingBuilder SetCommandTimeout(int timeout)
         {
-            CommandTimeout = timeout;
+            Constant.CommandTimeout = timeout;
 
             return this;
         }
         public IShardingBuilder UseLogicDelete(string keyField = "Id", string deletedField = "Deleted")
         {
-            LogicDelete = true;
-            KeyField = keyField;
-            DeletedField = deletedField;
+            Constant.LogicDelete = true;
+            Constant.KeyField = keyField;
+            Constant.DeletedField = deletedField;
 
             return this;
         }
@@ -251,10 +178,9 @@ namespace EFCore.Sharding
             _services.AddScoped(_ =>
             {
                 var dbFactory = _.GetService<IDbFactory>();
-                var config = _.GetService<IShardingConfig>();
                 IDbAccessor db = dbFactory.GetDbAccessor(conString, dbType, entityNamespace);
-                if (config.LogicDelete)
-                    db = new LogicDeleteDbAccessor(db, config);
+                if (Constant.LogicDelete)
+                    db = new LogicDeleteDbAccessor(db);
 
                 if (typeof(TDbAccessor) == typeof(IDbAccessor))
                     return (TDbAccessor)db;
@@ -280,8 +206,7 @@ namespace EFCore.Sharding
                     dbs,
                     dbType,
                     entityNamespace,
-                    _.GetService<IDbFactory>(),
-                    _.GetService<IShardingConfig>()
+                    _.GetService<IDbFactory>()
                     );
 
                 if (typeof(TDbAccessor) == typeof(IDbAccessor))

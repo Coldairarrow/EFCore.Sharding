@@ -13,7 +13,7 @@ namespace EFCore.Sharding
             {
                 var option = genericDbContext.Options;
 
-                var entityTypeNames = (option.EntityTypes ?? new Type[] { }).Select(x => x.AssemblyQualifiedName).ToList();
+                var entityTypeNames = (option?.EntityTypes ?? new Type[] { }).Select(x => x.AssemblyQualifiedName).ToList();
 
                 return $"{option.GetType()}_{option.DbType}_{option.EntityNamespace}_{string.Join(",", entityTypeNames)}_{option.Suffix}";
             }

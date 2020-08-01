@@ -13,9 +13,9 @@ namespace EFCore.Sharding.SqlServer
 
         public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new SqlServerDbAccessor(baseDbContext);
 
-        public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection, GenericDbContextOptions options)
+        public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            dbContextOptionsBuilder.UseSqlServer(dbConnection, config => config.CommandTimeout(options.ShardingConfig?.CommandTimeout ?? 30));
+            dbContextOptionsBuilder.UseSqlServer(dbConnection);
         }
     }
 }

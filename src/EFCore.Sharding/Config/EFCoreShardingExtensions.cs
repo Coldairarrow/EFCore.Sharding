@@ -19,20 +19,18 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static IServiceCollection AddEFCoreSharding(this IServiceCollection services, Action<IShardingBuilder> shardingBuilder)
         {
-            ShardingContainer container = new ShardingContainer(services);
             if (!services.Any(x => x.ServiceType == typeof(ILoggerFactory)))
             {
                 services.AddLogging();
             }
 
-            services.AddSingleton<IShardingConfig>(container);
-            services.AddSingleton<IShardingBuilder>(container);
-
-            services.AddSingleton<IDbFactory, DbFactory>();
-
-            services.AddScoped<IShardingDbAccessor, ShardingDbAccessor>();
-
+            ShardingContainer container = new ShardingContainer(services);
             shardingBuilder(container);
+
+            services.AddSingleton<IShardingBuilder>(container);
+            services.AddSingleton<IShardingConfig>(container);
+            services.AddSingleton<IDbFactory, DbFactory>();
+            services.AddScoped<IShardingDbAccessor, ShardingDbAccessor>();
 
             return services;
         }

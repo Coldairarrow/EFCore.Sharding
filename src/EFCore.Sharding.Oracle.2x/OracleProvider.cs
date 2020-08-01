@@ -5,13 +5,13 @@ using System.Data.Common;
 
 namespace EFCore.Sharding.Oracle
 {
-    public class OracleProvider : AbstractProvider
+    internal class OracleProvider : AbstractProvider
     {
         public override DbProviderFactory DbProviderFactory => OracleClientFactory.Instance;
 
-        public override ModelBuilder GetModelBuilder() => new ModelBuilder(OracleConventionSetBuilder.Build());
+        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new OracleDbAccessor(baseDbContext);
 
-        public override IRepository GetRepository(BaseDbContext baseDbContext) => new OracleRepository(baseDbContext);
+        public override ModelBuilder GetModelBuilder() => new ModelBuilder(OracleConventionSetBuilder.Build());
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {

@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
@@ -16,6 +14,7 @@ namespace EFCore.Sharding
             : base(options.ContextOptions)
         {
             Options = options;
+            Database.SetCommandTimeout(Constant.CommandTimeout);
         }
         public GenericDbContextOptions Options { get; }
         private static readonly ValueConverter<DateTime, DateTime> _dateTimeConverter
@@ -29,7 +28,7 @@ namespace EFCore.Sharding
             }
             else
             {
-                var q = Options.ShardingConfig.AllEntityTypes.Where(x => x.GetCustomAttribute(typeof(TableAttribute), false) != null);
+                var q = Constant.AllEntityTypes.Where(x => x.GetCustomAttribute(typeof(TableAttribute), false) != null);
 
                 //通过Namespace解决同表名问题
                 if (!Options.EntityNamespace.IsNullOrEmpty())
@@ -69,12 +68,16 @@ namespace EFCore.Sharding
                 }
             }
         }
-        public IQueryable GetIQueryable(Type entityType)
+        public IQueryable GetIQueryable(Type entityType, bool tracking)
         {
-            var dbSet = GetType().GetMethod("Set").MakeGenericMethod(entityType).Invoke(this, null);
-            var resQ = typeof(EntityFrameworkQueryableExtensions).GetMethod("AsNoTracking").MakeGenericMethod(entityType).Invoke(null, new object[] { dbSet });
+            var iq = GetType().GetMethod("Set").MakeGenericMethod(entityType).Invoke(this, null) as IQueryable;
 
-            return resQ as IQueryable;
+            if (!tracking)
+            {
+                iq = typeof(EntityFrameworkQueryableExtensions).GetMethod("AsNoTracking").MakeGenericMethod(entityType).Invoke(null, new object[] { iq }) as IQueryable;
+            }
+
+            return iq;
         }
         public void Detach()
         {
@@ -83,20 +86,6 @@ namespace EFCore.Sharding
                 if (aEntry.State != EntityState.Detached)
                     aEntry.State = EntityState.Detached;
             });
-        }
-        public override int SaveChanges()
-        {
-            int count = base.SaveChanges();
-            Detach();
-
-            return count;
-        }
-        public async override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            int count = await base.SaveChangesAsync(cancellationToken);
-            Detach();
-
-            return count;
         }
     }
 }

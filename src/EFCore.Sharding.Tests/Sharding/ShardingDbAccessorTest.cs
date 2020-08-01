@@ -127,7 +127,7 @@ namespace EFCore.Sharding.Tests
         public async Task Delete_Sql()
         {
             _db.Insert(_insertList);
-            await _db.Delete_SqlAsync<Base_UnitTest>(x => x.UserId == "Admin2");
+            await _db.DeleteSqlAsync<Base_UnitTest>(x => x.UserId == "Admin2");
             var count = _db.GetIShardingQueryable<Base_UnitTest>().Count();
             Assert.AreEqual(1, count);
         }

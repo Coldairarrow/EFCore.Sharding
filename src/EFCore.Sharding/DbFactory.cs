@@ -11,11 +11,9 @@ namespace EFCore.Sharding
     internal class DbFactory : IDbFactory
     {
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IShardingConfig _shardingConfig;
-        public DbFactory(ILoggerFactory loggerFactory, IShardingConfig shardingConfig)
+        public DbFactory(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
-            _shardingConfig = shardingConfig;
         }
 
         public IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, string entityNamespace = null, string suffix = null)
@@ -25,33 +23,14 @@ namespace EFCore.Sharding
                 ConnectionString = conString,
                 DbType = dbType,
                 EntityNamespace = entityNamespace,
-                LoggerFactory = _loggerFactory,
                 Suffix = suffix,
-                ShardingConfig = _shardingConfig
+                LoggerFactory = _loggerFactory
             };
 
             var dbContext = GetDbContext(options);
 
             return GetProvider(dbType).GetDbAccessor(dbContext);
         }
-
-        public static AbstractProvider GetProvider(DatabaseType databaseType)
-        {
-            string assemblyName = $"EFCore.Sharding.{databaseType}";
-            try
-            {
-                Assembly assembly = Assembly.Load(assemblyName);
-
-                var type = assembly.GetType($"{assemblyName}.{databaseType}Provider");
-
-                return Activator.CreateInstance(type) as AbstractProvider;
-            }
-            catch
-            {
-                throw new Exception($"请安装nuget包:{assemblyName}");
-            }
-        }
-
         public static void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
         {
             GenericDbContextOptions options = new GenericDbContextOptions
@@ -75,7 +54,6 @@ namespace EFCore.Sharding
                 }
             }
         }
-
         public static GenericDbContext GetDbContext(GenericDbContextOptions options)
         {
             AbstractProvider provider = GetProvider(options.DbType);
@@ -85,7 +63,7 @@ namespace EFCore.Sharding
 
             DbContextOptionsBuilder builder = new DbContextOptionsBuilder();
 
-            provider.UseDatabase(builder, dbConnection, options);
+            provider.UseDatabase(builder, dbConnection);
             builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();
 
             builder.UseLoggerFactory(options.LoggerFactory);
@@ -93,6 +71,22 @@ namespace EFCore.Sharding
             options.ContextOptions = builder.Options;
 
             return new GenericDbContext(options);
+        }
+        public static AbstractProvider GetProvider(DatabaseType databaseType)
+        {
+            string assemblyName = $"EFCore.Sharding.{databaseType}";
+            try
+            {
+                Assembly assembly = Assembly.Load(assemblyName);
+
+                var type = assembly.GetType($"{assemblyName}.{databaseType}Provider");
+
+                return Activator.CreateInstance(type) as AbstractProvider;
+            }
+            catch
+            {
+                throw new Exception($"请安装nuget包:{assemblyName}");
+            }
         }
     }
 }

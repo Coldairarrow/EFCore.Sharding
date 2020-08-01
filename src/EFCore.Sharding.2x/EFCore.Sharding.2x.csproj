@@ -11,7 +11,7 @@
     <PackageProjectUrl>https://github.com/Coldairarrow/EFCore.Sharding</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Coldairarrow/EFCore.Sharding</RepositoryUrl>
     <RepositoryType>github</RepositoryType>
-    <Version>2.2.6.46</Version>
+    <Version>2.40.0.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -26,6 +26,14 @@
     <OutputPath>bin\Release</OutputPath>
     <DocumentationFile>bin\Release\EFCore.Sharding.xml</DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\EFCore.Sharding\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="..\EFCore.Sharding\obj\**" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="4.4.1" />
     <PackageReference Include="Dynamitey" Version="2.0.10.189" />

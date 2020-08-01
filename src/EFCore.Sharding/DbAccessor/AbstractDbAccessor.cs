@@ -269,8 +269,27 @@ namespace EFCore.Sharding
             _transaction?.Dispose();
             _openedTransaction = false;
         }
-
         public IDbAccessor FullDbAccessor { get; set; }
+        public int SaveChanges(bool tracking = true)
+        {
+            int count = _db.SaveChanges();
+            if (!tracking)
+            {
+                _db.Detach();
+            }
+
+            return count;
+        }
+        public async Task<int> SaveChangesAsync(bool tracking = true)
+        {
+            int count = await _db.SaveChangesAsync();
+            if (!tracking)
+            {
+                _db.Detach();
+            }
+
+            return count;
+        }
 
         #endregion
 
@@ -287,13 +306,13 @@ namespace EFCore.Sharding
         public int Insert<T>(List<T> entities) where T : class
         {
             _db.AddRange(entities);
-            return _db.SaveChanges();
+            return SaveChanges(false);
         }
         public async Task<int> InsertAsync<T>(List<T> entities) where T : class
         {
             await _db.AddRangeAsync(entities);
 
-            return await _db.SaveChangesAsync();
+            return await SaveChangesAsync(false);
         }
         public virtual void BulkInsert<T>(List<T> entities, string tableName = null) where T : class
         {
@@ -314,11 +333,11 @@ namespace EFCore.Sharding
         }
         public int DeleteAll(Type type)
         {
-            return Delete_Sql(type, "true");
+            return DeleteSql(type, "true");
         }
         public async Task<int> DeleteAllAsync(Type type)
         {
-            return await Delete_SqlAsync(type, "true");
+            return await DeleteSqlAsync(type, "true");
         }
         public int Delete<T>(T entity) where T : class
         {
@@ -331,13 +350,13 @@ namespace EFCore.Sharding
         public int Delete<T>(List<T> entities) where T : class
         {
             _db.RemoveRange(entities);
-            return _db.SaveChanges();
+            return SaveChanges(false);
         }
         public async Task<int> DeleteAsync<T>(List<T> entities) where T : class
         {
             _db.RemoveRange(entities);
 
-            return await _db.SaveChangesAsync();
+            return await SaveChangesAsync(false);
         }
         public int Delete<T>(Expression<Func<T, bool>> condition) where T : class
         {
@@ -381,37 +400,37 @@ namespace EFCore.Sharding
         {
             return await DeleteAsync(GetDeleteList(type, keys));
         }
-        public int Delete_Sql<T>(Expression<Func<T, bool>> where) where T : class
+        public int DeleteSql<T>(Expression<Func<T, bool>> where) where T : class
         {
             var iq = GetIQueryable<T>().Where(where);
 
-            return Delete_Sql(iq);
+            return DeleteSql(iq);
         }
-        public async Task<int> Delete_SqlAsync<T>(Expression<Func<T, bool>> where) where T : class
+        public async Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where) where T : class
         {
             var iq = GetIQueryable<T>().Where(where);
 
-            return await Delete_SqlAsync(iq);
+            return await DeleteSqlAsync(iq);
         }
-        public int Delete_Sql(Type entityType, string where, params object[] paramters)
+        public int DeleteSql(Type entityType, string where, params object[] paramters)
         {
             var iq = GetIQueryable(entityType).Where(where, paramters);
 
-            return Delete_Sql(iq);
+            return DeleteSql(iq);
         }
-        public async Task<int> Delete_SqlAsync(Type entityType, string where, params object[] paramters)
+        public async Task<int> DeleteSqlAsync(Type entityType, string where, params object[] paramters)
         {
             var iq = GetIQueryable(entityType).Where(where, paramters);
 
-            return await Delete_SqlAsync(iq);
+            return await DeleteSqlAsync(iq);
         }
-        public int Delete_Sql(IQueryable source)
+        public int DeleteSql(IQueryable source)
         {
             var sql = GetDeleteSql(source);
 
             return ExecuteSql(sql.sql, sql.paramters.ToArray());
         }
-        public async Task<int> Delete_SqlAsync(IQueryable source)
+        public async Task<int> DeleteSqlAsync(IQueryable source)
         {
             var sql = GetDeleteSql(source);
 
@@ -436,7 +455,7 @@ namespace EFCore.Sharding
             {
                 _db.Entry(aEntity).State = EntityState.Modified;
             });
-            return _db.SaveChanges();
+            return SaveChanges(false);
         }
         public async Task<int> UpdateAsync<T>(List<T> entities) where T : class
         {
@@ -445,7 +464,7 @@ namespace EFCore.Sharding
                 _db.Entry(aEntity).State = EntityState.Modified;
             });
 
-            return await _db.SaveChangesAsync();
+            return await SaveChangesAsync(false);
         }
         public int Update<T>(T entity, List<string> properties) where T : class
         {
@@ -465,7 +484,7 @@ namespace EFCore.Sharding
                 });
             });
 
-            return _db.SaveChanges();
+            return SaveChanges(false);
         }
         public async Task<int> UpdateAsync<T>(List<T> entities, List<string> properties) where T : class
         {
@@ -477,7 +496,7 @@ namespace EFCore.Sharding
                 });
             });
 
-            return await _db.SaveChangesAsync();
+            return await SaveChangesAsync(false);
         }
         public int Update<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class
         {
@@ -491,37 +510,37 @@ namespace EFCore.Sharding
             list.ForEach(aData => set(aData));
             return await UpdateAsync(list);
         }
-        public int Update_Sql<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
+        public int UpdateSql<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
         {
             var iq = GetIQueryable<T>().Where(where);
 
-            return Update_Sql(iq, values);
+            return UpdateSql(iq, values);
         }
-        public async Task<int> Update_SqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
+        public async Task<int> UpdateSqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
         {
             var iq = GetIQueryable<T>().Where(where);
 
-            return await Update_SqlAsync(iq, values);
+            return await UpdateSqlAsync(iq, values);
         }
-        public int Update_Sql(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
+        public int UpdateSql(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
         {
             var iq = GetIQueryable(entityType).Where(where, paramters);
 
-            return Update_Sql(iq, values);
+            return UpdateSql(iq, values);
         }
-        public async Task<int> Update_SqlAsync(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
+        public async Task<int> UpdateSqlAsync(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
         {
             var iq = GetIQueryable(entityType).Where(where, paramters);
 
-            return await Update_SqlAsync(iq, values);
+            return await UpdateSqlAsync(iq, values);
         }
-        public int Update_Sql(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
+        public int UpdateSql(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
         {
             var sql = GetUpdateWhereSql(source, values);
 
             return ExecuteSql(sql.sql, sql.paramters.ToArray());
         }
-        public async Task<int> Update_SqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
+        public async Task<int> UpdateSqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
         {
             var sql = GetUpdateWhereSql(source, values);
 
@@ -564,13 +583,13 @@ namespace EFCore.Sharding
         {
             return await GetIQueryable(type).Cast<object>().ToListAsync();
         }
-        public IQueryable<T> GetIQueryable<T>() where T : class
+        public IQueryable<T> GetIQueryable<T>(bool tracking = false) where T : class
         {
-            return GetIQueryable(typeof(T)) as IQueryable<T>;
+            return GetIQueryable(typeof(T), tracking) as IQueryable<T>;
         }
-        public IQueryable GetIQueryable(Type type)
+        public IQueryable GetIQueryable(Type type, bool tracking = false)
         {
-            return _db.GetIQueryable(type);
+            return _db.GetIQueryable(type, tracking);
         }
         public DataTable GetDataTableWithSql(string sql, params (string paramterName, object value)[] parameters)
         {
@@ -586,7 +605,7 @@ namespace EFCore.Sharding
                 {
                     cmd.Connection = conn;
                     cmd.CommandText = sql;
-                    cmd.CommandTimeout = _db.Options.ShardingConfig.CommandTimeout;
+                    cmd.CommandTimeout = Constant.CommandTimeout;
                     if (_openedTransaction)
                     {
                         cmd.Transaction = _transaction.GetDbTransaction();
