@@ -59,9 +59,9 @@ namespace EFCore.Sharding
                                 {
                                     try
                                     {
+                                        Assemblies.Add(aAssembly);
                                         _allEntityTypes.AddRange(aAssembly.GetTypes());
                                     }
-
                                     catch
                                     {
 
@@ -75,6 +75,7 @@ namespace EFCore.Sharding
             }
         }
         public static List<string> AssemblyNames = new List<string>();
+        public static readonly List<Assembly> Assemblies = new List<Assembly>();
         public static List<string> AssemblyPaths
             = new List<string>() { Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) };
         private static List<Type> _allEntityTypes;

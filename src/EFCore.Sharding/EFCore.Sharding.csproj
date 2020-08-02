@@ -3,13 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Coldairarrow</Authors>
     <Description>Database Sharding For EFCore</Description>
     <PackageProjectUrl>https://github.com/Coldairarrow/EFCore.Sharding</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Coldairarrow/EFCore.Sharding</RepositoryUrl>
     <RepositoryType>github</RepositoryType>
-    <Version>3.1.6.6</Version>
+    <Version>$(EFCore_Sharding)</Version>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
 
@@ -24,7 +23,9 @@
     <DefineConstants>TRACE;EFCORE3</DefineConstants>
     <OutputPath>bin\Release</OutputPath>
     <DocumentationFile>bin\Release\EFCore.Sharding.xml</DocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="4.4.1" />
     <PackageReference Include="Dynamitey" Version="2.0.10.189" />

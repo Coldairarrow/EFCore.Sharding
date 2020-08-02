@@ -40,7 +40,7 @@ namespace EFCore.Sharding
             }
 
             //支持IEntityTypeConfiguration配置
-            entityTypes.Select(x => x.Assembly).Distinct().ToList().ForEach(aAssembly =>
+            Constant.Assemblies.Distinct().ToList().ForEach(aAssembly =>
             {
                 modelBuilder.ApplyConfigurationsFromAssembly(aAssembly, x =>
                 {
