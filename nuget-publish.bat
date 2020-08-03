@@ -1,3 +1,7 @@
+::定义版本
+set EFCore_Sharding=3.1.6.8
+set EFCore_Sharding_2x=2.40.0.8
+
 ::删除所有bin与obj下的文件
 @echo off
 set nowpath=%cd%
@@ -8,5 +12,13 @@ for /r %nowpath% %%i in (*.pdb,*.vshost.*) do (del %%i && echo delete %%i)
  
 ::delete specify folder(obj,bin)
 for /r %nowpath% %%i in (obj,bin) do (IF EXIST %%i (RD /s /q %%i && echo delete %%i))
- 
+
+echo 清理完成
+
+::构建
+dotnet build -c Release
+::推送
+for /r %nowpath% %%i in (*.nupkg) do (dotnet nuget push %%i --api-key oy2n3mbhi2nw4ncq3yqavb2ks4xz4qrelbbfng3gp2jx64 --source https://api.nuget.org/v3/index.json)
+
+echo 完成
 pause
