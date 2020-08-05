@@ -17,28 +17,32 @@ namespace EFCore.Sharding
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entity">实体对象</param>
-        int Insert<T>(T entity) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        int Insert<T>(T entity, bool tracking = false) where T : class;
 
         /// <summary>
         /// 添加单条记录
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entity">实体对象</param>
-        Task<int> InsertAsync<T>(T entity) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        Task<int> InsertAsync<T>(T entity, bool tracking = false) where T : class;
 
         /// <summary>
         /// 添加多条记录
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entities">实体对象集合</param>
-        int Insert<T>(List<T> entities) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        int Insert<T>(List<T> entities, bool tracking = false) where T : class;
 
         /// <summary>
         /// 添加多条记录
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entities">实体对象集合</param>
-        Task<int> InsertAsync<T>(List<T> entities) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        Task<int> InsertAsync<T>(List<T> entities, bool tracking = false) where T : class;
 
         #endregion
 
@@ -127,28 +131,32 @@ namespace EFCore.Sharding
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entity">实体对象</param>
-        int Update<T>(T entity) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        int Update<T>(T entity, bool tracking = false) where T : class;
 
         /// <summary>
         /// 更新单条记录
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entity">实体对象</param>
-        Task<int> UpdateAsync<T>(T entity) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        Task<int> UpdateAsync<T>(T entity, bool tracking = false) where T : class;
 
         /// <summary>
         /// 更新多条记录
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entities">实体对象集合</param>
-        int Update<T>(List<T> entities) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        int Update<T>(List<T> entities, bool tracking = false) where T : class;
 
         /// <summary>
         /// 更新多条记录
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entities">实体对象集合</param>
-        Task<int> UpdateAsync<T>(List<T> entities) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        Task<int> UpdateAsync<T>(List<T> entities, bool tracking = false) where T : class;
 
         /// <summary>
         /// 更新单条记录的某些属性
@@ -156,7 +164,8 @@ namespace EFCore.Sharding
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entity">实体对象</param>
         /// <param name="properties">属性</param>
-        int Update<T>(T entity, List<string> properties) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        int Update<T>(T entity, List<string> properties, bool tracking = false) where T : class;
 
         /// <summary>
         /// 更新单条记录的某些属性
@@ -164,7 +173,8 @@ namespace EFCore.Sharding
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entity">实体对象</param>
         /// <param name="properties">属性</param>
-        Task<int> UpdateAsync<T>(T entity, List<string> properties) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        Task<int> UpdateAsync<T>(T entity, List<string> properties, bool tracking = false) where T : class;
 
         /// <summary>
         /// 更新多条记录的某些属性
@@ -172,7 +182,8 @@ namespace EFCore.Sharding
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entities">实体对象集合</param>
         /// <param name="properties">属性</param>
-        int Update<T>(List<T> entities, List<string> properties) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        int Update<T>(List<T> entities, List<string> properties, bool tracking = false) where T : class;
 
         /// <summary>
         /// 更新多条记录的某些属性
@@ -180,7 +191,8 @@ namespace EFCore.Sharding
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="entities">实体对象集合</param>
         /// <param name="properties">属性</param>
-        Task<int> UpdateAsync<T>(List<T> entities, List<string> properties) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        Task<int> UpdateAsync<T>(List<T> entities, List<string> properties, bool tracking = false) where T : class;
 
         /// <summary>
         /// 按照条件更新记录
@@ -188,7 +200,8 @@ namespace EFCore.Sharding
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="whereExpre">筛选条件</param>
         /// <param name="set">更新操作</param>
-        int Update<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        int Update<T>(Expression<Func<T, bool>> whereExpre, Action<T> set, bool tracking = false) where T : class;
 
         /// <summary>
         /// 按照条件更新记录
@@ -196,25 +209,8 @@ namespace EFCore.Sharding
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="whereExpre">筛选条件</param>
         /// <param name="set">更新操作</param>
-        Task<int> UpdateAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class;
-
-        #endregion
-
-        #region 查询数据
-
-        /// <summary>
-        /// 获取所有数据
-        /// </summary>
-        /// <typeparam name="T">实体泛型</typeparam>
-        /// <returns></returns>
-        List<T> GetList<T>() where T : class;
-
-        /// <summary>
-        /// 获取所有数据
-        /// </summary>
-        /// <typeparam name="T">实体泛型</typeparam>
-        /// <returns></returns>
-        Task<List<T>> GetListAsync<T>() where T : class;
+        /// <param name="tracking">是否开启实体追踪</param>
+        Task<int> UpdateAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set, bool tracking = false) where T : class;
 
         #endregion
     }

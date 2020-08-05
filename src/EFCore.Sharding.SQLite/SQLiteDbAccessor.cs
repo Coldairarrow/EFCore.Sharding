@@ -1,6 +1,6 @@
 ﻿namespace EFCore.Sharding.SQLite
 {
-    internal class SQLiteDbAccessor : AbstractDbAccessor, IDbAccessor
+    internal class SQLiteDbAccessor : GenericDbAccessor, IDbAccessor
     {
         public SQLiteDbAccessor(GenericDbContext baseDbContext)
             : base(baseDbContext)

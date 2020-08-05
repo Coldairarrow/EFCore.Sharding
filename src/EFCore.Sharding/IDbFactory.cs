@@ -1,7 +1,8 @@
-﻿using System;
-
-namespace EFCore.Sharding
+﻿namespace EFCore.Sharding
 {
+    /// <summary>
+    /// 数据库工厂
+    /// </summary>
     public interface IDbFactory
     {
         /// <summary>

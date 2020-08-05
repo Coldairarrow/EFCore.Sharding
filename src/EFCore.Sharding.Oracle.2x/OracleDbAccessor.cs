@@ -2,7 +2,7 @@
 
 namespace EFCore.Sharding.Oracle
 {
-    internal class OracleDbAccessor : AbstractDbAccessor, IDbAccessor
+    internal class OracleDbAccessor : GenericDbAccessor, IDbAccessor
     {
         public OracleDbAccessor(GenericDbContext baseDbContext)
             : base(baseDbContext)

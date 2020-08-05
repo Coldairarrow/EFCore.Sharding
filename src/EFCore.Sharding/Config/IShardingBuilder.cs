@@ -2,6 +2,9 @@
 
 namespace EFCore.Sharding
 {
+    /// <summary>
+    /// 构建者
+    /// </summary>
     public interface IShardingBuilder
     {
         /// <summary>

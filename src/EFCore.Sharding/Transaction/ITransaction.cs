@@ -27,10 +27,32 @@ namespace EFCore.Sharding
         /// <returns></returns>
         Task<(bool Success, Exception ex)> RunTransactionAsync(Func<Task> action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
 
+        /// <summary>
+        /// 开始事务
+        /// </summary>
+        /// <param name="isolationLevel"></param>
         void BeginTransaction(IsolationLevel isolationLevel);
+
+        /// <summary>
+        /// 开始事务
+        /// </summary>
+        /// <param name="isolationLevel"></param>
+        /// <returns></returns>
         Task BeginTransactionAsync(IsolationLevel isolationLevel);
+
+        /// <summary>
+        /// 提交事务
+        /// </summary>
         void CommitTransaction();
+
+        /// <summary>
+        /// 回滚事务
+        /// </summary>
         void RollbackTransaction();
+
+        /// <summary>
+        /// 释放事务
+        /// </summary>
         void DisposeTransaction();
     }
 }

@@ -1,0 +1,827 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Data;
+using System.Data.Common;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+namespace EFCore.Sharding
+{
+    internal class GenericDbAccessor : DefaultDbAccessor
+    {
+        #region 构造函数
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="baseDbContext">BaseDbContext</param>
+        public GenericDbAccessor(GenericDbContext baseDbContext)
+        {
+            _db = baseDbContext;
+            _provider = DbFactory.GetProvider(DbType);
+        }
+
+        #endregion
+
+        #region 私有成员
+
+        protected AbstractProvider _provider { get; }
+        protected GenericDbContext _db { get; }
+        protected IDbContextTransaction _transaction { get; set; }
+        protected static PropertyInfo GetKeyProperty(Type type)
+        {
+            return GetKeyPropertys(type).FirstOrDefault();
+        }
+        protected static List<PropertyInfo> GetKeyPropertys(Type type)
+        {
+            var properties = type
+                .GetProperties()
+                .Where(x => x.GetCustomAttributes(true).Select(o => o.GetType().FullName).Contains(typeof(KeyAttribute).FullName))
+                .ToList();
+
+            return properties;
+        }
+        protected bool _openedTransaction { get; set; } = false;
+
+        public override string ConnectionString => throw new NotImplementedException();
+
+        public override DatabaseType DbType => throw new NotImplementedException();
+
+        public override IDbAccessor FullDbAccessor => throw new NotImplementedException();
+
+        protected virtual string FormatFieldName(string name)
+        {
+            throw new NotImplementedException("请在子类实现!");
+        }
+        protected virtual string FormatParamterName(string name)
+        {
+            return $"@{name}";
+        }
+        protected virtual string GetSchema(string schema)
+        {
+            throw new Exception("请在子类实现");
+        }
+        private string GetFormatedSchemaAndTableName(Type entityType)
+        {
+            string fullName = string.Empty;
+            string schema = AnnotationHelper.GetDbSchemaName(entityType);
+            schema = GetSchema(schema);
+            string table = AnnotationHelper.GetDbTableName(entityType);
+            if (!_db.Options.Suffix.IsNullOrEmpty())
+            {
+                table += $"_{_db.Options.Suffix}";
+            }
+
+            if (schema.IsNullOrEmpty())
+                fullName = FormatFieldName(table);
+            else
+                fullName = $"{FormatFieldName(schema)}.{FormatFieldName(table)}";
+
+            return fullName;
+        }
+        private (string sql, List<(string paramterName, object paramterValue)> paramters) GetWhereSql(IQueryable query)
+        {
+            List<(string paramterName, object paramterValue)> paramters =
+                new List<(string paramterName, object paramterValue)>();
+            var querySql = query.ToSql();
+            string theQSql = querySql.sql.Replace("\r\n", "\n").Replace("\n", " ");
+            //无筛选
+            if (!theQSql.Contains("WHERE"))
+                return (" 1=1 ", paramters);
+
+            string pattern1 = "^SELECT.*?FROM.*? AS (.*?) WHERE .*?$";
+            string pattern2 = "^SELECT.*?FROM .*? (.*?) WHERE .*?$";
+            string asTmp = string.Empty;
+            if (Regex.IsMatch(theQSql, pattern1))
+            {
+                var match = Regex.Match(theQSql, pattern1);
+                asTmp = match.Groups[1]?.ToString();
+            }
+            else if (Regex.IsMatch(theQSql, pattern2))
+            {
+                var match = Regex.Match(theQSql, pattern2);
+                asTmp = match.Groups[1]?.ToString();
+            }
+            if (asTmp.IsNullOrEmpty())
+                throw new Exception("SQL解析失败!");
+
+            string whereSql = querySql.sql.Split(new string[] { "WHERE" }, StringSplitOptions.None)[1].Replace($"{asTmp}.", "");
+
+            querySql.parameters.ForEach(aData =>
+            {
+                if (whereSql.Contains(aData.Key))
+                    paramters.Add((aData.Key, aData.Value));
+            });
+
+            return (whereSql, paramters);
+        }
+        private (string sql, List<(string paramterName, object paramterValue)> paramters) GetDeleteSql(IQueryable iq)
+        {
+            string tableName = GetFormatedSchemaAndTableName(iq.ElementType);
+            var whereSql = GetWhereSql(iq);
+            string sql = $"DELETE FROM {tableName} WHERE {whereSql.sql}";
+
+            return (sql, whereSql.paramters);
+        }
+        private List<object> GetDeleteList(Type type, List<string> keys)
+        {
+            var theProperty = GetKeyProperty(type);
+            if (theProperty == null)
+                throw new Exception("该实体没有主键标识！请使用[Key]标识主键！");
+
+            List<object> deleteList = new List<object>();
+            keys.ForEach(aKey =>
+            {
+                object newData = Activator.CreateInstance(type);
+                var value = aKey.ChangeType(theProperty.PropertyType);
+                theProperty.SetValue(newData, value);
+                deleteList.Add(newData);
+            });
+
+            return deleteList;
+        }
+        private (string sql, List<(string paramterName, object paramterValue)> paramters) GetUpdateWhereSql(IQueryable iq, params (string field, UpdateType updateType, object value)[] values)
+        {
+            string tableName = GetFormatedSchemaAndTableName(iq.ElementType);
+            var whereSql = GetWhereSql(iq);
+
+            List<string> propertySetStr = new List<string>();
+
+            values.ToList().ForEach(aProperty =>
+            {
+                var paramterName = FormatParamterName($"_p_{aProperty.field}");
+                string formatedField = FormatFieldName(aProperty.field);
+                whereSql.paramters.Add((paramterName, aProperty.value));
+
+                string setValueBody = string.Empty;
+                switch (aProperty.updateType)
+                {
+                    case UpdateType.Equal: setValueBody = paramterName; break;
+                    case UpdateType.Add: setValueBody = $" {formatedField} + {paramterName} "; break;
+                    case UpdateType.Minus: setValueBody = $" {formatedField} - {paramterName} "; break;
+                    case UpdateType.Multiply: setValueBody = $" {formatedField} * {paramterName} "; break;
+                    case UpdateType.Divide: setValueBody = $" {formatedField} / {paramterName} "; break;
+                    default: throw new Exception("updateType无效");
+                }
+
+                propertySetStr.Add($" {formatedField} = {setValueBody} ");
+            });
+            string sql = $"UPDATE {tableName} SET {string.Join(",", propertySetStr)} WHERE {whereSql.sql}";
+
+            return (sql, whereSql.paramters);
+        }
+        private List<DbParameter> CreateDbParamters(List<(string paramterName, object paramterValue)> paramters)
+        {
+            List<DbParameter> dbParamters = new List<DbParameter>();
+            paramters.ForEach(aParamter =>
+            {
+                var newParamter = _provider.GetDbParameter();
+                newParamter.ParameterName = aParamter.paramterName;
+                newParamter.Value = aParamter.paramterValue;
+                dbParamters.Add(newParamter);
+            });
+
+            return dbParamters;
+        }
+
+        #endregion
+
+        #region 事物相关
+        public override Task BeginTransactionAsync(IsolationLevel isolationLevel)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void CommitTransaction()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void DisposeTransaction()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void RollbackTransaction()
+        {
+            throw new NotImplementedException();
+        }
+
+        //public void BeginTransaction(IsolationLevel isolationLevel)
+        //{
+        //    _openedTransaction = true;
+        //    _transaction = _db.Database.BeginTransaction(isolationLevel);
+        //}
+
+        //public async Task BeginTransactionAsync(IsolationLevel isolationLevel)
+        //{
+        //    _openedTransaction = true;
+        //    _transaction = await _db.Database.BeginTransactionAsync(isolationLevel);
+        //}
+
+        //public (bool Success, Exception ex) RunTransaction(Action action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+        //{
+        //    bool success = true;
+        //    Exception resEx = null;
+        //    try
+        //    {
+        //        BeginTransaction(isolationLevel);
+
+        //        action();
+
+        //        CommitTransaction();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        success = false;
+        //        resEx = ex;
+        //        RollbackTransaction();
+        //    }
+        //    finally
+        //    {
+        //        DisposeTransaction();
+        //    }
+
+        //    return (success, resEx);
+        //}
+
+        //public async Task<(bool Success, Exception ex)> RunTransactionAsync(Func<Task> action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+        //{
+        //    bool success = true;
+        //    Exception resEx = null;
+        //    try
+        //    {
+        //        await BeginTransactionAsync(isolationLevel);
+
+        //        await action();
+
+        //        CommitTransaction();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        success = false;
+        //        resEx = ex;
+        //        RollbackTransaction();
+        //    }
+        //    finally
+        //    {
+        //        DisposeTransaction();
+        //    }
+
+        //    return (success, resEx);
+        //}
+
+        #endregion
+
+        #region 数据库相关
+
+        //public string ConnectionString => _db.Options.ConnectionString;
+        //public DatabaseType DbType => _db.Options.DbType;
+        //public void CommitTransaction()
+        //{
+        //    _transaction?.Commit();
+        //}
+        //public void RollbackTransaction()
+        //{
+        //    _transaction?.Rollback();
+        //}
+        //public void DisposeTransaction()
+        //{
+        //    _db.Detach();
+        //    _transaction?.Dispose();
+        //    _openedTransaction = false;
+        //}
+        //public IDbAccessor FullDbAccessor { get; set; }
+        //public int SaveChanges(bool tracking = true)
+        //{
+        //    int count = _db.SaveChanges();
+        //    if (!tracking)
+        //    {
+        //        _db.Detach();
+        //    }
+
+        //    return count;
+        //}
+        //public async Task<int> SaveChangesAsync(bool tracking = true)
+        //{
+        //    int count = await _db.SaveChangesAsync();
+        //    if (!tracking)
+        //    {
+        //        _db.Detach();
+        //    }
+
+        //    return count;
+        //}
+        public override Task<int> SaveChangesAsync(bool tracking = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region 增加数据
+
+        //public int Insert<T>(T entity) where T : class
+        //{
+        //    return Insert(new List<T> { entity });
+        //}
+        //public async Task<int> InsertAsync<T>(T entity) where T : class
+        //{
+        //    return await InsertAsync(new List<T> { entity });
+        //}
+        //public int Insert<T>(List<T> entities) where T : class
+        //{
+        //    _db.AddRange(entities);
+        //    return SaveChanges(false);
+        //}
+        //public async Task<int> InsertAsync<T>(List<T> entities) where T : class
+        //{
+        //    await _db.AddRangeAsync(entities);
+
+        //    return await SaveChangesAsync(false);
+        //}
+        //public override void BulkInsert<T>(List<T> entities, string tableName = null) where T : class
+        //{
+        //    throw new NotImplementedException("暂不支持");
+        //}
+        public override void BulkInsert<T>(List<T> entities, string tableName = null)
+        {
+            throw new Exception("待支持");
+        }
+        public override Task<int> InsertAsync<T>(List<T> entities, bool tracking = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region 删除数据
+
+        //public int DeleteAll<T>() where T : class
+        //{
+        //    return DeleteAll(typeof(T));
+        //}
+        //public async Task<int> DeleteAllAsync<T>() where T : class
+        //{
+        //    return await DeleteAllAsync(typeof(T));
+        //}
+        //public int DeleteAll(Type type)
+        //{
+        //    return DeleteSql(type, "true");
+        //}
+        //public async Task<int> DeleteAllAsync(Type type)
+        //{
+        //    return await DeleteSqlAsync(type, "true");
+        //}
+        //public int Delete<T>(T entity) where T : class
+        //{
+        //    return Delete(new List<T> { entity });
+        //}
+        //public async Task<int> DeleteAsync<T>(T entity) where T : class
+        //{
+        //    return await DeleteAsync(new List<T> { entity });
+        //}
+        //public int Delete<T>(List<T> entities) where T : class
+        //{
+        //    _db.RemoveRange(entities);
+        //    return SaveChanges(false);
+        //}
+        //public async Task<int> DeleteAsync<T>(List<T> entities) where T : class
+        //{
+        //    _db.RemoveRange(entities);
+
+        //    return await SaveChangesAsync(false);
+        //}
+        //public int Delete<T>(Expression<Func<T, bool>> condition) where T : class
+        //{
+        //    var deleteList = GetIQueryable<T>().Where(condition).ToList();
+        //    return Delete(deleteList);
+        //}
+        //public async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class
+        //{
+        //    var deleteList = await GetIQueryable<T>().Where(condition).ToListAsync();
+        //    return await DeleteAsync(deleteList);
+        //}
+        //public int Delete<T>(string key) where T : class
+        //{
+        //    return Delete<T>(new List<string> { key });
+        //}
+        //public async Task<int> DeleteAsync<T>(string key) where T : class
+        //{
+        //    return await DeleteAsync<T>(new List<string> { key });
+        //}
+        //public int Delete<T>(List<string> keys) where T : class
+        //{
+        //    return Delete(typeof(T), keys);
+        //}
+        //public async Task<int> DeleteAsync<T>(List<string> keys) where T : class
+        //{
+        //    return await DeleteAsync(typeof(T), keys);
+        //}
+        //public int Delete(Type type, string key)
+        //{
+        //    return Delete(type, new List<string> { key });
+        //}
+        //public async Task<int> DeleteAsync(Type type, string key)
+        //{
+        //    return await DeleteAsync(type, new List<string> { key });
+        //}
+        //public int Delete(Type type, List<string> keys)
+        //{
+        //    return Delete(GetDeleteList(type, keys));
+        //}
+        //public async Task<int> DeleteAsync(Type type, List<string> keys)
+        //{
+        //    return await DeleteAsync(GetDeleteList(type, keys));
+        //}
+        //public int DeleteSql<T>(Expression<Func<T, bool>> where) where T : class
+        //{
+        //    var iq = GetIQueryable<T>().Where(where);
+
+        //    return DeleteSql(iq);
+        //}
+        //public async Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where) where T : class
+        //{
+        //    var iq = GetIQueryable<T>().Where(where);
+
+        //    return await DeleteSqlAsync(iq);
+        //}
+        //public int DeleteSql(Type entityType, string where, params object[] paramters)
+        //{
+        //    var iq = GetIQueryable(entityType).Where(where, paramters);
+
+        //    return DeleteSql(iq);
+        //}
+        //public async Task<int> DeleteSqlAsync(Type entityType, string where, params object[] paramters)
+        //{
+        //    var iq = GetIQueryable(entityType).Where(where, paramters);
+
+        //    return await DeleteSqlAsync(iq);
+        //}
+        //public int DeleteSql(IQueryable source)
+        //{
+        //    var sql = GetDeleteSql(source);
+
+        //    return ExecuteSql(sql.sql, sql.paramters.ToArray());
+        //}
+        //public async Task<int> DeleteSqlAsync(IQueryable source)
+        //{
+        //    var sql = GetDeleteSql(source);
+
+        //    return await ExecuteSqlAsync(sql.sql, sql.paramters.ToArray());
+        //}
+        public override Task<int> DeleteAsync<T>(List<string> keys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<int> DeleteSqlAsync(IQueryable source)
+        {
+            throw new NotImplementedException();
+        }
+        public override Task<int> DeleteAllAsync<T>()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<int> DeleteAsync<T>(List<T> entities)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region 更新数据
+
+        //public int Update<T>(T entity) where T : class
+        //{
+        //    return Update(new List<T> { entity });
+        //}
+        //public async Task<int> UpdateAsync<T>(T entity) where T : class
+        //{
+        //    return await UpdateAsync(new List<T> { entity });
+        //}
+        //public int Update<T>(List<T> entities) where T : class
+        //{
+        //    entities.ForEach(aEntity =>
+        //    {
+        //        _db.Entry(aEntity).State = EntityState.Modified;
+        //    });
+        //    return SaveChanges(false);
+        //}
+        //public async Task<int> UpdateAsync<T>(List<T> entities) where T : class
+        //{
+        //    entities.ForEach(aEntity =>
+        //    {
+        //        _db.Entry(aEntity).State = EntityState.Modified;
+        //    });
+
+        //    return await SaveChangesAsync(false);
+        //}
+        //public int Update<T>(T entity, List<string> properties) where T : class
+        //{
+        //    return Update(new List<T> { entity }, properties);
+        //}
+        //public async Task<int> UpdateAsync<T>(T entity, List<string> properties) where T : class
+        //{
+        //    return await UpdateAsync(new List<T> { entity }, properties);
+        //}
+        //public int Update<T>(List<T> entities, List<string> properties) where T : class
+        //{
+        //    entities.ForEach(aEntity =>
+        //    {
+        //        properties.ForEach(aProperty =>
+        //        {
+        //            _db.Entry(aEntity).Property(aProperty).IsModified = true;
+        //        });
+        //    });
+
+        //    return SaveChanges(false);
+        //}
+        //public async Task<int> UpdateAsync<T>(List<T> entities, List<string> properties) where T : class
+        //{
+        //    entities.ForEach(aEntity =>
+        //    {
+        //        properties.ForEach(aProperty =>
+        //        {
+        //            _db.Entry(aEntity).Property(aProperty).IsModified = true;
+        //        });
+        //    });
+
+        //    return await SaveChangesAsync(false);
+        //}
+        //public int Update<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class
+        //{
+        //    var list = GetIQueryable<T>().Where(whereExpre).ToList();
+        //    list.ForEach(aData => set(aData));
+        //    return Update(list);
+        //}
+        //public async Task<int> UpdateAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class
+        //{
+        //    var list = GetIQueryable<T>().Where(whereExpre).ToList();
+        //    list.ForEach(aData => set(aData));
+        //    return await UpdateAsync(list);
+        //}
+        //public int UpdateSql<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
+        //{
+        //    var iq = GetIQueryable<T>().Where(where);
+
+        //    return UpdateSql(iq, values);
+        //}
+        //public async Task<int> UpdateSqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
+        //{
+        //    var iq = GetIQueryable<T>().Where(where);
+
+        //    return await UpdateSqlAsync(iq, values);
+        //}
+        //public int UpdateSql(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
+        //{
+        //    var iq = GetIQueryable(entityType).Where(where, paramters);
+
+        //    return UpdateSql(iq, values);
+        //}
+        //public async Task<int> UpdateSqlAsync(Type entityType, string where, object[] paramters, params (string field, UpdateType updateType, object value)[] values)
+        //{
+        //    var iq = GetIQueryable(entityType).Where(where, paramters);
+
+        //    return await UpdateSqlAsync(iq, values);
+        //}
+        //public int UpdateSql(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
+        //{
+        //    var sql = GetUpdateWhereSql(source, values);
+
+        //    return ExecuteSql(sql.sql, sql.paramters.ToArray());
+        //}
+        //public async Task<int> UpdateSqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
+        //{
+        //    var sql = GetUpdateWhereSql(source, values);
+
+        //    return await ExecuteSqlAsync(sql.sql, sql.paramters.ToArray());
+        //}
+        public override Task<int> UpdateSqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
+        {
+            throw new NotImplementedException();
+        }
+        public override Task<int> UpdateAsync<T>(List<T> entities, bool tracking = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<int> UpdateAsync<T>(List<T> entities, List<string> properties, bool tracking = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<int> UpdateAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set, bool tracking = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region 查询数据
+
+        //public T GetEntity<T>(params object[] keyValue) where T : class
+        //{
+        //    var obj = _db.Set<T>().Find(keyValue);
+        //    if (!obj.IsNullOrEmpty())
+        //        _db.Entry(obj).State = EntityState.Detached;
+
+        //    return obj;
+        //}
+        //public async Task<T> GetEntityAsync<T>(params object[] keyValue) where T : class
+        //{
+        //    var obj = await _db.Set<T>().FindAsync(keyValue);
+        //    if (!obj.IsNullOrEmpty())
+        //        _db.Entry(obj).State = EntityState.Detached;
+
+        //    return obj;
+        //}
+        //public List<T> GetList<T>() where T : class
+        //{
+        //    return GetIQueryable<T>().ToList();
+        //}
+        //public async Task<List<T>> GetListAsync<T>() where T : class
+        //{
+        //    return await GetIQueryable<T>().ToListAsync();
+        //}
+        //public List<object> GetList(Type type)
+        //{
+        //    return GetIQueryable(type).CastToList<object>();
+        //}
+        //public async Task<List<object>> GetListAsync(Type type)
+        //{
+        //    return await GetIQueryable(type).Cast<object>().ToListAsync();
+        //}
+        //public IQueryable<T> GetIQueryable<T>(bool tracking = false) where T : class
+        //{
+        //    return GetIQueryable(typeof(T), tracking) as IQueryable<T>;
+        //}
+        //public IQueryable GetIQueryable(Type type, bool tracking = false)
+        //{
+        //    return _db.GetIQueryable(type, tracking);
+        //}
+        //public DataTable GetDataTableWithSql(string sql, params (string paramterName, object value)[] parameters)
+        //{
+        //    using (DbConnection conn = _provider.GetDbConnection())
+        //    {
+        //        conn.ConnectionString = ConnectionString;
+        //        if (conn.State != ConnectionState.Open)
+        //        {
+        //            conn.Open();
+        //        }
+
+        //        using (DbCommand cmd = conn.CreateCommand())
+        //        {
+        //            cmd.Connection = conn;
+        //            cmd.CommandText = sql;
+        //            cmd.CommandTimeout = Constant.CommandTimeout;
+        //            if (_openedTransaction)
+        //            {
+        //                cmd.Transaction = _transaction.GetDbTransaction();
+        //            }
+
+        //            if (parameters != null && parameters.Count() > 0)
+        //                cmd.Parameters.AddRange(CreateDbParamters(parameters.ToList()).ToArray());
+
+        //            using (var reader = cmd.ExecuteReader())
+        //            {
+        //                DataTable table = new DataTable();
+
+        //                DataSet dataSet = new DataSet();
+        //                dataSet.Tables.Add(table);
+        //                dataSet.EnforceConstraints = false;
+        //                table.Load(reader);
+
+        //                return table;
+        //            }
+        //        }
+        //    }
+        //}
+        //public async Task<DataTable> GetDataTableWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
+        //{
+        //    using (DbConnection conn = _provider.GetDbConnection())
+        //    {
+        //        conn.ConnectionString = ConnectionString;
+        //        if (conn.State != ConnectionState.Open)
+        //        {
+        //            await conn.OpenAsync();
+        //        }
+
+        //        using (DbCommand cmd = conn.CreateCommand())
+        //        {
+        //            cmd.Connection = conn;
+        //            cmd.CommandText = sql;
+        //            cmd.CommandTimeout = 5 * 60;
+        //            if (_openedTransaction)
+        //            {
+        //                cmd.Transaction = _transaction.GetDbTransaction();
+        //            }
+
+        //            if (parameters != null && parameters.Count() > 0)
+        //                cmd.Parameters.AddRange(CreateDbParamters(parameters.ToList()).ToArray());
+
+        //            using (var reader = await cmd.ExecuteReaderAsync())
+        //            {
+        //                DataTable table = new DataTable();
+
+        //                DataSet dataSet = new DataSet();
+        //                dataSet.Tables.Add(table);
+        //                dataSet.EnforceConstraints = false;
+        //                table.Load(reader);
+
+        //                return table;
+        //            }
+        //        }
+        //    }
+        //}
+        //public List<T> GetListBySql<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class
+        //{
+        //    return GetDataTableWithSql(sqlStr, parameters).ToList<T>();
+        //}
+        //public async Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class
+        //{
+        //    return (await GetDataTableWithSqlAsync(sqlStr, parameters)).ToList<T>();
+        //}
+        public override Task<T> GetEntityAsync<T>(params object[] keyValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IQueryable<T> GetIQueryable<T>(bool tracking = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<DataTable> GetDataTableWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region 执行Sql语句
+
+        //        public int ExecuteSql(string sql, params (string paramterName, object paramterValue)[] paramters)
+        //        {
+        //#if EFCORE3
+        //            return _db.Database.ExecuteSqlRaw(sql, CreateDbParamters(paramters.ToList()).ToArray());
+        //#endif
+
+        //#if EFCORE2
+        //            return _db.Database.ExecuteSqlCommand(sql, CreateDbParamters(paramters.ToList()).ToArray());
+        //#endif
+        //        }
+        //        public async Task<int> ExecuteSqlAsync(string sql, params (string paramterName, object paramterValue)[] paramters)
+        //        {
+        //#if EFCORE3
+        //            return await _db.Database.ExecuteSqlRawAsync(sql, CreateDbParamters(paramters.ToList()).ToArray());
+        //#endif
+
+        //#if EFCORE2
+        //            return await _db.Database.ExecuteSqlCommandAsync(sql, CreateDbParamters(paramters.ToList()).ToArray());
+        //#endif
+        //        }
+        public override Task<int> ExecuteSqlAsync(string sql, params (string paramterName, object paramterValue)[] parameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Dispose
+
+        private bool _disposed = false;
+        public override void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+            DisposeTransaction();
+            _db.Dispose();
+        }
+
+
+
+
+        #endregion
+    }
+}

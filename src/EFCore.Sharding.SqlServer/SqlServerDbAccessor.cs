@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace EFCore.Sharding.SqlServer
 {
-    internal class SqlServerDbAccessor : AbstractDbAccessor, IDbAccessor
+    internal class SqlServerDbAccessor : GenericDbAccessor, IDbAccessor
     {
         public SqlServerDbAccessor(GenericDbContext baseDbContext)
             : base(baseDbContext)

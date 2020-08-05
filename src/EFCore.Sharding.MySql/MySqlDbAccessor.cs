@@ -9,7 +9,7 @@ using System.Text;
 
 namespace EFCore.Sharding.MySql
 {
-    internal class MySqlDbAccessor : AbstractDbAccessor, IDbAccessor
+    internal class MySqlDbAccessor : GenericDbAccessor, IDbAccessor
     {
         public MySqlDbAccessor(GenericDbContext baseDbContext)
             : base(baseDbContext)

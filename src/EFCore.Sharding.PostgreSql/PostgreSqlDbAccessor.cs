@@ -1,6 +1,6 @@
 ﻿namespace EFCore.Sharding.PostgreSql
 {
-    internal class PostgreSqlDbAccessor : AbstractDbAccessor, IDbAccessor
+    internal class PostgreSqlDbAccessor : GenericDbAccessor, IDbAccessor
     {
         public PostgreSqlDbAccessor(GenericDbContext baseDbContext)
             : base(baseDbContext)

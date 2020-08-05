@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace EFCore.Sharding
 {
-    public class GenericModelCacheKeyFactory : IModelCacheKeyFactory
+    internal class GenericModelCacheKeyFactory : IModelCacheKeyFactory
     {
         public object Create(DbContext context)
         {
