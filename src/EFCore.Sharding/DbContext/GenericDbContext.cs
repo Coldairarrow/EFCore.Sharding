@@ -68,17 +68,6 @@ namespace EFCore.Sharding
                 }
             }
         }
-        public IQueryable GetIQueryable(Type entityType, bool tracking)
-        {
-            var iq = GetType().GetMethod("Set").MakeGenericMethod(entityType).Invoke(this, null) as IQueryable;
-
-            if (!tracking)
-            {
-                iq = typeof(EntityFrameworkQueryableExtensions).GetMethod("AsNoTracking").MakeGenericMethod(entityType).Invoke(null, new object[] { iq }) as IQueryable;
-            }
-
-            return iq;
-        }
         public void Detach()
         {
             ChangeTracker.Entries().ToList().ForEach(aEntry =>

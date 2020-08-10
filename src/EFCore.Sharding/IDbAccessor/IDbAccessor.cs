@@ -153,6 +153,7 @@ namespace EFCore.Sharding
 
         /// <summary>
         /// 获取单条记录
+        /// 注:无实体跟踪
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="keyValue">主键</param>
@@ -161,6 +162,7 @@ namespace EFCore.Sharding
 
         /// <summary>
         /// 获取单条记录
+        /// 注:无实体跟踪
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>
         /// <param name="keyValue">主键</param>

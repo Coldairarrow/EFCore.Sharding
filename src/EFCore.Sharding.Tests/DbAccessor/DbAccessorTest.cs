@@ -43,7 +43,7 @@ namespace EFCore.Sharding.Tests
         public void Insert_multiple()
         {
             _db.Insert(_insertList);
-            var theList = _db.GetList<Base_UnitTest>();
+            var theList = _db.GetIQueryable<Base_UnitTest>().ToList();
             Assert.AreEqual(_insertList.OrderBy(X => X.Id).ToJson(), theList.OrderBy(X => X.Id).ToJson());
         }
 
@@ -51,7 +51,7 @@ namespace EFCore.Sharding.Tests
         public async Task InsertAsync_multiple()
         {
             await _db.InsertAsync(_insertList);
-            var theList = await _db.GetListAsync<Base_UnitTest>();
+            var theList = await _db.GetIQueryable<Base_UnitTest>().ToListAsync();
             Assert.AreEqual(_insertList.OrderBy(X => X.Id).ToJson(), theList.OrderBy(X => X.Id).ToJson());
         }
 
@@ -69,24 +69,6 @@ namespace EFCore.Sharding.Tests
         {
             _db.Insert(_insertList);
             await _db.DeleteAllAsync<Base_UnitTest>();
-            int count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(0, count);
-        }
-
-        [TestMethod]
-        public void DeleteAll_nogeneric()
-        {
-            _db.Insert(_insertList);
-            _db.DeleteAll(typeof(Base_UnitTest));
-            int count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(0, count);
-        }
-
-        [TestMethod]
-        public async Task DeleteAllAsync__nogeneric()
-        {
-            _db.Insert(_insertList);
-            await _db.DeleteAllAsync(typeof(Base_UnitTest));
             int count = _db.GetIQueryable<Base_UnitTest>().Count();
             Assert.AreEqual(0, count);
         }
@@ -182,42 +164,6 @@ namespace EFCore.Sharding.Tests
         }
 
         [TestMethod]
-        public void Delete_key_nogeneric()
-        {
-            _db.Insert(_newData);
-            _db.Delete(typeof(Base_UnitTest), _newData.Id);
-            var count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(0, count);
-        }
-
-        [TestMethod]
-        public async Task DeleteAsync_key_nogeneric()
-        {
-            _db.Insert(_newData);
-            await _db.DeleteAsync(typeof(Base_UnitTest), _newData.Id);
-            var count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(0, count);
-        }
-
-        [TestMethod]
-        public void Delete_keys_nogeneric()
-        {
-            _db.Insert(_insertList);
-            _db.Delete(typeof(Base_UnitTest), _insertList.Select(x => x.Id).ToList());
-            var count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(0, count);
-        }
-
-        [TestMethod]
-        public async Task DeleteAsync_keys_nogeneric()
-        {
-            _db.Insert(_insertList);
-            await _db.DeleteAsync(typeof(Base_UnitTest), _insertList.Select(x => x.Id).ToList());
-            var count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(0, count);
-        }
-
-        [TestMethod]
         public void Delete_Sql_generic()
         {
             _db.Insert(_insertList);
@@ -231,24 +177,6 @@ namespace EFCore.Sharding.Tests
         {
             _db.Insert(_insertList);
             await _db.DeleteSqlAsync<Base_UnitTest>(x => x.UserId == "Admin2");
-            var count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(1, count);
-        }
-
-        [TestMethod]
-        public void Delete_Sql_nogeneric()
-        {
-            _db.Insert(_insertList);
-            _db.DeleteSql(typeof(Base_UnitTest), "UserId==@0", "Admin2");
-            var count = _db.GetIQueryable<Base_UnitTest>().Count();
-            Assert.AreEqual(1, count);
-        }
-
-        [TestMethod]
-        public async Task Delete_SqlAsync_nogeneric()
-        {
-            _db.Insert(_insertList);
-            await _db.DeleteSqlAsync(typeof(Base_UnitTest), "UserId==@0", "Admin2");
             var count = _db.GetIQueryable<Base_UnitTest>().Count();
             Assert.AreEqual(1, count);
         }
@@ -346,7 +274,7 @@ namespace EFCore.Sharding.Tests
             });
 
             _db.Update(newList1, new List<string> { "UserName", "Age" });
-            var dbData = _db.GetList<Base_UnitTest>();
+            var dbData = _db.GetIQueryable<Base_UnitTest>().ToList();
             Assert.AreEqual(newList2.OrderBy(x => x.Id).ToJson(), dbData.OrderBy(x => x.Id).ToJson());
         }
 
@@ -369,7 +297,7 @@ namespace EFCore.Sharding.Tests
             });
 
             await _db.UpdateAsync(newList1, new List<string> { "UserName", "Age" });
-            var dbData = _db.GetList<Base_UnitTest>();
+            var dbData = _db.GetIQueryable<Base_UnitTest>().ToList();
             Assert.AreEqual(newList2.OrderBy(x => x.Id).ToJson(), dbData.OrderBy(x => x.Id).ToJson());
         }
 
@@ -416,24 +344,6 @@ namespace EFCore.Sharding.Tests
         }
 
         [TestMethod]
-        public void UpdateWhere_Sql_type()
-        {
-            _db.Insert(_newData);
-            _db.UpdateSql(typeof(Base_UnitTest), "UserId = @0", new object[] { "Admin" }, ("UserId", UpdateType.Equal, "Admin2"));
-
-            Assert.IsTrue(_db.GetIQueryable<Base_UnitTest>().Any(x => x.UserId == "Admin2"));
-        }
-
-        [TestMethod]
-        public async Task UpdateWhere_SqlAsync_type()
-        {
-            _db.Insert(_newData);
-            await _db.UpdateSqlAsync(typeof(Base_UnitTest), "UserId = @0", new object[] { "Admin" }, ("UserId", UpdateType.Equal, "Admin2"));
-
-            Assert.IsTrue(_db.GetIQueryable<Base_UnitTest>().Any(x => x.UserId == "Admin2"));
-        }
-
-        [TestMethod]
         public void GetEntity()
         {
             _db.Insert(_newData);
@@ -447,22 +357,6 @@ namespace EFCore.Sharding.Tests
             _db.Insert(_newData);
             var theData = await _db.GetEntityAsync<Base_UnitTest>(_newData.Id);
             Assert.AreEqual(_newData.ToJson(), theData.ToJson());
-        }
-
-        [TestMethod]
-        public void GetList()
-        {
-            _db.Insert(_insertList);
-            var dbList = _db.GetList<Base_UnitTest>();
-            Assert.AreEqual(_insertList.OrderBy(x => x.Id).ToJson(), dbList.OrderBy(x => x.Id).ToJson());
-        }
-
-        [TestMethod]
-        public async Task GetListAsync()
-        {
-            _db.Insert(_insertList);
-            var dbList = await _db.GetListAsync<Base_UnitTest>();
-            Assert.AreEqual(_insertList.OrderBy(x => x.Id).ToJson(), dbList.OrderBy(x => x.Id).ToJson());
         }
 
         [TestMethod]

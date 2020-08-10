@@ -140,8 +140,8 @@ namespace EFCore.Sharding
         public abstract void RollbackTransaction();
         public abstract Task<int> DeleteAllAsync<T>() where T : class;
         public abstract Task<int> DeleteAsync<T>(List<T> entities) where T : class;
-        public abstract Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where) where T : class;
         public abstract Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class;
+        public abstract Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where) where T : class;
         public abstract Task<int> InsertAsync<T>(List<T> entities, bool tracking = false) where T : class;
         public abstract Task<int> UpdateAsync<T>(List<T> entities, bool tracking = false) where T : class;
         public abstract Task<int> UpdateAsync<T>(List<T> entities, List<string> properties, bool tracking = false) where T : class;

@@ -36,22 +36,6 @@ namespace EFCore.Sharding.Tests
         }
 
         [TestMethod]
-        public void Insert_multiple()
-        {
-            _db.Insert(_insertList);
-            var theList = _db.GetList<Base_UnitTest>();
-            Assert.AreEqual(_insertList.OrderBy(X => X.Id).ToJson(), theList.OrderBy(X => X.Id).ToJson());
-        }
-
-        [TestMethod]
-        public async Task InsertAsync_multiple()
-        {
-            await _db.InsertAsync(_insertList);
-            var theList = await _db.GetListAsync<Base_UnitTest>();
-            Assert.AreEqual(_insertList.OrderBy(X => X.Id).ToJson(), theList.OrderBy(X => X.Id).ToJson());
-        }
-
-        [TestMethod]
         public void DeleteAll_generic()
         {
             _db.Insert(_insertList);
@@ -225,7 +209,7 @@ namespace EFCore.Sharding.Tests
             });
 
             _db.Update(newList1, new List<string> { "UserName", "Age" });
-            var dbData = _db.GetList<Base_UnitTest>();
+            var dbData = _db.GetIShardingQueryable<Base_UnitTest>().ToList();
             Assert.AreEqual(newList2.OrderBy(x => x.Id).ToJson(), dbData.OrderBy(x => x.Id).ToJson());
         }
 
@@ -248,7 +232,7 @@ namespace EFCore.Sharding.Tests
             });
 
             await _db.UpdateAsync(newList1, new List<string> { "UserName", "Age" });
-            var dbData = _db.GetList<Base_UnitTest>();
+            var dbData = _db.GetIShardingQueryable<Base_UnitTest>().ToList();
             Assert.AreEqual(newList2.OrderBy(x => x.Id).ToJson(), dbData.OrderBy(x => x.Id).ToJson());
         }
 
@@ -274,24 +258,6 @@ namespace EFCore.Sharding.Tests
             });
 
             Assert.IsTrue(_db.GetIShardingQueryable<Base_UnitTest>().Any(x => x.UserId == "Admin2"));
-        }
-
-        [TestMethod]
-        public void GetList()
-        {
-            _db.Insert(_dataList);
-            var local = _dataList.OrderBy(x => x.Id).ToJson();
-            var db = _db.GetList<Base_UnitTest>().OrderBy(x => x.Id).ToJson();
-            Assert.AreEqual(local, db);
-        }
-
-        [TestMethod]
-        public async Task GetListAsync()
-        {
-            _db.Insert(_dataList);
-            var local = _dataList.OrderBy(x => x.Id).ToJson();
-            var db = (await _db.GetListAsync<Base_UnitTest>()).OrderBy(x => x.Id).ToJson();
-            Assert.AreEqual(local, db);
         }
 
         [TestMethod]

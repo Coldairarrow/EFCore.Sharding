@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
-    internal class ShardingDbAccessor : IShardingDbAccessor
+    internal class ShardingDbAccessor : DefaultBaseDbAccessor, IShardingDbAccessor
     {
         private readonly IShardingConfig _shardingConfig;
         private readonly IDbFactory _dbFactory;
@@ -119,27 +119,11 @@ namespace EFCore.Sharding
 
             return db;
         }
-        public int Insert<T>(T entity) where T : class
-        {
-            return Insert(new List<T> { entity });
-        }
-        public async Task<int> InsertAsync<T>(T entity) where T : class
-        {
-            return await InsertAsync(new List<T> { entity });
-        }
-        public int Insert<T>(List<T> entities) where T : class
-        {
-            return AsyncHelper.RunSync(() => InsertAsync(entities));
-        }
-        public async Task<int> InsertAsync<T>(List<T> entities) where T : class
+        public override async Task<int> InsertAsync<T>(List<T> entities, bool tracking = false) where T : class
         {
             return await WriteTableAsync(entities, (targetObj, targetDb) => targetDb.InsertAsync(targetObj));
         }
-        public int DeleteAll<T>() where T : class
-        {
-            return AsyncHelper.RunSync(() => DeleteAllAsync<T>());
-        }
-        public async Task<int> DeleteAllAsync<T>() where T : class
+        public override async Task<int> DeleteAllAsync<T>() where T : class
         {
             var configs = _shardingConfig.GetWriteTables<T>();
             return await PackAccessDataAsync(async () =>
@@ -148,37 +132,17 @@ namespace EFCore.Sharding
                 return (await Task.WhenAll(tasks.ToArray())).Sum();
             });
         }
-        public int Delete<T>(T entity) where T : class
-        {
-            return Delete(new List<T> { entity });
-        }
-        public async Task<int> DeleteAsync<T>(T entity) where T : class
-        {
-            return await DeleteAsync(new List<T> { entity });
-        }
-        public int Delete<T>(List<T> entities) where T : class
-        {
-            return AsyncHelper.RunSync(() => DeleteAsync(entities));
-        }
-        public async Task<int> DeleteAsync<T>(List<T> entities) where T : class
+        public override async Task<int> DeleteAsync<T>(List<T> entities) where T : class
         {
             return await WriteTableAsync(entities, (targetObj, targetDb) => targetDb.DeleteAsync(targetObj));
         }
-        public int Delete<T>(Expression<Func<T, bool>> condition) where T : class
-        {
-            return AsyncHelper.RunSync(() => DeleteAsync(condition));
-        }
-        public async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class
+        public override async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class
         {
             var deleteList = GetIShardingQueryable<T>().Where(condition).ToList();
 
             return await DeleteAsync(deleteList);
         }
-        public int DeleteSql<T>(Expression<Func<T, bool>> where) where T : class
-        {
-            return AsyncHelper.RunSync(() => DeleteSqlAsync(where));
-        }
-        public async Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where) where T : class
+        public override async Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where) where T : class
         {
             var q = _db.GetIQueryable<T>().Where(where);
             var configs = _shardingConfig.GetWriteTables<T>(q);
@@ -188,43 +152,15 @@ namespace EFCore.Sharding
                 return (await Task.WhenAll(tasks.ToArray())).Sum();
             });
         }
-        public int Update<T>(T entity) where T : class
-        {
-            return Update(new List<T> { entity });
-        }
-        public async Task<int> UpdateAsync<T>(T entity) where T : class
-        {
-            return await UpdateAsync(new List<T> { entity });
-        }
-        public int Update<T>(List<T> entities) where T : class
-        {
-            return AsyncHelper.RunSync(() => UpdateAsync(entities));
-        }
-        public async Task<int> UpdateAsync<T>(List<T> entities) where T : class
+        public override async Task<int> UpdateAsync<T>(List<T> entities, bool tracking = false) where T : class
         {
             return await WriteTableAsync(entities, (targetObj, targetDb) => targetDb.UpdateAsync(targetObj));
         }
-        public int Update<T>(T entity, List<string> properties) where T : class
-        {
-            return Update(new List<T> { entity }, properties);
-        }
-        public async Task<int> UpdateAsync<T>(T entity, List<string> properties) where T : class
-        {
-            return await UpdateAsync(new List<T> { entity }, properties);
-        }
-        public int Update<T>(List<T> entities, List<string> properties) where T : class
-        {
-            return AsyncHelper.RunSync(() => UpdateAsync(entities, properties));
-        }
-        public async Task<int> UpdateAsync<T>(List<T> entities, List<string> properties) where T : class
+        public override async Task<int> UpdateAsync<T>(List<T> entities, List<string> properties, bool tracking = false) where T : class
         {
             return await WriteTableAsync(entities, (targetObj, targetDb) => targetDb.UpdateAsync(targetObj, properties));
         }
-        public int Update<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class
-        {
-            return AsyncHelper.RunSync(() => UpdateAsync(whereExpre, set));
-        }
-        public async Task<int> UpdateAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set) where T : class
+        public override async Task<int> UpdateAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set, bool tracking = false) where T : class
         {
             var list = GetIShardingQueryable<T>().Where(whereExpre).ToList();
             list.ForEach(aData => set(aData));
@@ -234,90 +170,26 @@ namespace EFCore.Sharding
         {
             return new ShardingQueryable<T>(_db.GetIQueryable<T>(), this, _shardingConfig, _dbFactory);
         }
-        public List<T> GetList<T>() where T : class
-        {
-            return GetIShardingQueryable<T>().ToList();
-        }
-        public async Task<List<T>> GetListAsync<T>() where T : class
-        {
-            return await GetIShardingQueryable<T>().ToListAsync();
-        }
 
         #endregion
 
         #region 事物处理
 
-        public (bool Success, Exception ex) RunTransaction(Action action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
-        {
-            bool isOK = true;
-            Exception resEx = null;
-            try
-            {
-                BeginTransaction(isolationLevel);
-
-                action();
-
-                CommitTransaction();
-            }
-            catch (Exception ex)
-            {
-                RollbackTransaction();
-                isOK = false;
-                resEx = ex;
-            }
-            finally
-            {
-                DisposeTransaction();
-            }
-
-            return (isOK, resEx);
-        }
-        public async Task<(bool Success, Exception ex)> RunTransactionAsync(Func<Task> action, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
-        {
-            bool isOK = true;
-            Exception resEx = null;
-            try
-            {
-                await BeginTransactionAsync(isolationLevel);
-
-                await action();
-
-                CommitTransaction();
-            }
-            catch (Exception ex)
-            {
-                RollbackTransaction();
-                isOK = false;
-                resEx = ex;
-            }
-            finally
-            {
-                DisposeTransaction();
-            }
-
-            return (isOK, resEx);
-        }
-        public void BeginTransaction(IsolationLevel isolationLevel)
-        {
-            OpenedTransaction = true;
-            _transaction = new DistributedTransaction();
-            _transaction.BeginTransaction(isolationLevel);
-        }
-        public async Task BeginTransactionAsync(IsolationLevel isolationLevel)
+        public override async Task BeginTransactionAsync(IsolationLevel isolationLevel)
         {
             OpenedTransaction = true;
             _transaction = new DistributedTransaction();
             await _transaction.BeginTransactionAsync(isolationLevel);
         }
-        public void CommitTransaction()
+        public override void CommitTransaction()
         {
             _transaction.CommitTransaction();
         }
-        public void RollbackTransaction()
+        public override void RollbackTransaction()
         {
             _transaction.RollbackTransaction();
         }
-        public void DisposeTransaction()
+        public override void DisposeTransaction()
         {
             OpenedTransaction = false;
             _transaction.DisposeTransaction();
@@ -329,7 +201,7 @@ namespace EFCore.Sharding
         #region Dispose
 
         private bool _disposed = false;
-        public virtual void Dispose()
+        public override void Dispose()
         {
             if (_disposed)
                 return;

@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding.2x", "src\E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding.Oracle.2x", "src\EFCore.Sharding.Oracle.2x\EFCore.Sharding.Oracle.2x.csproj", "{2D62E88D-A5D7-4F5A-B97A-276E26895BC4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding.SqlServer.2x", "src\EFCore.Sharding.SqlServer.2x\EFCore.Sharding.SqlServer.2x.csproj", "{980F2A3E-C298-46AA-9E06-28FD67E3A881}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{2D62E88D-A5D7-4F5A-B97A-276E26895BC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D62E88D-A5D7-4F5A-B97A-276E26895BC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D62E88D-A5D7-4F5A-B97A-276E26895BC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{980F2A3E-C298-46AA-9E06-28FD67E3A881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{980F2A3E-C298-46AA-9E06-28FD67E3A881}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{980F2A3E-C298-46AA-9E06-28FD67E3A881}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{980F2A3E-C298-46AA-9E06-28FD67E3A881}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +115,7 @@ Global
 		{35C78CEB-C398-4FA8-885E-CC926F897924} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
 		{751F8551-2322-4318-B90A-D707B887BE71} = {A8EA1A26-EA0A-4647-A69F-48204A7AA9A0}
 		{2D62E88D-A5D7-4F5A-B97A-276E26895BC4} = {A8EA1A26-EA0A-4647-A69F-48204A7AA9A0}
+		{980F2A3E-C298-46AA-9E06-28FD67E3A881} = {A8EA1A26-EA0A-4647-A69F-48204A7AA9A0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {777B6C86-08A0-4823-83C5-4DE00B557828}

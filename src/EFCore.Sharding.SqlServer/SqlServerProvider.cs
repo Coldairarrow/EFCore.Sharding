@@ -1,7 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System.Data.Common;
+
+#if EFCORE3
+using Microsoft.Data.SqlClient;
+#elif EFCORE2
 using System.Data.SqlClient;
+#endif
 
 namespace EFCore.Sharding.SqlServer
 {
@@ -15,7 +20,11 @@ namespace EFCore.Sharding.SqlServer
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
+#if EFCORE3
             dbContextOptionsBuilder.UseSqlServer(dbConnection);
+#elif EFCORE2
+            dbContextOptionsBuilder.UseSqlServer(dbConnection, config => config.UseRowNumberForPaging());
+#endif
         }
     }
 }
