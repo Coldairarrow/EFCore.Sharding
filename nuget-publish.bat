@@ -18,7 +18,7 @@ echo 清理完成
 ::构建
 dotnet build -c Release
 ::推送
-for /r %nowpath% %%i in (*.nupkg) do (dotnet nuget push %%i --api-key oy2n3mbhi2nw4ncq3yqavb2ks4xz4qrelbbfng3gp2jx64 --source https://api.nuget.org/v3/index.json)
+for /r %nowpath% %%i in (*.nupkg) do (dotnet nuget push %%i --api-key {key} --source https://api.nuget.org/v3/index.json)
 
 echo 完成
 pause
