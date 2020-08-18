@@ -87,7 +87,7 @@ namespace EFCore.Sharding
         }
         public Task<int> UpdateSqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
         {
-            return UpdateSqlAsync(GetIQueryable<T>(), values);
+            return UpdateSqlAsync(GetIQueryable<T>().Where(where), values);
         }
         public async Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class
         {

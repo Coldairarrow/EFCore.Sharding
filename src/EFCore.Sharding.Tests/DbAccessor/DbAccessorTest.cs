@@ -326,7 +326,7 @@ namespace EFCore.Sharding.Tests
         }
 
         [TestMethod]
-        public void UpdateWhere_Sql()
+        public void UpdateSql()
         {
             _db.Insert(_newData);
             _db.UpdateSql<Base_UnitTest>(x => x.UserId == "Admin", ("UserId", UpdateType.Equal, "Admin2"));
@@ -335,7 +335,7 @@ namespace EFCore.Sharding.Tests
         }
 
         [TestMethod]
-        public async Task UpdateWhere_SqlAsync()
+        public async Task UpdateAsync()
         {
             _db.Insert(_newData);
             await _db.UpdateSqlAsync<Base_UnitTest>(x => x.UserId == "Admin", ("UserId", UpdateType.Equal, "Admin2"));
