@@ -66,7 +66,7 @@ namespace EFCore.Sharding
         public override DatabaseType DbType => FullDbAccessor.DbType;
         public override Task BeginTransactionAsync(IsolationLevel isolationLevel)
         {
-            throw new NotImplementedException();
+            return FullDbAccessor.BeginTransactionAsync(isolationLevel);
         }
         public override void BulkInsert<T>(List<T> entities, string tableName = null)
         {
