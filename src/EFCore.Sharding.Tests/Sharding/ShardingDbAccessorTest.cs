@@ -13,7 +13,12 @@ namespace EFCore.Sharding.Tests
     [TestClass]
     public class ShardingDbAccessorTest : BaseTest
     {
-        private IShardingDbAccessor _db { get => ServiceProvider.GetService<IShardingDbAccessor>(); }
+        private readonly IShardingDbAccessor _db;
+        public ShardingDbAccessorTest()
+        {
+            _db = CurrentServiceProvider.GetService<IShardingDbAccessor>();
+        }
+
         protected override void Clear()
         {
             _db.DeleteAll<Base_UnitTest>();
@@ -321,8 +326,8 @@ namespace EFCore.Sharding.Tests
         [TestMethod]
         public void RunTransaction_isolationLevel()
         {
-            var db1 = ServiceProvider.GetService<IShardingDbAccessor>();
-            var db2 = ServiceProvider.CreateScope().ServiceProvider.GetService<IShardingDbAccessor>();
+            var db1 = RootServiceProvider.GetService<IShardingDbAccessor>();
+            var db2 = RootServiceProvider.CreateScope().ServiceProvider.GetService<IShardingDbAccessor>();
             db1.Insert(_newData);
 
             var updateData = _newData.DeepClone();

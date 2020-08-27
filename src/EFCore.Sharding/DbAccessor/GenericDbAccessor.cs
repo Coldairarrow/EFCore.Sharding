@@ -166,7 +166,11 @@ namespace EFCore.Sharding
         }
         public override void DisposeTransaction()
         {
-            _db.Detach();
+            if (!_disposed)
+            {
+                _db.Detach();
+            }
+
             _transaction?.Dispose();
             _openedTransaction = false;
         }
@@ -185,7 +189,7 @@ namespace EFCore.Sharding
         public override async Task<int> SaveChangesAsync(bool tracking = true)
         {
             int count = await _db.SaveChangesAsync();
-            if (!tracking)
+            if (!tracking && !_openedTransaction)
             {
                 _db.Detach();
             }

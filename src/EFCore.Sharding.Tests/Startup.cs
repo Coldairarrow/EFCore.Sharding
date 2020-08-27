@@ -29,7 +29,8 @@ namespace EFCore.Sharding.Tests
                 config.SetHashModSharding<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });
 
-            ServiceProvider = services.BuildServiceProvider();
+            RootServiceProvider = services.BuildServiceProvider();
+            ServiceScopeFactory = RootServiceProvider.GetService<IServiceScopeFactory>();
         }
 
         /// <summary>
@@ -41,6 +42,7 @@ namespace EFCore.Sharding.Tests
 
         }
 
-        public static IServiceProvider ServiceProvider;
+        public static IServiceProvider RootServiceProvider { get; private set; }
+        public static IServiceScopeFactory ServiceScopeFactory { get; private set; }
     }
 }

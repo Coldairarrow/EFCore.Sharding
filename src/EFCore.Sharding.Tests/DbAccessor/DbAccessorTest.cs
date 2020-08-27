@@ -12,16 +12,15 @@ namespace EFCore.Sharding.Tests
     [TestClass]
     public class DbAccessorTest : BaseTest
     {
+        protected IDbAccessor _db { get; set; }
+        public DbAccessorTest()
+        {
+            _db = CurrentServiceProvider.GetService<IDbAccessor>();
+        }
         protected override void Clear()
         {
             _db.DeleteAll<Base_UnitTest>();
         }
-
-        #region 私有成员
-
-        protected virtual IDbAccessor _db { get => ServiceProvider.GetService<IDbAccessor>(); }
-
-        #endregion
 
         [TestMethod]
         public void Insert_single()
@@ -532,8 +531,8 @@ namespace EFCore.Sharding.Tests
         [TestMethod]
         public void RunTransaction_isolationLevel()
         {
-            var db1 = ServiceProvider.GetService<ISQLiteDb1>();
-            var db2 = ServiceProvider.CreateScope().ServiceProvider.GetService<ISQLiteDb1>();
+            var db1 = CurrentServiceScope.ServiceProvider.GetService<ISQLiteDb1>();
+            var db2 = ServiceScopeFactory.CreateScope().ServiceProvider.GetService<ISQLiteDb1>();
 
             db1.Insert(_newData);
 
@@ -563,8 +562,8 @@ namespace EFCore.Sharding.Tests
         public void DistributedTransaction()
         {
             //失败事务
-            var db1 = ServiceProvider.GetService<ISQLiteDb1>();
-            var db2 = ServiceProvider.GetService<ISQLiteDb2>();
+            var db1 = RootServiceProvider.GetService<ISQLiteDb1>();
+            var db2 = RootServiceProvider.GetService<ISQLiteDb2>();
             db1.DeleteAll<Base_UnitTest>();
             db2.DeleteAll<Base_UnitTest>();
             Base_UnitTest data1 = new Base_UnitTest
@@ -629,10 +628,10 @@ namespace EFCore.Sharding.Tests
         [TestMethod]
         public void Tracking()
         {
-            _db.Insert(_insertList);
-
-            using var scop = ServiceProvider.CreateScope();
+            using var scop = RootServiceProvider.CreateScope();
             var db = scop.ServiceProvider.GetService<IDbAccessor>();
+            db.Insert(_insertList);
+
             var data = db.GetIQueryable<Base_UnitTest>(true).FirstOrDefault();
             data.Age = 10000;
             db.SaveChanges();
@@ -644,7 +643,7 @@ namespace EFCore.Sharding.Tests
         [TestMethod]
         public void Dispose()
         {
-            using (var scop = ServiceProvider.CreateScope())
+            using (var scop = RootServiceProvider.CreateScope())
             {
                 scop.ServiceProvider.GetService<IDbAccessor>().Dispose();
                 scop.ServiceProvider.GetService<ICustomDbAccessor>().Dispose();

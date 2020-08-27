@@ -20,7 +20,7 @@ namespace EFCore.Sharding.Tests.Sharding
         [TestMethod]
         public void FilterTable()
         {
-            var db = Startup.ServiceProvider.GetService<IDbAccessor>();
+            var db = Startup.RootServiceProvider.GetService<IDbAccessor>();
 
             var q = db.GetIQueryable<Base_UnitTest>();
             ShardingRule rule = new ShardingRule

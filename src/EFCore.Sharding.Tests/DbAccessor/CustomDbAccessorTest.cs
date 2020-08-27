@@ -6,6 +6,9 @@ namespace EFCore.Sharding.Tests
     [TestClass]
     public class CustomDbAccessorTest : DbAccessorTest
     {
-        protected override IDbAccessor _db => ServiceProvider.GetService<ICustomDbAccessor>();
+        public CustomDbAccessorTest()
+        {
+            _db = CurrentServiceProvider.GetService<ICustomDbAccessor>();
+        }
     }
 }
