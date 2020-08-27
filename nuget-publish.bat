@@ -1,6 +1,6 @@
 ::定义版本
-set EFCore_Sharding=3.1.6.11
-set EFCore_Sharding_2x=2.40.0.11
+set EFCore_Sharding=3.1.6.12
+set EFCore_Sharding_2x=2.40.0.12
 
 ::删除所有bin与obj下的文件
 @echo off
