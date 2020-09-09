@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -31,12 +32,29 @@ namespace EFCore.Sharding
 
         #region 重写
 
+        public override async Task<int> DeleteAsync<T>(List<string> keys)
+        {
+            var entities = await GetIQueryable<T>().Where($"@0.Contains({_keyField})", keys).ToListAsync();
+
+            return await DeleteAsync(entities);
+        }
         public override async Task<int> DeleteAsync<T>(List<T> entities)
         {
             if (entities?.Count > 0)
             {
-                var keys = entities.Select(x => x.GetPropertyValue(_keyField) as string).ToList();
-                return await DeleteAsync<T>(keys);
+                if (NeedLogicDelete(typeof(T)))
+                {
+                    entities.ForEach(aData =>
+                    {
+                        aData.SetPropertyValue(_deletedField, true);
+                    });
+
+                    return await UpdateAsync(entities);
+                }
+                else
+                {
+                    return await FullDbAccessor.DeleteAsync(entities);
+                }
             }
             else
                 return 0;

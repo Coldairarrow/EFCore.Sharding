@@ -122,7 +122,7 @@ namespace EFCore.Sharding
         {
             return await DeleteSqlAsync(GetIQueryable<T>());
         }
-        public async Task<int> DeleteAsync<T>(List<string> keys) where T : class
+        public virtual async Task<int> DeleteAsync<T>(List<string> keys) where T : class
         {
             return await DeleteAsync(GetDeleteList(typeof(T), keys));
         }

@@ -63,6 +63,18 @@ namespace EFCore.Sharding
         }
 
         /// <summary>
+        /// 设置某属性值
+        /// </summary>
+        /// <param name="obj">对象</param>
+        /// <param name="propertyName">属性名</param>
+        /// <param name="value">属性值</param>
+        /// <returns></returns>
+        public static void SetPropertyValue(this object obj, string propertyName, object value)
+        {
+            obj.GetType().GetProperty(propertyName, _bindingFlags).SetValue(obj, value);
+        }
+
+        /// <summary>
         /// 获取某字段值
         /// </summary>
         /// <param name="obj">对象</param>
