@@ -1,0 +1,14 @@
+<Project>
+
+  <PropertyGroup>
+    <!--默认统一输出XML注释文档，不需要输出的项目可以单独关闭-->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<Description>Database Sharding For EFCore</Description>
+    <RepositoryUrl>https://github.com/Coldairarrow/EFCore.Sharding</RepositoryUrl>
+	<PackageProjectUrl>https://github.com/Coldairarrow/EFCore.Sharding</PackageProjectUrl>
+    <RepositoryType>github</RepositoryType>
+	<Authors>Coldairarrow</Authors>
+    <Company>Coldairarrow</Company>
+  </PropertyGroup>
+  
+</Project>

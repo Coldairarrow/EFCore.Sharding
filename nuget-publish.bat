@@ -1,6 +1,6 @@
 ::定义版本
-set EFCore_Sharding=3.1.6.13
-set EFCore_Sharding_2x=2.40.0.13
+set EFCore_Sharding=3.1.6.14
+set EFCore_Sharding_2x=2.40.0.14
 
 ::删除所有bin与obj下的文件
 @echo off
@@ -18,7 +18,7 @@ echo 清理完成
 ::构建
 dotnet build -c Release
 ::推送
-for /r %nowpath% %%i in (*.nupkg) do (dotnet nuget push %%i --api-key {} --source https://api.nuget.org/v3/index.json)
+for /r %nowpath% %%i in (*.nupkg) do (dotnet nuget push %%i --api-key  --source https://api.nuget.org/v3/index.json)
 
 echo 完成
 pause

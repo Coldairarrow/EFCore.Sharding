@@ -13,17 +13,17 @@ namespace EFCore.Sharding
         public static bool LogicDelete { get; set; } = false;
         public static string KeyField { get; set; } = "Id";
         public static string DeletedField { get; set; } = "Deleted";
-        public static List<Type> AllEntityTypes
+        public static List<Type> AllTypes
         {
             get
             {
-                if (_allEntityTypes == null)
+                if (_allTypes == null)
                 {
                     lock (_entityLock)
                     {
-                        if (_allEntityTypes == null)
+                        if (_allTypes == null)
                         {
-                            _allEntityTypes = new List<Type>();
+                            _allTypes = new List<Type>();
 
                             Expression<Func<string, bool>> where = x => true;
                             where = where.And(x =>
@@ -60,7 +60,7 @@ namespace EFCore.Sharding
                                     try
                                     {
                                         Assemblies.Add(aAssembly);
-                                        _allEntityTypes.AddRange(aAssembly.GetTypes());
+                                        _allTypes.AddRange(aAssembly.GetTypes());
                                     }
                                     catch
                                     {
@@ -71,14 +71,14 @@ namespace EFCore.Sharding
                     }
                 }
 
-                return _allEntityTypes;
+                return _allTypes;
             }
         }
         public static List<string> AssemblyNames = new List<string>();
         public static readonly List<Assembly> Assemblies = new List<Assembly>();
         public static List<string> AssemblyPaths
             = new List<string>() { Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) };
-        private static List<Type> _allEntityTypes;
+        private static List<Type> _allTypes;
         private static object _entityLock = new object();
     }
 }

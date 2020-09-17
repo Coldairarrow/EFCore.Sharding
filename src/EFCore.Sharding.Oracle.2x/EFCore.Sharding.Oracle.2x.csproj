@@ -2,20 +2,24 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>$(EFCore_Sharding_2x)</Version>
+    <LangVersion>8.0</LangVersion>
     <AssemblyName>EFCore.Sharding.Oracle</AssemblyName>
     <RootNamespace>EFCore.Sharding.Oracle</RootNamespace>
-    <Authors>Coldairarrow</Authors>
-    <Description>Database Sharding For EFCore</Description>
-    <PackageProjectUrl>https://github.com/Coldairarrow/EFCore.Sharding</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Coldairarrow/EFCore.Sharding</RepositoryUrl>
-    <RepositoryType>github</RepositoryType>
-    <Version>$(EFCore_Sharding_2x)</Version>
   </PropertyGroup>
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Oracle.EntityFrameworkCore" Version="2.19.80" />
+    <Compile Include="..\EFCore.Sharding.Oracle\**\*.cs" />
+    <Compile Remove="..\EFCore.Sharding.Oracle\obj\**" />
+    <Compile Remove="..\EFCore.Sharding.Oracle\bin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Oracle.EntityFrameworkCore" Version="2.19.90" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EFCore.Sharding.2x\EFCore.Sharding.2x.csproj" />

@@ -28,7 +28,7 @@ namespace EFCore.Sharding
             }
             else
             {
-                var q = Constant.AllEntityTypes.Where(x => x.GetCustomAttribute(typeof(TableAttribute), false) != null);
+                var q = Constant.AllTypes.Where(x => x.GetCustomAttribute(typeof(TableAttribute), false) != null);
 
                 //通过Namespace解决同表名问题
                 if (!Options.EntityNamespace.IsNullOrEmpty())
@@ -39,16 +39,6 @@ namespace EFCore.Sharding
                 entityTypes = q.ToList();
             }
 
-            //支持IEntityTypeConfiguration配置
-            Constant.Assemblies.Distinct().ToList().ForEach(aAssembly =>
-            {
-                modelBuilder.ApplyConfigurationsFromAssembly(aAssembly, x =>
-                {
-                    //仅加载对应实体配置
-                    return entityTypes.Any(y => typeof(IEntityTypeConfiguration<>).MakeGenericType(y).IsAssignableFrom(x));
-                });
-            });
-
             entityTypes.ForEach(aEntity =>
             {
                 var entity = modelBuilder.Entity(aEntity);
@@ -56,6 +46,19 @@ namespace EFCore.Sharding
                 {
                     entity.ToTable($"{AnnotationHelper.GetDbTableName(aEntity)}_{Options.Suffix}");
                 }
+            });
+
+            //支持IEntityTypeConfiguration配置
+            var entityTypeConfigurationTypes = Constant.AllTypes
+                .Where(x => x.GetInterfaces().Any(y =>
+                    y.IsGenericType
+                    && y.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)
+                    && entityTypes.Contains(y.GetGenericArguments()[0])
+                    ))
+                .ToList();
+            entityTypeConfigurationTypes.ForEach(aConfig =>
+            {
+                modelBuilder.ApplyConfiguration((dynamic)Activator.CreateInstance(aConfig));
             });
 
             //DateTime默认为Local
