@@ -19,8 +19,6 @@ namespace Demo.HelloWorld
             });
             services.AddEFCoreSharding(config =>
             {
-                config.SetEntityAssembly("EFCore.Sharding");
-
                 config.UseDatabase(Config.SQLITE1, DatabaseType.SQLite);
             });
             var serviceProvider = services.BuildServiceProvider();

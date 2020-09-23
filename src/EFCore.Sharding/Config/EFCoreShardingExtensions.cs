@@ -1,8 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Linq;
 
 namespace EFCore.Sharding
 {
@@ -19,10 +16,8 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static IServiceCollection AddEFCoreSharding(this IServiceCollection services, Action<IShardingBuilder> shardingBuilder)
         {
-            if (!services.Any(x => x.ServiceType == typeof(ILoggerFactory)))
-            {
-                services.AddLogging();
-            }
+            services.AddOptions<EFCoreShardingOptions>();
+            services.AddLogging();
 
             ShardingContainer container = new ShardingContainer(services);
             shardingBuilder(container);
@@ -31,6 +26,8 @@ namespace EFCore.Sharding
             services.AddSingleton<IShardingConfig>(container);
             services.AddSingleton<IDbFactory, DbFactory>();
             services.AddScoped<IShardingDbAccessor, ShardingDbAccessor>();
+
+            services.AddHostedService<Bootstrapper>();
 
             return services;
         }

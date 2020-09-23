@@ -15,15 +15,6 @@ namespace EFCore.Sharding
         IShardingBuilder SetEntityAssemblyPath(params string[] entityAssemblyPaths);
 
         /// <summary>
-        /// 设置实体的程序集
-        /// 注:使用模糊匹配获取,例如传入"Entity",则将会扫描所有名字包含"Entity"的程序集
-        /// 注:实体类必须拥有System.ComponentModel.DataAnnotations.Schema.TableAttribute特性
-        /// </summary>
-        /// <param name="entityAssemblyNames">程序集名</param>
-        /// <returns></returns>
-        IShardingBuilder SetEntityAssembly(params string[] entityAssemblyNames);
-
-        /// <summary>
         /// 设置SQL执行超时时间(单位秒,默认30)
         /// </summary>
         /// <param name="timeout">超时时间</param>

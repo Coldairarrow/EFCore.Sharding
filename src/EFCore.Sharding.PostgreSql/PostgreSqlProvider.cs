@@ -9,7 +9,9 @@ namespace EFCore.Sharding.PostgreSql
     {
         public override DbProviderFactory DbProviderFactory => NpgsqlFactory.Instance;
 
+#pragma warning disable EF1001 // Internal EF Core API usage.
         public override ModelBuilder GetModelBuilder() => new ModelBuilder(NpgsqlConventionSetBuilder.Build());
+#pragma warning restore EF1001 // Internal EF Core API usage.
 
         public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new PostgreSqlDbAccessor(baseDbContext);
 

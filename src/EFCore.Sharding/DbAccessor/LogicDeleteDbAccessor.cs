@@ -17,12 +17,12 @@ namespace EFCore.Sharding
         private bool _logicDelete;
         private string _deletedField;
         private string _keyField;
-        public LogicDeleteDbAccessor(IDbAccessor db)
+        public LogicDeleteDbAccessor(IDbAccessor db, EFCoreShardingOptions shardingOptions)
         {
             FullDbAccessor = db;
-            _logicDelete = Constant.LogicDelete;
-            _deletedField = Constant.DeletedField;
-            _keyField = Constant.KeyField;
+            _logicDelete = shardingOptions.LogicDelete;
+            _deletedField = shardingOptions.DeletedField;
+            _keyField = shardingOptions.KeyField;
         }
         public override IDbAccessor FullDbAccessor { get; }
         bool NeedLogicDelete(Type entityType)

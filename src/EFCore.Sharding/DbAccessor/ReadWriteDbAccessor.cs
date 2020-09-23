@@ -15,18 +15,21 @@ namespace EFCore.Sharding
         private readonly string _entityNamespace;
         private readonly bool _logicDelete;
         private readonly IDbFactory _dbFactory;
+        private readonly EFCoreShardingOptions _shardingOptions;
         public ReadWriteDbAccessor(
             (string connectionString, ReadWriteType readWriteType)[] dbs,
             DatabaseType dbType,
             string entityNamespace,
-            IDbFactory dbFactory
+            IDbFactory dbFactory,
+            EFCoreShardingOptions shardingOptions
             )
         {
             _dbConfigs = dbs;
             _entityNamespace = entityNamespace;
             _dbType = dbType;
-            _logicDelete = Constant.LogicDelete;
+            _logicDelete = shardingOptions.LogicDelete;
             _dbFactory = dbFactory;
+            _shardingOptions = shardingOptions;
         }
 
         private (IDbAccessor db, ReadWriteType readWriteType)[] _allDbs;
@@ -51,7 +54,7 @@ namespace EFCore.Sharding
             var theDb = RandomHelper.Next(dbs).db;
 
             if (_logicDelete)
-                theDb = new LogicDeleteDbAccessor(theDb);
+                theDb = new LogicDeleteDbAccessor(theDb, _shardingOptions);
 
             return theDb;
         }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 
 namespace EFCore.Sharding
@@ -12,6 +11,5 @@ namespace EFCore.Sharding
         public string EntityNamespace { get; set; }
         public Type[] EntityTypes { get; set; }
         public string Suffix { get; set; }
-        public ILoggerFactory LoggerFactory { get; set; }
     }
 }

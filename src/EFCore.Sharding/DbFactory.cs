@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Data.Common;
 using System.Reflection;
@@ -11,11 +12,12 @@ namespace EFCore.Sharding
     internal class DbFactory : IDbFactory
     {
         private readonly ILoggerFactory _loggerFactory;
-        public DbFactory(ILoggerFactory loggerFactory)
+        private readonly EFCoreShardingOptions _shardingOptions;
+        public DbFactory(ILoggerFactory loggerFactory, IOptions<EFCoreShardingOptions> shardingOptions)
         {
             _loggerFactory = loggerFactory;
+            _shardingOptions = shardingOptions.Value;
         }
-
         public IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, string entityNamespace = null, string suffix = null)
         {
             GenericDbContextOptions options = new GenericDbContextOptions
@@ -24,14 +26,13 @@ namespace EFCore.Sharding
                 DbType = dbType,
                 EntityNamespace = entityNamespace,
                 Suffix = suffix,
-                LoggerFactory = _loggerFactory
             };
 
             var dbContext = GetDbContext(options);
 
             return GetProvider(dbType).GetDbAccessor(dbContext);
         }
-        public static void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
+        public void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
         {
             GenericDbContextOptions options = new GenericDbContextOptions
             {
@@ -54,7 +55,7 @@ namespace EFCore.Sharding
                 }
             }
         }
-        public static GenericDbContext GetDbContext(GenericDbContextOptions options)
+        public GenericDbContext GetDbContext(GenericDbContextOptions options)
         {
             AbstractProvider provider = GetProvider(options.DbType);
 
@@ -66,11 +67,11 @@ namespace EFCore.Sharding
             provider.UseDatabase(builder, dbConnection);
             builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();
 
-            builder.UseLoggerFactory(options.LoggerFactory);
+            builder.UseLoggerFactory(_loggerFactory);
 
             options.ContextOptions = builder.Options;
 
-            return new GenericDbContext(options);
+            return new GenericDbContext(options, _shardingOptions);
         }
         public static AbstractProvider GetProvider(DatabaseType databaseType)
         {

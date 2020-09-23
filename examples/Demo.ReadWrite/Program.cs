@@ -19,8 +19,6 @@ namespace Demo.ReadWrite
             });
             services.AddEFCoreSharding(config =>
             {
-                config.SetEntityAssembly("EFCore.Sharding");
-
                 //SQLITE1作为主库(写库)
                 //SQLITE2作为从库(读库)
                 config.UseDatabase(new (string, ReadWriteType)[]
