@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
 
 namespace EFCore.Sharding
 {
@@ -20,6 +21,19 @@ namespace EFCore.Sharding
         /// <param name="timeout">超时时间</param>
         /// <returns></returns>
         IShardingBuilder SetCommandTimeout(int timeout);
+
+        /// <summary>
+        /// 添加实体模型构建过滤器
+        /// </summary>
+        /// <param name="filter">过滤器</param>
+        /// <returns></returns>
+        IShardingBuilder AddEntityTypeBuilderFilter(Action<EntityTypeBuilder> filter);
+
+        /// <summary>
+        /// 使用Code First进行迁移时忽略外键
+        /// </summary>
+        /// <returns></returns>
+        IShardingBuilder MigrationsWithoutForeignKey();
 
         /// <summary>
         /// 使用逻辑删除

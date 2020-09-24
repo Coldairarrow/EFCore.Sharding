@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -158,6 +159,24 @@ namespace EFCore.Sharding
             _services.Configure<EFCoreShardingOptions>(x =>
             {
                 x.CommandTimeout = timeout;
+            });
+
+            return this;
+        }
+        public IShardingBuilder AddEntityTypeBuilderFilter(Action<EntityTypeBuilder> filter)
+        {
+            _services.Configure<EFCoreShardingOptions>(x =>
+            {
+                x.EntityTypeBuilderFilter += filter;
+            });
+
+            return this;
+        }
+        public IShardingBuilder MigrationsWithoutForeignKey()
+        {
+            _services.Configure<EFCoreShardingOptions>(x =>
+            {
+                x.MigrationsWithoutForeignKey = true;
             });
 
             return this;

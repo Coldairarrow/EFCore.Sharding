@@ -1,4 +1,6 @@
-﻿namespace EFCore.Sharding
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace EFCore.Sharding
 {
     /// <summary>
     /// 数据库工厂
@@ -14,5 +16,12 @@
         /// <param name="suffix">表明后缀</param>
         /// <returns></returns>
         IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, string entityNamespace = null, string suffix = null);
+
+        /// <summary>
+        /// 获取DbContext
+        /// </summary>
+        /// <param name="options">选项</param>
+        /// <returns></returns>
+        DbContext GetDbContext(GenericDbContextOptions options);
     }
 }

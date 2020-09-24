@@ -35,9 +35,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding.Oracle.2x",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding.SqlServer.2x", "src\EFCore.Sharding.SqlServer.2x\EFCore.Sharding.SqlServer.2x.csproj", "{980F2A3E-C298-46AA-9E06-28FD67E3A881}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFCore.Sharding.Oracle", "src\EFCore.Sharding.Oracle\EFCore.Sharding.Oracle.csproj", "{42C58FAE-AFCC-437F-9225-6AF4A47DFBB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.Sharding.Oracle", "src\EFCore.Sharding.Oracle\EFCore.Sharding.Oracle.csproj", "{42C58FAE-AFCC-437F-9225-6AF4A47DFBB3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src2x", "src2x", "{A2B3F3F2-EF52-48D0-84CB-19AE19F73E7C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.DbMigrator", "examples\Demo.DbMigrator\Demo.DbMigrator.csproj", "{1E3EFDCE-9270-4C97-9EFF-A5B6C8F9D33A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -105,6 +107,10 @@ Global
 		{42C58FAE-AFCC-437F-9225-6AF4A47DFBB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42C58FAE-AFCC-437F-9225-6AF4A47DFBB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42C58FAE-AFCC-437F-9225-6AF4A47DFBB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E3EFDCE-9270-4C97-9EFF-A5B6C8F9D33A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E3EFDCE-9270-4C97-9EFF-A5B6C8F9D33A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E3EFDCE-9270-4C97-9EFF-A5B6C8F9D33A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E3EFDCE-9270-4C97-9EFF-A5B6C8F9D33A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -125,6 +131,7 @@ Global
 		{2D62E88D-A5D7-4F5A-B97A-276E26895BC4} = {A2B3F3F2-EF52-48D0-84CB-19AE19F73E7C}
 		{980F2A3E-C298-46AA-9E06-28FD67E3A881} = {A2B3F3F2-EF52-48D0-84CB-19AE19F73E7C}
 		{42C58FAE-AFCC-437F-9225-6AF4A47DFBB3} = {A8EA1A26-EA0A-4647-A69F-48204A7AA9A0}
+		{1E3EFDCE-9270-4C97-9EFF-A5B6C8F9D33A} = {16DEE8FC-5EDE-42DF-9386-528F579C166D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {777B6C86-08A0-4823-83C5-4DE00B557828}

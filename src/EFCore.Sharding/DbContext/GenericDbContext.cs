@@ -11,8 +11,8 @@ namespace EFCore.Sharding
     internal class GenericDbContext : DbContext
     {
         private readonly EFCoreShardingOptions _shardingOptions;
-        public GenericDbContext(GenericDbContextOptions options, EFCoreShardingOptions shardingOptions)
-            : base(options.ContextOptions)
+        public GenericDbContext(DbContextOptions contextOptions, GenericDbContextOptions options, EFCoreShardingOptions shardingOptions)
+            : base(contextOptions)
         {
             Options = options;
             _shardingOptions = shardingOptions;

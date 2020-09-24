@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -30,7 +31,7 @@ namespace EFCore.Sharding
 
             var dbContext = GetDbContext(options);
 
-            return GetProvider(dbType).GetDbAccessor(dbContext);
+            return GetProvider(dbType).GetDbAccessor(dbContext as GenericDbContext);
         }
         public void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
         {
@@ -42,21 +43,24 @@ namespace EFCore.Sharding
                 Suffix = suffix
             };
 
-            using (DbContext dbContext = GetDbContext(options))
+            using DbContext dbContext = GetDbContext(options);
+            var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
+            try
             {
-                var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
-                try
-                {
-                    databaseCreator.CreateTables();
-                }
-                catch
-                {
+                databaseCreator.CreateTables();
+            }
+            catch
+            {
 
-                }
             }
         }
-        public GenericDbContext GetDbContext(GenericDbContextOptions options)
+        public DbContext GetDbContext(GenericDbContextOptions options)
         {
+            if (options.ConnectionString.IsNullOrEmpty())
+            {
+                throw new Exception("连接字符串不能为空");
+            }
+
             AbstractProvider provider = GetProvider(options.DbType);
 
             DbConnection dbConnection = provider.GetDbConnection();
@@ -66,12 +70,15 @@ namespace EFCore.Sharding
 
             provider.UseDatabase(builder, dbConnection);
             builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();
-
+#if EFCORE3
+            if (_shardingOptions.MigrationsWithoutForeignKey)
+            {
+                builder.ReplaceService<IMigrationsModelDiffer, MigrationsWithoutForeignKey>();
+            }
+#endif
             builder.UseLoggerFactory(_loggerFactory);
 
-            options.ContextOptions = builder.Options;
-
-            return new GenericDbContext(options, _shardingOptions);
+            return new GenericDbContext(builder.Options, options, _shardingOptions);
         }
         public static AbstractProvider GetProvider(DatabaseType databaseType)
         {

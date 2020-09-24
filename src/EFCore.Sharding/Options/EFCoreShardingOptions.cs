@@ -42,6 +42,11 @@ namespace EFCore.Sharding
         /// </summary>
         public Action<EntityTypeBuilder> EntityTypeBuilderFilter { get; set; }
 
+        /// <summary>
+        /// 使用Code First进行迁移时是否忽略外键（即不生成数据库外键）,默认为false(即默认生成外键)
+        /// </summary>
+        public bool MigrationsWithoutForeignKey { get; set; } = false;
+
         private Type[] _types;
         private readonly object _typesLock = new object();
         internal Type[] Types
