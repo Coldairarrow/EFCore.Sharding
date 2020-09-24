@@ -40,7 +40,7 @@ namespace EFCore.Sharding
         /// <summary>
         /// 实体模型构建过滤器
         /// </summary>
-        public Action<EntityTypeBuilder> EntityTypeBuilderFilter;
+        public Action<EntityTypeBuilder> EntityTypeBuilderFilter { get; set; }
 
         private Type[] _types;
         private readonly object _typesLock = new object();

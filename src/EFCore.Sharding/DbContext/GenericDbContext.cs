@@ -45,6 +45,7 @@ namespace EFCore.Sharding
             entityTypes.ForEach(aEntity =>
             {
                 var entity = modelBuilder.Entity(aEntity);
+                _shardingOptions.EntityTypeBuilderFilter?.Invoke(entity);
 
                 if (!string.IsNullOrEmpty(Options.Suffix))
                 {
