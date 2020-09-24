@@ -14,7 +14,7 @@ namespace EFCore.Sharding.Tests
         private readonly IShardingDbAccessor _db;
         public ShardingIQueryableTest()
         {
-            _db = CurrentServiceProvider.GetService<IShardingDbAccessor>();
+            _db = ServiceProvider.GetService<IShardingDbAccessor>();
         }
         
         protected override void Clear()

@@ -8,7 +8,7 @@ namespace EFCore.Sharding.Tests
     {
         public CustomDbAccessorTest()
         {
-            _db = CurrentServiceProvider.GetService<ICustomDbAccessor>();
+            _db = ServiceProvider.GetService<ICustomDbAccessor>();
         }
     }
 }

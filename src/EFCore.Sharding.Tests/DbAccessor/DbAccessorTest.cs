@@ -15,7 +15,7 @@ namespace EFCore.Sharding.Tests
         protected IDbAccessor _db { get; set; }
         public DbAccessorTest()
         {
-            _db = CurrentServiceProvider.GetService<IDbAccessor>();
+            _db = ServiceProvider.GetService<IDbAccessor>();
         }
         protected override void Clear()
         {
@@ -531,7 +531,7 @@ namespace EFCore.Sharding.Tests
         [TestMethod]
         public void RunTransaction_isolationLevel()
         {
-            var db1 = CurrentServiceScope.ServiceProvider.GetService<ISQLiteDb1>();
+            var db1 = ServiceProvider.GetService<ISQLiteDb1>();
             var db2 = ServiceScopeFactory.CreateScope().ServiceProvider.GetService<ISQLiteDb1>();
 
             db1.Insert(_newData);
@@ -562,8 +562,8 @@ namespace EFCore.Sharding.Tests
         public void DistributedTransaction()
         {
             //失败事务
-            var db1 = RootServiceProvider.GetService<ISQLiteDb1>();
-            var db2 = RootServiceProvider.GetService<ISQLiteDb2>();
+            var db1 = ServiceProvider.GetService<ISQLiteDb1>();
+            var db2 = ServiceProvider.GetService<ISQLiteDb2>();
             db1.DeleteAll<Base_UnitTest>();
             db2.DeleteAll<Base_UnitTest>();
             Base_UnitTest data1 = new Base_UnitTest

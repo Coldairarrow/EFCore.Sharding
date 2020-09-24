@@ -23,11 +23,11 @@ namespace EFCore.Sharding.Tests
         }
         protected BaseTest()
         {
-            CurrentServiceScope = RootServiceProvider.CreateScope();
-            CurrentServiceProvider = CurrentServiceScope.ServiceProvider;
+            ServiceScope = RootServiceProvider.CreateScope();
+            ServiceProvider = ServiceScope.ServiceProvider;
         }
-        protected IServiceScope CurrentServiceScope { get; }
-        protected IServiceProvider CurrentServiceProvider { get; }
+        protected IServiceScope ServiceScope { get; }
+        protected IServiceProvider ServiceProvider { get; }
 
         [TestInitialize]
         public virtual void TestInitialize()
@@ -38,7 +38,7 @@ namespace EFCore.Sharding.Tests
         [TestCleanup]
         public virtual void TestCleanup()
         {
-            CurrentServiceScope.Dispose();
+            ServiceScope.Dispose();
         }
 
         protected static List<Base_UnitTest> _insertList { get; }

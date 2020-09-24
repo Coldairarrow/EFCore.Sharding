@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
@@ -14,22 +15,26 @@ namespace EFCore.Sharding.Tests
         [AssemblyInitialize]
         public static void Begin(TestContext context)
         {
-            ServiceCollection services = new ServiceCollection();
-            services.AddEFCoreSharding(config =>
-            {
-                config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
-                config.UseDatabase<ISQLiteDb1>(Config.SQLITE1, DatabaseType.SQLite);
-                config.UseDatabase<ISQLiteDb2>(Config.SQLITE2, DatabaseType.SQLite);
-                config.UseDatabase<ICustomDbAccessor>(Config.CONSTRING1, DatabaseType.SqlServer);
+            var host = Host.CreateDefaultBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddEFCoreSharding(config =>
+                    {
+                        config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
+                        config.UseDatabase<ISQLiteDb1>(Config.SQLITE1, DatabaseType.SQLite);
+                        config.UseDatabase<ISQLiteDb2>(Config.SQLITE2, DatabaseType.SQLite);
+                        config.UseDatabase<ICustomDbAccessor>(Config.CONSTRING1, DatabaseType.SqlServer);
 
-                //分表配置
-                //添加数据源
-                config.AddDataSource(Config.CONSTRING1, ReadWriteType.Read | ReadWriteType.Write, DatabaseType.SqlServer);
-                //设置分表规则
-                config.SetHashModSharding<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
-            });
+                        //分表配置
+                        //添加数据源
+                        config.AddDataSource(Config.CONSTRING1, ReadWriteType.Read | ReadWriteType.Write, DatabaseType.SqlServer);
+                        //设置分表规则
+                        config.SetHashModSharding<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
+                    });
+                }).Build();
+            host.Start();
 
-            RootServiceProvider = services.BuildServiceProvider();
+            RootServiceProvider = host.Services;
             ServiceScopeFactory = RootServiceProvider.GetService<IServiceScopeFactory>();
         }
 
