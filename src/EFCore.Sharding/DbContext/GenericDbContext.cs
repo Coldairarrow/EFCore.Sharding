@@ -8,35 +8,54 @@ using System.Reflection;
 
 namespace EFCore.Sharding
 {
-    internal class GenericDbContext : DbContext
+    public class GenericDbContext : DbContext
     {
-        private readonly EFCoreShardingOptions _shardingOptions;
-        public GenericDbContext(DbContextOptions contextOptions, GenericDbContextOptions options, EFCoreShardingOptions shardingOptions)
+        public DbContextOptions DbContextOption { get; }
+        public EFCoreShardingOptions ShardingOption { get; }
+        public DbContextParamters Paramter { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="contextOptions"></param>
+        /// <param name="paramter"></param>
+        /// <param name="shardingOptions"></param>
+        public GenericDbContext(DbContextOptions contextOptions, DbContextParamters paramter, EFCoreShardingOptions shardingOptions)
             : base(contextOptions)
         {
-            Options = options;
-            _shardingOptions = shardingOptions;
+            DbContextOption = contextOptions;
+            Paramter = paramter;
+            ShardingOption = shardingOptions;
 
-            Database.SetCommandTimeout(_shardingOptions.CommandTimeout);
+            Database.SetCommandTimeout(ShardingOption.CommandTimeout);
         }
-        public GenericDbContextOptions Options { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dbContext"></param>
+        public GenericDbContext(GenericDbContext dbContext)
+            : this(dbContext.DbContextOption, dbContext.Paramter, dbContext.ShardingOption)
+        {
+
+        }
         private static readonly ValueConverter<DateTime, DateTime> _dateTimeConverter
             = new ValueConverter<DateTime, DateTime>(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Local));
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             List<Type> entityTypes;
-            if (Options.EntityTypes?.Length > 0)
+            if (Paramter.EntityTypes?.Length > 0)
             {
-                entityTypes = Options.EntityTypes.ToList();
+                entityTypes = Paramter.EntityTypes.ToList();
             }
             else
             {
-                var q = _shardingOptions.Types.Where(x => x.GetCustomAttribute(typeof(TableAttribute), false) != null);
+                var q = ShardingOption.Types.Where(x => x.GetCustomAttribute(typeof(TableAttribute), false) != null);
 
                 //通过Namespace解决同表名问题
-                if (!Options.EntityNamespace.IsNullOrEmpty())
+                if (!Paramter.EntityNamespace.IsNullOrEmpty())
                 {
-                    q = q.Where(x => x.Namespace.Contains(Options.EntityNamespace));
+                    q = q.Where(x => x.Namespace.Contains(Paramter.EntityNamespace));
                 }
 
                 entityTypes = q.ToList();
@@ -45,16 +64,16 @@ namespace EFCore.Sharding
             entityTypes.ForEach(aEntity =>
             {
                 var entity = modelBuilder.Entity(aEntity);
-                _shardingOptions.EntityTypeBuilderFilter?.Invoke(entity);
+                ShardingOption.EntityTypeBuilderFilter?.Invoke(entity);
 
-                if (!string.IsNullOrEmpty(Options.Suffix))
+                if (!string.IsNullOrEmpty(Paramter.Suffix))
                 {
-                    entity.ToTable($"{AnnotationHelper.GetDbTableName(aEntity)}_{Options.Suffix}");
+                    entity.ToTable($"{AnnotationHelper.GetDbTableName(aEntity)}_{Paramter.Suffix}");
                 }
             });
 
             //支持IEntityTypeConfiguration配置
-            var entityTypeConfigurationTypes = _shardingOptions.Types
+            var entityTypeConfigurationTypes = ShardingOption.Types
                 .Where(x => x.GetInterfaces().Any(y =>
                     y.IsGenericType
                     && y.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)

@@ -14,13 +14,13 @@ namespace EFCore.Sharding
         /// <param name="services">服务集合</param>
         /// <param name="shardingBuilder">配置项</param>
         /// <returns></returns>
-        public static IServiceCollection AddEFCoreSharding(this IServiceCollection services, Action<IShardingBuilder> shardingBuilder)
+        public static IServiceCollection AddEFCoreSharding(this IServiceCollection services, Action<IShardingBuilder> shardingBuilder = null)
         {
             services.AddOptions<EFCoreShardingOptions>();
             services.AddLogging();
 
             ShardingContainer container = new ShardingContainer(services);
-            shardingBuilder(container);
+            shardingBuilder?.Invoke(container);
 
             services.AddSingleton<IShardingBuilder>(container);
             services.AddSingleton<IShardingConfig>(container);

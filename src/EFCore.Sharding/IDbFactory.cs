@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace EFCore.Sharding
+﻿namespace EFCore.Sharding
 {
     /// <summary>
     /// 数据库工厂
@@ -22,6 +20,6 @@ namespace EFCore.Sharding
         /// </summary>
         /// <param name="options">选项</param>
         /// <returns></returns>
-        DbContext GetDbContext(GenericDbContextOptions options);
+        GenericDbContext GetDbContext(DbContextParamters options);
     }
 }

@@ -11,7 +11,7 @@ namespace EFCore.Sharding
         {
             if (context is GenericDbContext genericDbContext)
             {
-                var option = genericDbContext.Options;
+                var option = genericDbContext.Paramter;
 
                 var entityTypeNames = (option?.EntityTypes ?? new Type[] { }).Select(x => x.AssemblyQualifiedName).ToList();
 

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Demo.DbMigrator
 {
+    [Table(nameof(Order))]
     public class Order
     {
         [Key]

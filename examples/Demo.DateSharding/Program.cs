@@ -11,7 +11,7 @@ namespace Demo.DateSharding
         static async Task Main(string[] args)
         {
             DateTime startTime = DateTime.Now.AddMinutes(-5);
-            await Host.CreateDefaultBuilder()
+            var host = Host.CreateDefaultBuilder()
                 .ConfigureServices(services =>
                 {
                     //配置初始化
@@ -23,7 +23,7 @@ namespace Demo.DateSharding
                         //按分钟分表
                         config.SetDateSharding<Base_UnitTest>(nameof(Base_UnitTest.CreateTime), ExpandByDateMode.PerMinute, startTime);
                     });
-                }).RunConsoleAsync();
+                }).Build();
             //host.Start();
 
             //var serviceProvider = host.Services;

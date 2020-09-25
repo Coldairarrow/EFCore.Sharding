@@ -51,9 +51,9 @@ namespace EFCore.Sharding
             string schema = AnnotationHelper.GetDbSchemaName(entityType);
             schema = GetSchema(schema);
             string table = AnnotationHelper.GetDbTableName(entityType);
-            if (!_db.Options.Suffix.IsNullOrEmpty())
+            if (!_db.Paramter.Suffix.IsNullOrEmpty())
             {
-                table += $"_{_db.Options.Suffix}";
+                table += $"_{_db.Paramter.Suffix}";
             }
 
             if (schema.IsNullOrEmpty())
@@ -183,8 +183,8 @@ namespace EFCore.Sharding
 
         #region 数据库相关
 
-        public override string ConnectionString => _db.Options.ConnectionString;
-        public override DatabaseType DbType => _db.Options.DbType;
+        public override string ConnectionString => _db.Paramter.ConnectionString;
+        public override DatabaseType DbType => _db.Paramter.DbType;
         public override IDbAccessor FullDbAccessor => this;
         public override async Task<int> SaveChangesAsync(bool tracking = true)
         {

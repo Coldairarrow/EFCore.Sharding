@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using EFCore.Sharding.Config;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
@@ -14,6 +15,7 @@ namespace EFCore.Sharding
         {
             _serviceProvider = serviceProvider;
             _shardingOptions = shardingOptions.Value;
+            Cache.ServiceProvider = serviceProvider;
         }
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {

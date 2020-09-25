@@ -21,7 +21,7 @@ namespace EFCore.Sharding
         }
         public IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, string entityNamespace = null, string suffix = null)
         {
-            GenericDbContextOptions options = new GenericDbContextOptions
+            DbContextParamters options = new DbContextParamters
             {
                 ConnectionString = conString,
                 DbType = dbType,
@@ -31,11 +31,11 @@ namespace EFCore.Sharding
 
             var dbContext = GetDbContext(options);
 
-            return GetProvider(dbType).GetDbAccessor(dbContext as GenericDbContext);
+            return GetProvider(dbType).GetDbAccessor(dbContext);
         }
         public void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
         {
-            GenericDbContextOptions options = new GenericDbContextOptions
+            DbContextParamters options = new DbContextParamters
             {
                 ConnectionString = conString,
                 DbType = dbType,
@@ -54,7 +54,7 @@ namespace EFCore.Sharding
 
             }
         }
-        public DbContext GetDbContext(GenericDbContextOptions options)
+        public GenericDbContext GetDbContext(DbContextParamters options)
         {
             if (options.ConnectionString.IsNullOrEmpty())
             {
@@ -67,6 +67,7 @@ namespace EFCore.Sharding
             dbConnection.ConnectionString = options.ConnectionString;
 
             DbContextOptionsBuilder builder = new DbContextOptionsBuilder();
+            builder.UseLoggerFactory(_loggerFactory);
 
             provider.UseDatabase(builder, dbConnection);
             builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();
@@ -76,8 +77,6 @@ namespace EFCore.Sharding
                 builder.ReplaceService<IMigrationsModelDiffer, MigrationsWithoutForeignKey>();
             }
 #endif
-            builder.UseLoggerFactory(_loggerFactory);
-
             return new GenericDbContext(builder.Options, options, _shardingOptions);
         }
         public static AbstractProvider GetProvider(DatabaseType databaseType)

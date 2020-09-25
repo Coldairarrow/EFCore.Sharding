@@ -5,7 +5,7 @@ namespace EFCore.Sharding
     /// <summary>
     /// 通用DbContext参数
     /// </summary>
-    public class GenericDbContextOptions
+    public class DbContextParamters
     {
         /// <summary>
         /// 连接字符串

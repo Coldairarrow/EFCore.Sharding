@@ -21,10 +21,11 @@ namespace EFCore.Sharding
             IMigrationsAnnotationProvider migrationsAnnotations,
             IChangeDetector changeDetector,
             IUpdateAdapterFactory updateAdapterFactory,
-            CommandBatchPreparerDependencies commandBatchPreparerDependencies)
+            CommandBatchPreparerDependencies commandBatchPreparerDependencies
+            )
         : base(typeMappingSource, migrationsAnnotations, changeDetector, updateAdapterFactory, commandBatchPreparerDependencies)
         {
-
+            //_dbFactory = dbFactory;
         }
 
         public override IReadOnlyList<MigrationOperation> GetDifferences(IModel source, IModel target)
@@ -35,7 +36,9 @@ namespace EFCore.Sharding
                 .ToList();
 
             foreach (var operation in operations.OfType<CreateTableOperation>())
+            {
                 operation.ForeignKeys?.Clear();
+            }
 
             return operations;
         }
