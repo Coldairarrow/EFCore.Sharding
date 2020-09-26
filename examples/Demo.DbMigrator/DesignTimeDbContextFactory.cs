@@ -1,16 +1,24 @@
 ﻿using EFCore.Sharding;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using System;
 
 namespace DbMigrator
 {
-    public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<CustomContext>, IDesignTimeServices
+    public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<CustomContext>
     {
-        public void ConfigureDesignTimeServices(IServiceCollection serviceCollection)
+        static DesignTimeDbContextFactory()
         {
-            throw new System.NotImplementedException();
+            ServiceCollection services = new ServiceCollection();
+            services.AddEFCoreSharding(x =>
+            {
+                x.MigrationsWithoutForeignKey();
+            });
+            ServiceProvider = services.BuildServiceProvider();
+            new EFCoreShardingBootstrapper(ServiceProvider).StartAsync(default).Wait();
         }
+
+        public static readonly IServiceProvider ServiceProvider;
 
         /// <summary>
         /// 创建数据库上下文
@@ -19,17 +27,7 @@ namespace DbMigrator
         /// <returns></returns>
         public CustomContext CreateDbContext(string[] args)
         {
-            using var host = Host.CreateDefaultBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddEFCoreSharding(x =>
-                    {
-                        x.MigrationsWithoutForeignKey();
-                    });
-                }).Build();
-            host.Start();
-
-            var db = host.Services
+            var db = ServiceProvider
                 .GetService<IDbFactory>()
                 .GetDbContext(new DbContextParamters
                 {

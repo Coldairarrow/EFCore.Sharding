@@ -72,10 +72,7 @@ namespace EFCore.Sharding
             provider.UseDatabase(builder, dbConnection);
             builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();
 #if EFCORE3
-            if (_shardingOptions.MigrationsWithoutForeignKey)
-            {
-                builder.ReplaceService<IMigrationsModelDiffer, MigrationsWithoutForeignKey>();
-            }
+            builder.ReplaceService<IMigrationsModelDiffer, ShardingMigration>();
 #endif
             return new GenericDbContext(builder.Options, options, _shardingOptions);
         }

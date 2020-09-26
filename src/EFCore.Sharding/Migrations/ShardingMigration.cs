@@ -1,4 +1,5 @@
 ﻿#if EFCORE3
+using EFCore.Sharding.Config;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -7,16 +8,20 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.EntityFrameworkCore.Update.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 
 namespace EFCore.Sharding
 {
     [SuppressMessage("Usage", "EF1001:Internal EF Core API usage.", Justification = "<挂起>")]
-    internal class MigrationsWithoutForeignKey : MigrationsModelDiffer
+    internal class ShardingMigration : MigrationsModelDiffer
     {
-        public MigrationsWithoutForeignKey(
+        public ShardingMigration(
             IRelationalTypeMappingSource typeMappingSource,
             IMigrationsAnnotationProvider migrationsAnnotations,
             IChangeDetector changeDetector,
@@ -25,22 +30,30 @@ namespace EFCore.Sharding
             )
         : base(typeMappingSource, migrationsAnnotations, changeDetector, updateAdapterFactory, commandBatchPreparerDependencies)
         {
-            //_dbFactory = dbFactory;
         }
 
         public override IReadOnlyList<MigrationOperation> GetDifferences(IModel source, IModel target)
         {
-            var operations = base.GetDifferences(source, target)
-                .Where(op => !(op is AddForeignKeyOperation))
-                .Where(op => !(op is DropForeignKeyOperation))
-                .ToList();
+            List<MigrationOperation> resList = new List<MigrationOperation>();
 
-            foreach (var operation in operations.OfType<CreateTableOperation>())
+            var shardingOption = Cache.ServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+            var sourceOperations = base.GetDifferences(source, target).ToList();
+
+            //忽略外键
+            if (shardingOption.MigrationsWithoutForeignKey)
             {
-                operation.ForeignKeys?.Clear();
+                sourceOperations.RemoveAll(x => x is AddForeignKeyOperation || x is DropForeignKeyOperation);
+                foreach (var operation in sourceOperations.OfType<CreateTableOperation>())
+                {
+                    operation.ForeignKeys?.Clear();
+                }
             }
+            resList.AddRange(sourceOperations);
 
-            return operations;
+            //分表
+            
+
+            return resList;
         }
     }
 }
