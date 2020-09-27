@@ -10,7 +10,7 @@ namespace Demo.DbMigrator
     {
         [Key]
         public Guid Id { get; set; }
-        public DateTime DateTime { get; set; }
+        public DateTime CreateTime { get; set; }
         public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 }

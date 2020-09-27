@@ -59,7 +59,15 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static object GetPropertyValue(this object obj, string propertyName)
         {
-            return obj.GetType().GetProperty(propertyName, _bindingFlags).GetValue(obj);
+            var property = obj.GetType().GetProperty(propertyName, _bindingFlags);
+            if (property != null)
+            {
+                return obj.GetType().GetProperty(propertyName, _bindingFlags).GetValue(obj);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>

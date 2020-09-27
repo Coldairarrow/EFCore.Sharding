@@ -1,6 +1,6 @@
 ﻿using EFCore.Sharding;
 
-namespace DbMigrator
+namespace Demo.DbMigrator
 {
     public class CustomContext : GenericDbContext
     {

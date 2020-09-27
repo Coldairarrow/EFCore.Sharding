@@ -21,7 +21,7 @@ namespace EFCore.Sharding
 
             ShardingContainer container = new ShardingContainer(services);
             shardingBuilder?.Invoke(container);
-
+            services.AddSingleton(container);
             services.AddSingleton<IShardingBuilder>(container);
             services.AddSingleton<IShardingConfig>(container);
             services.AddSingleton<DbFactory>();

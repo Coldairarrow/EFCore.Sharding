@@ -140,6 +140,8 @@ namespace EFCore.Sharding
         {
             return _dataSources.FirstOrDefault().DbType;
         }
+        public readonly Dictionary<string, List<string>> ExistsShardingTables
+            = new Dictionary<string, List<string>>();
 
         #endregion
 
@@ -301,6 +303,15 @@ namespace EFCore.Sharding
                     {
                         var theSourceName = GetSourceName(theTime);
                         string suffix = shardingRule.GetTableSuffixByField(theTime);
+
+                        string absTableName = AnnotationHelper.GetDbTableName(typeof(TEntity));
+                        string fullTableName = $"{absTableName}_{suffix}";
+                        if (!ExistsShardingTables.ContainsKey(absTableName))
+                        {
+                            ExistsShardingTables.Add(absTableName, new List<string>());
+                        }
+                        ExistsShardingTables[absTableName].Add(fullTableName);
+
                         CreateTable<TEntity>(serviceProvider, theSourceName, suffix);
                         AddPhysicTable<TEntity>(suffix, theSourceName);
 
@@ -308,7 +319,6 @@ namespace EFCore.Sharding
                     }
 
                     //定时自动建表
-
                     JobHelper.SetCronJob(() =>
                     {
                         DateTime trueDate = DateTime.Now + paramter.leadTime;
@@ -318,7 +328,6 @@ namespace EFCore.Sharding
                         CreateTable<TEntity>(serviceProvider, theSourceName, suffix);
                         AddPhysicTable<TEntity>(suffix, theSourceName);
                     }, paramter.conExpression);
-
 
                     string GetSourceName(DateTime time)
                     {
