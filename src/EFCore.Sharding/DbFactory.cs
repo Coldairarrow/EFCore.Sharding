@@ -56,11 +56,6 @@ namespace EFCore.Sharding
         }
         public GenericDbContext GetDbContext(DbContextParamters options)
         {
-            if (options.ConnectionString.IsNullOrEmpty())
-            {
-                throw new Exception("连接字符串不能为空");
-            }
-
             AbstractProvider provider = GetProvider(options.DbType);
 
             DbConnection dbConnection = provider.GetDbConnection();

@@ -25,6 +25,7 @@ namespace Demo.Performance
                 config.SetHashModSharding<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });
             var serviceProvider = services.BuildServiceProvider();
+            new EFCoreShardingBootstrapper(serviceProvider).StartAsync(default).Wait();
 
             var db = serviceProvider.GetService<IDbAccessor>();
             var shardingDb = serviceProvider.GetService<IShardingDbAccessor>();

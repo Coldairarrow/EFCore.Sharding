@@ -111,6 +111,14 @@ namespace EFCore.Sharding
 #endif
             return allTables;
         }
+        private void AddShardingTable(string absTableName, string fullTableName)
+        {
+            if (!ExistsShardingTables.ContainsKey(absTableName))
+            {
+                ExistsShardingTables.Add(absTableName, new List<string>());
+            }
+            ExistsShardingTables[absTableName].Add(fullTableName);
+        }
 
         #endregion
 
@@ -179,6 +187,24 @@ namespace EFCore.Sharding
             _services.Configure<EFCoreShardingOptions>(x =>
             {
                 x.MigrationsWithoutForeignKey = true;
+            });
+
+            return this;
+        }
+        public IShardingBuilder CreateShardingTableOnStarting(bool enable)
+        {
+            _services.Configure<EFCoreShardingOptions>(x =>
+            {
+                x.CreateShardingTableOnStarting = enable;
+            });
+
+            return this;
+        }
+        public IShardingBuilder EnableShardingMigration(bool enable)
+        {
+            _services.Configure<EFCoreShardingOptions>(x =>
+            {
+                x.EnableShardingMigration = enable;
             });
 
             return this;
@@ -280,24 +306,24 @@ namespace EFCore.Sharding
             {
                 x.Bootstrapper += serviceProvider =>
                 {
-                    (string conExpression, TimeSpan leadTime) paramter =
+                    var sharingOption = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+
+                    (string conExpression, string startTimeFormat, Func<DateTime, DateTime> nextTime) paramter =
                         expandByDateMode switch
                         {
-                            ExpandByDateMode.PerMinute => ("30 * * * * ? *", TimeSpan.FromSeconds(60)),
-                            ExpandByDateMode.PerHour => ("0 30 * * * ? *", TimeSpan.FromMinutes(60)),
-                            ExpandByDateMode.PerDay => ("0 0 23 * * ? *", TimeSpan.FromHours(2)),
-                            ExpandByDateMode.PerMonth => ("0 0 0 L * ? *", TimeSpan.FromDays(2)),
-                            ExpandByDateMode.PerYear => ("0 0 0 L 12 ? *", TimeSpan.FromDays(2)),
+                            ExpandByDateMode.PerMinute => ("0 * * * * ? *", "yyyy/MM/dd HH:mm:00", x => x.AddMinutes(1)),
+                            ExpandByDateMode.PerHour => ("0 0 * * * ? *", "yyyy/MM/dd HH:00:00", x => x.AddHours(1)),
+                            ExpandByDateMode.PerDay => ("0 0 0 * * ? *", "yyyy/MM/dd 00:00:00", x => x.AddDays(1)),
+                            ExpandByDateMode.PerMonth => ("0 0 0 1 * ? *", "yyyy/MM/01 00:00:00", x => x.AddMonths(1)),
+                            ExpandByDateMode.PerYear => ("0 0 0 1 1 ? *", "yyyy/01/01 00:00:00", x => x.AddYears(1)),
                             _ => throw new Exception("expandByDateMode参数无效")
                         };
 
                     //确保之前的表已存在
                     var theTime = ranges.Min(x => x.startTime);
+                    theTime = DateTime.Parse(theTime.ToString(paramter.startTimeFormat));
 
-                    var key = expandByDateMode.ToString().Replace("Per", "");
-                    var method = theTime.GetType().GetMethod($"Add{key}s");
-
-                    DateTime endTime = (DateTime)method.Invoke(DateTime.Now, new object[] { 1 }) + paramter.leadTime;
+                    DateTime endTime = paramter.nextTime(DateTime.Parse(DateTime.Now.ToString(paramter.startTimeFormat)));
 
                     while (theTime <= endTime)
                     {
@@ -306,22 +332,23 @@ namespace EFCore.Sharding
 
                         string absTableName = AnnotationHelper.GetDbTableName(typeof(TEntity));
                         string fullTableName = $"{absTableName}_{suffix}";
-                        if (!ExistsShardingTables.ContainsKey(absTableName))
-                        {
-                            ExistsShardingTables.Add(absTableName, new List<string>());
-                        }
-                        ExistsShardingTables[absTableName].Add(fullTableName);
+                        AddShardingTable(absTableName, fullTableName);
 
-                        CreateTable<TEntity>(serviceProvider, theSourceName, suffix);
+                        //启动时建表
+                        if (sharingOption.CreateShardingTableOnStarting)
+                        {
+                            CreateTable<TEntity>(serviceProvider, theSourceName, suffix);
+                        }
+
                         AddPhysicTable<TEntity>(suffix, theSourceName);
 
-                        theTime = (DateTime)method.Invoke(theTime, new object[] { 1 });
+                        theTime = paramter.nextTime(theTime);
                     }
 
                     //定时自动建表
                     JobHelper.SetCronJob(() =>
                     {
-                        DateTime trueDate = DateTime.Now + paramter.leadTime;
+                        DateTime trueDate = paramter.nextTime(DateTime.Parse(DateTime.Now.ToString(paramter.startTimeFormat)));
                         var theSourceName = GetSourceName(trueDate);
                         string suffix = shardingRule.GetTableSuffixByField(trueDate);
                         //添加物理表
@@ -331,7 +358,11 @@ namespace EFCore.Sharding
 
                     string GetSourceName(DateTime time)
                     {
-                        return ranges.Where(x => time >= x.startTime && time < x.endTime).FirstOrDefault().sourceName;
+                        return ranges
+                            .Where(x => time >= DateTime.Parse(x.startTime.ToString(paramter.startTimeFormat))
+                                && time < x.endTime)
+                            .FirstOrDefault()
+                            .sourceName;
                     }
                 };
             });
@@ -359,11 +390,23 @@ namespace EFCore.Sharding
             {
                 x.Bootstrapper += serviceProvider =>
                 {
+                    var sharingOption = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+
                     //建表
                     for (int i = 0; i < mod; i++)
                     {
                         var sourceName = ranges.Where(x => i >= x.start && i < x.end).FirstOrDefault().sourceName;
-                        CreateTable<TEntity>(serviceProvider, sourceName, i.ToString());
+
+                        string absTableName = AnnotationHelper.GetDbTableName(typeof(TEntity));
+                        string fullTableName = $"{absTableName}_{i}";
+                        AddShardingTable(absTableName, fullTableName);
+
+                        //启动时建表
+                        if (sharingOption.CreateShardingTableOnStarting)
+                        {
+                            CreateTable<TEntity>(serviceProvider, sourceName, i.ToString());
+                        }
+
                         AddPhysicTable<TEntity>(i.ToString(), sourceName);
                     }
                 };

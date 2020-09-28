@@ -36,6 +36,20 @@ namespace EFCore.Sharding
         IShardingBuilder MigrationsWithoutForeignKey();
 
         /// <summary>
+        /// 是否在启动时自动创建分表,默认true
+        /// </summary>
+        /// <param name="enable">是否启用</param>
+        /// <returns></returns>
+        IShardingBuilder CreateShardingTableOnStarting(bool enable);
+
+        /// <summary>
+        /// 是否启用分表数据库迁移,默认false
+        /// </summary>
+        /// <param name="enable">是否启用</param>
+        /// <returns></returns>
+        IShardingBuilder EnableShardingMigration(bool enable);
+
+        /// <summary>
         /// 使用逻辑删除
         /// </summary>
         /// <param name="keyField">主键字段,字段类型为string</param>

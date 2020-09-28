@@ -15,7 +15,7 @@ namespace EFCore.Sharding.SQLite
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            dbContextOptionsBuilder.UseSqlite(dbConnection);
+            dbContextOptionsBuilder.UseSqlite(dbConnection, x => x.UseNetTopologySuite());
         }
     }
 }

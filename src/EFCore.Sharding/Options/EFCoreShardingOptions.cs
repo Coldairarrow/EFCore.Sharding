@@ -47,6 +47,16 @@ namespace EFCore.Sharding
         /// </summary>
         public bool MigrationsWithoutForeignKey { get; set; } = false;
 
+        /// <summary>
+        /// 是否在启动时自动创建分表,默认true
+        /// </summary>
+        public bool CreateShardingTableOnStarting { get; set; } = true;
+
+        /// <summary>
+        /// 是否启用分表数据库迁移,默认false
+        /// </summary>
+        public bool EnableShardingMigration { get; set; } = false;
+
         private Type[] _types;
         private readonly object _typesLock = new object();
         internal Type[] Types

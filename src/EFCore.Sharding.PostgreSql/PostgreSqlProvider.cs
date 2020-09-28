@@ -17,7 +17,7 @@ namespace EFCore.Sharding.PostgreSql
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            dbContextOptionsBuilder.UseNpgsql(dbConnection);
+            dbContextOptionsBuilder.UseNpgsql(dbConnection, x => x.UseNetTopologySuite());
         }
     }
 }

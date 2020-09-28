@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
@@ -15,26 +14,24 @@ namespace EFCore.Sharding.Tests
         [AssemblyInitialize]
         public static void Begin(TestContext context)
         {
-            var host = Host.CreateDefaultBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddEFCoreSharding(config =>
-                    {
-                        config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
-                        config.UseDatabase<ISQLiteDb1>(Config.SQLITE1, DatabaseType.SQLite);
-                        config.UseDatabase<ISQLiteDb2>(Config.SQLITE2, DatabaseType.SQLite);
-                        config.UseDatabase<ICustomDbAccessor>(Config.CONSTRING1, DatabaseType.SqlServer);
+            ServiceCollection services = new ServiceCollection();
+            services.AddEFCoreSharding(config =>
+            {
+                config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
+                config.UseDatabase<ISQLiteDb1>(Config.SQLITE1, DatabaseType.SQLite);
+                config.UseDatabase<ISQLiteDb2>(Config.SQLITE2, DatabaseType.SQLite);
+                config.UseDatabase<ICustomDbAccessor>(Config.CONSTRING1, DatabaseType.SqlServer);
 
-                        //分表配置
-                        //添加数据源
-                        config.AddDataSource(Config.CONSTRING1, ReadWriteType.Read | ReadWriteType.Write, DatabaseType.SqlServer);
-                        //设置分表规则
-                        config.SetHashModSharding<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
-                    });
-                }).Build();
-            host.Start();
+                //分表配置
+                //添加数据源
+                config.AddDataSource(Config.CONSTRING1, ReadWriteType.Read | ReadWriteType.Write, DatabaseType.SqlServer);
+                //设置分表规则
+                config.SetHashModSharding<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
+            });
 
-            RootServiceProvider = host.Services;
+            RootServiceProvider = services.BuildServiceProvider();
+            new EFCoreShardingBootstrapper(RootServiceProvider).StartAsync(default).Wait();
+
             ServiceScopeFactory = RootServiceProvider.GetService<IServiceScopeFactory>();
         }
 

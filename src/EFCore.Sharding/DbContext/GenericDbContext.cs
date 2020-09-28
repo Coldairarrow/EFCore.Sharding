@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFCore.Sharding.Util;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 using System.Collections.Generic;
@@ -8,10 +9,24 @@ using System.Reflection;
 
 namespace EFCore.Sharding
 {
+    /// <summary>
+    /// 通用DbContext
+    /// </summary>
     public class GenericDbContext : DbContext
     {
+        /// <summary>
+        /// DbContext原生配置
+        /// </summary>
         public DbContextOptions DbContextOption { get; }
+
+        /// <summary>
+        /// 全局自定义配置
+        /// </summary>
         public EFCoreShardingOptions ShardingOption { get; }
+
+        /// <summary>
+        /// 构建参数
+        /// </summary>
         public DbContextParamters Paramter { get; }
 
         /// <summary>
@@ -41,6 +56,11 @@ namespace EFCore.Sharding
         }
         private static readonly ValueConverter<DateTime, DateTime> _dateTimeConverter
             = new ValueConverter<DateTime, DateTime>(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Local));
+
+        /// <summary>
+        /// 模型构建
+        /// </summary>
+        /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             List<Type> entityTypes;
@@ -64,6 +84,7 @@ namespace EFCore.Sharding
             entityTypes.ForEach(aEntity =>
             {
                 var entity = modelBuilder.Entity(aEntity);
+
                 ShardingOption.EntityTypeBuilderFilter?.Invoke(entity);
 
                 if (!string.IsNullOrEmpty(Paramter.Suffix))
@@ -94,7 +115,26 @@ namespace EFCore.Sharding
                         property.SetValueConverter(_dateTimeConverter);
                 }
             }
+
+#if EFCORE3
+            //字段注释,需要开启程序集XML文档
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                var comments = XmlHelper.GetProperyCommentBySummary(entityType.ClrType);
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (comments.ContainsKey(property.Name))
+                    {
+                        property.SetComment(comments[property.Name]);
+                    }
+                }
+            }
+#endif
         }
+
+        /// <summary>
+        /// 取消跟踪
+        /// </summary>
         public void Detach()
         {
             ChangeTracker.Entries().ToList().ForEach(aEntry =>

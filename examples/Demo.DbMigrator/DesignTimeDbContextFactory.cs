@@ -11,16 +11,20 @@ namespace Demo.DbMigrator
 
         static DesignTimeDbContextFactory()
         {
-            DateTime startTime = DateTime.Now.AddMinutes(-5);
+            DateTime startTime = DateTime.Parse("2020/7/1");
             ServiceCollection services = new ServiceCollection();
             services.AddEFCoreSharding(x =>
             {
-                x.MigrationsWithoutForeignKey();
+                //取消建表
+                x.CreateShardingTableOnStarting(false);
+                //使用分表迁移
+                x.EnableShardingMigration(true);
+
                 //添加数据源
                 x.AddDataSource(_connectionString, ReadWriteType.Read | ReadWriteType.Write, DatabaseType.SqlServer);
 
-                //按分钟分表
-                x.SetDateSharding<Order>(nameof(Order.CreateTime), ExpandByDateMode.PerMinute, startTime);
+                //按月分表
+                x.SetDateSharding<Order>(nameof(Order.CreateTime), ExpandByDateMode.PerMonth, startTime);
             });
             ServiceProvider = services.BuildServiceProvider();
             new EFCoreShardingBootstrapper(ServiceProvider).StartAsync(default).Wait();

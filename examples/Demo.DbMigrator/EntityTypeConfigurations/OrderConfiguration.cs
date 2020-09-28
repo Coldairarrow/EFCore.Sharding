@@ -8,10 +8,8 @@ namespace DbMigrator
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
-            builder
-                .HasMany(x => x.OrderItems)
-                .WithOne()
-                .HasForeignKey(x => x.OrderId);
+            builder.HasIndex(x => x.OrderNum).IsUnique();
+            builder.Property(x => x.Id).HasDefaultValueSql("newsequentialid()");
         }
     }
 }

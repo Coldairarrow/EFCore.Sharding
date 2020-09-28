@@ -54,8 +54,15 @@ namespace EFCore.Sharding
                 }
             }
 
-            //分表
-            resList.AddRange(sourceOperations.SelectMany(x => BuildShardingOperation(x)));
+            if (shardingOption.EnableShardingMigration)
+            {
+                //分表
+                resList.AddRange(sourceOperations.SelectMany(x => BuildShardingOperation(x)));
+            }
+            else
+            {
+                resList.AddRange(sourceOperations);
+            }
 
             return resList;
         }
@@ -113,14 +120,23 @@ namespace EFCore.Sharding
         private void ReplaceName(MigrationOperation theOperation, string sourceName, string targetName)
         {
             string name = theOperation.GetPropertyValue("Name") as string;
-            string tableName = theOperation.GetPropertyValue("TableName") as string;
+            string tableName = theOperation.GetPropertyValue("Table") as string;
             if (!tableName.IsNullOrEmpty())
             {
                 theOperation.SetPropertyValue("Table", targetName);
             }
             if (!name.IsNullOrEmpty() && !(theOperation is ColumnOperation))
             {
-                theOperation.SetPropertyValue("Name", name.Replace(sourceName, targetName));
+                string[] patterns = new string[] { $"^()({sourceName})()$", $"^()({sourceName})(_.*?)$", $"^(.*?_)({sourceName})(_.*?)$", $"^(.*?_)({sourceName})()$" };
+                foreach (var aPattern in patterns)
+                {
+                    if (Regex.IsMatch(name, aPattern))
+                    {
+                        var newName = new Regex(aPattern).Replace(name, "${1}" + targetName + "$3");
+                        theOperation.SetPropertyValue("Name", newName);
+                        break;
+                    }
+                }
             }
             Func<PropertyInfo, bool> propertyWhere = x =>
                 x.PropertyType.IsGenericType

@@ -22,6 +22,7 @@ namespace Demo.HelloWorld
                 config.UseDatabase(Config.SQLITE1, DatabaseType.SQLite);
             });
             var serviceProvider = services.BuildServiceProvider();
+            new EFCoreShardingBootstrapper(serviceProvider).StartAsync(default).Wait();
 
             using var scop = serviceProvider.CreateScope();
             //拿到注入的IDbAccessor即可进行所有数据库操作
