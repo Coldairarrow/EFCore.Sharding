@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System.Data.Common;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #if EFCORE3
 using Microsoft.Data.SqlClient;
@@ -27,6 +28,7 @@ namespace EFCore.Sharding.SqlServer
                 x.UseRowNumberForPaging();
 #endif
             });
+            dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingSqlServerMigrationsSqlGenerator>();
         }
     }
 }

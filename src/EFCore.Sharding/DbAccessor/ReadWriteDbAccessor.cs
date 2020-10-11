@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -95,7 +96,10 @@ namespace EFCore.Sharding
         private bool _disposed = false;
 
         #endregion
-
+        public override EntityEntry Entry(object entity)
+        {
+            return WriteDb.Entry(entity);
+        }
         public override string ConnectionString => throw new Exception("读写分离模式不支持");
         public override DatabaseType DbType => throw new Exception("读写分离模式不支持");
         public override IDbAccessor FullDbAccessor => throw new Exception("读写分离模式不支持");

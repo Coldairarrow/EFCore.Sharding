@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -42,6 +43,13 @@ namespace EFCore.Sharding
         /// <param name="tracking">是否开启实体追踪</param>
         /// <returns></returns>
         Task<int> SaveChangesAsync(bool tracking = true);
+
+        /// <summary>
+        /// 跟踪
+        /// </summary>
+        /// <param name="entity">实体</param>
+        /// <returns></returns>
+        EntityEntry Entry(object entity);
 
         #endregion
 

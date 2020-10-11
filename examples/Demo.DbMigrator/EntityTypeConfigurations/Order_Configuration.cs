@@ -4,12 +4,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DbMigrator
 {
-    internal class OrderConfiguration : IEntityTypeConfiguration<Order>
+    internal class Order_Configuration : IEntityTypeConfiguration<Order>
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
             builder.HasIndex(x => x.OrderNum).IsUnique();
-            builder.Property(x => x.Id).HasDefaultValueSql("newsequentialid()");
+            builder.HasMany(x => x.Items)
+                .WithOne()
+                .HasForeignKey(x => x.OrderId);
         }
     }
 }

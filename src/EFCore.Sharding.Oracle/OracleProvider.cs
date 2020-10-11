@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Oracle.EntityFrameworkCore.Metadata.Conventions;
 using Oracle.ManagedDataAccess.Client;
 using System.Data.Common;
@@ -16,6 +17,7 @@ namespace EFCore.Sharding.Oracle
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
             dbContextOptionsBuilder.UseOracle(dbConnection, x => x.UseOracleSQLCompatibility("11"));
+            dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingOracleMigrationsSqlGenerator>();
         }
     }
 }

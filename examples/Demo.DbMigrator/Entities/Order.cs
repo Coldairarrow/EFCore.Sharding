@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -10,7 +11,7 @@ namespace Demo.DbMigrator
         /// <summary>
         /// 主键
         /// </summary>
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Key]
         public Guid Id { get; set; }
 
         /// <summary>
@@ -33,5 +34,7 @@ namespace Demo.DbMigrator
         /// 商品数量
         /// </summary>
         public int Count { get; set; }
+
+        public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     }
 }

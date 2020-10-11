@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.EntityFrameworkCore.Migrations;
 using System.Data.Common;
 
 namespace EFCore.Sharding.SQLite
@@ -16,6 +17,7 @@ namespace EFCore.Sharding.SQLite
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
             dbContextOptionsBuilder.UseSqlite(dbConnection, x => x.UseNetTopologySuite());
+            dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingSQLiteMigrationsSqlGenerator>();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -75,6 +76,10 @@ namespace EFCore.Sharding
             }
 
             return q;
+        }
+        public override EntityEntry Entry(object entity)
+        {
+            return FullDbAccessor.Entry(entity);
         }
 
         #endregion

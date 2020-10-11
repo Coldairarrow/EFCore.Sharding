@@ -94,16 +94,26 @@ namespace EFCore.Sharding
             });
 
             //支持IEntityTypeConfiguration配置
-            var entityTypeConfigurationTypes = ShardingOption.Types
-                .Where(x => x.GetInterfaces().Any(y =>
-                    y.IsGenericType
-                    && y.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)
-                    && entityTypes.Contains(y.GetGenericArguments()[0])
-                    ))
-                .ToList();
-            entityTypeConfigurationTypes.ForEach(aConfig =>
+            entityTypes.ForEach(aEntityType =>
             {
-                modelBuilder.ApplyConfiguration((dynamic)Activator.CreateInstance(aConfig));
+                var entityTypeConfigurationTypes = ShardingOption.Types
+                    .Where(x => x.GetInterfaces().Any(y =>
+                        y.IsGenericType
+                        && y.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)
+                        && aEntityType == y.GetGenericArguments()[0])
+                        )
+                    .ToList();
+                entityTypeConfigurationTypes.ForEach(aEntityConfig =>
+                {
+                    var method = modelBuilder.GetType().GetMethods()
+                        .Where(x => x.Name == nameof(ModelBuilder.ApplyConfiguration)
+                            && x.GetParameters().Count() == 1
+                            && x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)
+                        )
+                        .FirstOrDefault();
+
+                    method.MakeGenericMethod(aEntityType).Invoke(modelBuilder, new object[] { Activator.CreateInstance(aEntityConfig) });
+                });
             });
 
             //DateTime默认为Local

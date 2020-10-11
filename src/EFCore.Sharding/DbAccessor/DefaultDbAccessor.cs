@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -142,6 +143,7 @@ namespace EFCore.Sharding
         public abstract IQueryable<T> GetIQueryable<T>(bool tracking = false) where T : class;
         public abstract Task<int> SaveChangesAsync(bool tracking = true);
         public abstract Task<int> UpdateSqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values);
+        public abstract EntityEntry Entry(object entity);
 
         #endregion
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata.Conventions;
 using System.Data.Common;
@@ -18,6 +19,7 @@ namespace EFCore.Sharding.PostgreSql
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
             dbContextOptionsBuilder.UseNpgsql(dbConnection, x => x.UseNetTopologySuite());
+            dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingPostgreSqlMigrationsSqlGenerator>();
         }
     }
 }

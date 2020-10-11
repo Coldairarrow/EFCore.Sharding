@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
@@ -195,6 +196,10 @@ namespace EFCore.Sharding
             }
 
             return count;
+        }
+        public override EntityEntry Entry(object entity)
+        {
+            return _db.Entry(entity);
         }
 
         #endregion
