@@ -209,6 +209,15 @@ namespace EFCore.Sharding
 
             return this;
         }
+        public IShardingBuilder EnableComments(bool enable)
+        {
+            _services.Configure<EFCoreShardingOptions>(x =>
+            {
+                x.EnableComments = enable;
+            });
+
+            return this;
+        }
         public IShardingBuilder UseLogicDelete(string keyField = "Id", string deletedField = "Deleted")
         {
             _services.Configure<EFCoreShardingOptions>(x =>

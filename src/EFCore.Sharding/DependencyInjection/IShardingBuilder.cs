@@ -50,6 +50,13 @@ namespace EFCore.Sharding
         IShardingBuilder EnableShardingMigration(bool enable);
 
         /// <summary>
+        /// 是否启用注释,默认true
+        /// </summary>
+        /// <param name="enable">是否启用</param>
+        /// <returns></returns>
+        IShardingBuilder EnableComments(bool enable);
+
+        /// <summary>
         /// 使用逻辑删除
         /// </summary>
         /// <param name="keyField">主键字段,字段类型为string</param>

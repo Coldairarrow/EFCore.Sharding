@@ -57,6 +57,11 @@ namespace EFCore.Sharding
         /// </summary>
         public bool EnableShardingMigration { get; set; } = false;
 
+        /// <summary>
+        /// 是否启用注释
+        /// </summary>
+        public bool EnableComments { get; set; } = true;
+
         private Type[] _types;
         private readonly object _typesLock = new object();
         internal Type[] Types

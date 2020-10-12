@@ -128,14 +128,17 @@ namespace EFCore.Sharding
 
 #if EFCORE3
             //字段注释,需要开启程序集XML文档
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            if (ShardingOption.EnableComments)
             {
-                var comments = XmlHelper.GetProperyCommentBySummary(entityType.ClrType);
-                foreach (var property in entityType.GetProperties())
+                foreach (var entityType in modelBuilder.Model.GetEntityTypes())
                 {
-                    if (comments.ContainsKey(property.Name))
+                    var comments = XmlHelper.GetProperyCommentBySummary(entityType.ClrType);
+                    foreach (var property in entityType.GetProperties())
                     {
-                        property.SetComment(comments[property.Name]);
+                        if (comments.ContainsKey(property.Name))
+                        {
+                            property.SetComment(comments[property.Name]);
+                        }
                     }
                 }
             }
