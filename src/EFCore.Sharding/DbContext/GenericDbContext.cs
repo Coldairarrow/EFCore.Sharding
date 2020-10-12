@@ -132,7 +132,7 @@ namespace EFCore.Sharding
             {
                 foreach (var entityType in modelBuilder.Model.GetEntityTypes())
                 {
-                    var comments = XmlHelper.GetProperyCommentBySummary(entityType.ClrType);
+                    var comments = XmlHelper.GetProperyCommentBySummary(entityType.ClrType) ?? new Dictionary<string, string>();
                     foreach (var property in entityType.GetProperties())
                     {
                         if (comments.ContainsKey(property.Name))
