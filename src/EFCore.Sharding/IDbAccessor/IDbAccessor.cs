@@ -203,6 +203,22 @@ namespace EFCore.Sharding
         Task<DataTable> GetDataTableWithSqlAsync(string sql, params (string paramterName, object value)[] parameters);
 
         /// <summary>
+        /// 通过SQL获取DataTable
+        /// </summary>
+        /// <param name="sql">SQL语句</param>
+        /// <param name="parameters">SQL参数</param>
+        /// <returns></returns>
+        DataSet GetDataSetWithSql(string sql, params (string paramterName, object value)[] parameters);
+
+        /// <summary>
+        /// 通过SQL获取DataTable
+        /// </summary>
+        /// <param name="sql">SQL语句</param>
+        /// <param name="parameters">SQL参数</param>
+        /// <returns></returns>
+        Task<DataSet> GetDataSetWithSqlAsync(string sql, params (string paramterName, object value)[] parameters);
+
+        /// <summary>
         /// 通过SQL获取List
         /// </summary>
         /// <typeparam name="T">实体泛型</typeparam>

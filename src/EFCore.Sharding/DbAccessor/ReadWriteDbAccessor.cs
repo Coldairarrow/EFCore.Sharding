@@ -128,6 +128,10 @@ namespace EFCore.Sharding
         {
             return ReadDb.GetDataTableWithSqlAsync(sql, parameters);
         }
+        public override Task<DataSet> GetDataSetWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
+        {
+            return ReadDb.GetDataSetWithSqlAsync(sql, parameters);
+        }
         public override Task<T> GetEntityAsync<T>(params object[] keyValue)
         {
             return ReadDb.GetEntityAsync<T>(keyValue);
