@@ -115,6 +115,10 @@ namespace EFCore.Sharding
         {
             return FullDbAccessor.GetDataTableWithSqlAsync(sql, parameters);
         }
+        public override Task<DataSet> GetDataSetWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
+        {
+            return FullDbAccessor.GetDataSetWithSqlAsync(sql, parameters);
+        }
         public override Task<T> GetEntityAsync<T>(params object[] keyValue)
         {
             return FullDbAccessor.GetEntityAsync<T>(keyValue);

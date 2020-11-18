@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
@@ -317,6 +318,32 @@ namespace EFCore.Sharding
             table.Load(reader);
 
             return table;
+        }
+        public override async Task<DataSet> GetDataSetWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
+        {
+            DbProviderFactory dbProviderFactory = _provider.DbProviderFactory;
+            using (DbConnection conn = dbProviderFactory.CreateConnection())
+            {
+                conn.ConnectionString = ConnectionString;
+                if (conn.State != ConnectionState.Open)
+                    await conn.OpenAsync();
+
+                using (DbCommand cmd = conn.CreateCommand())
+                {
+                    cmd.Connection = conn;
+                    cmd.CommandText = sql;
+                    cmd.CommandTimeout = 5 * 60;
+                    if (parameters != null && parameters.Count() > 0)
+                        cmd.Parameters.AddRange(parameters.ToArray());
+
+                    DbDataAdapter adapter = await Task.Run(()=>dbProviderFactory.CreateDataAdapter());
+                    adapter.SelectCommand = cmd;
+                    DataSet ds = new DataSet();
+                    adapter.Fill(ds);
+                    cmd.Parameters.Clear();
+                    return ds;
+                }
+            }
         }
 
         #endregion
