@@ -1,5 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
@@ -93,7 +92,7 @@ namespace EFCore.Sharding
 
             string whereSql = querySql.sql.Split(new string[] { "WHERE" }, StringSplitOptions.None)[1].Replace($"{asTmp}.", "");
 
-            querySql.parameters.ForEach(aData =>
+            querySql.parameters?.ForEach(aData =>
             {
                 if (whereSql.Contains(aData.Key))
                     paramters.Add((aData.Key, aData.Value));
@@ -336,7 +335,7 @@ namespace EFCore.Sharding
                     if (parameters != null && parameters.Count() > 0)
                         cmd.Parameters.AddRange(parameters.ToArray());
 
-                    DbDataAdapter adapter = await Task.Run(()=>dbProviderFactory.CreateDataAdapter());
+                    DbDataAdapter adapter = await Task.Run(() => dbProviderFactory.CreateDataAdapter());
                     adapter.SelectCommand = cmd;
                     DataSet ds = new DataSet();
                     adapter.Fill(ds);
@@ -352,7 +351,7 @@ namespace EFCore.Sharding
 
         public override async Task<int> ExecuteSqlAsync(string sql, params (string paramterName, object paramterValue)[] parameters)
         {
-#if EFCORE3
+#if EFCORE3||EFCORE5
             return await _db.Database.ExecuteSqlRawAsync(sql, CreateDbParamters(parameters.ToList()).ToArray());
 #endif
 

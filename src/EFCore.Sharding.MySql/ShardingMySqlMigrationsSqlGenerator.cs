@@ -10,10 +10,17 @@ namespace EFCore.Sharding.MySql
 {
     internal class ShardingMySqlMigrationsSqlGenerator : MySqlMigrationsSqlGenerator
     {
+#if EFCORE5
+        public ShardingMySqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider annotationProvider, IMySqlOptions options) : base(dependencies, annotationProvider, options)
+        {
+        }
+#endif
+#if EFCORE3
         public ShardingMySqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IMigrationsAnnotationProvider migrationsAnnotations, IMySqlOptions options) 
             : base(dependencies, migrationsAnnotations, options)
         {
         }
+#endif
 
         protected override void Generate(
             MigrationOperation operation,

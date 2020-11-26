@@ -126,7 +126,7 @@ namespace EFCore.Sharding
                 }
             }
 
-#if EFCORE3
+#if !EFCORE2
             //字段注释,需要开启程序集XML文档
             if (ShardingOption.EnableComments)
             {

@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-#if EFCORE3
-using Microsoft.Data.SqlClient;
-#elif EFCORE2
+#if EFCORE2
 using System.Data.SqlClient;
+#else
+using Microsoft.Data.SqlClient;
 #endif
 
 namespace EFCore.Sharding.SqlServer

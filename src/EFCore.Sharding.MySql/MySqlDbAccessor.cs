@@ -1,11 +1,17 @@
-﻿using MySql.Data.MySqlClient;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+
+#if EFCORE3
+using MySql.Data.MySqlClient;
+#endif
+#if EFCORE5
+using MySqlConnector;
+#endif
 
 namespace EFCore.Sharding.MySql
 {

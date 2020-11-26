@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Reflection;
 #endif
+#if EFCORE5
+using Microsoft.EntityFrameworkCore;
+#endif
 
 using Microsoft.EntityFrameworkCore.Query;
 using System.Collections.Generic;
@@ -122,6 +125,9 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static (string sql, IReadOnlyDictionary<string, object> parameters) ToSql(this IQueryable query)
         {
+#if EFCORE5
+            return (query.ToQueryString(), null);
+#endif
 #if EFCORE3
             var enumerator = query.Provider.Execute<IEnumerable>(query.Expression).GetEnumerator();
             var queryContext = enumerator.GetGetFieldValue("_relationalQueryContext") as RelationalQueryContext;
@@ -168,6 +174,7 @@ namespace EFCore.Sharding
 
         #region 自定义类
 
+#if !EFCORE5
         class ReplaceQueryableVisitor : ExpressionVisitor
         {
             private readonly IQueryable _newQuery;
@@ -186,7 +193,42 @@ namespace EFCore.Sharding
                 return base.VisitConstant(node);
             }
         }
+#endif
+#if EFCORE5
+        class ReplaceQueryableVisitor : ExpressionVisitor
+        {
+            private readonly QueryRootExpression _queryRootExpression;
+            public ReplaceQueryableVisitor(IQueryable newQuery)
+            {
+                var visitor = new GetQueryRootVisitor();
+                visitor.Visit(newQuery.Expression);
+                _queryRootExpression = visitor.QueryRootExpression;
+            }
 
+            protected override Expression VisitExtension(Expression node)
+            {
+                if (node is QueryRootExpression)
+                {
+                    return _queryRootExpression;
+                }
+
+                return base.VisitExtension(node);
+            }
+        }
+        class GetQueryRootVisitor : ExpressionVisitor
+        {
+            public QueryRootExpression QueryRootExpression { get; set; }
+            protected override Expression VisitExtension(Expression node)
+            {
+                if (node is QueryRootExpression expression)
+                {
+                    QueryRootExpression = expression;
+                }
+
+                return base.VisitExtension(node);
+            }
+        }
+#endif
         class GetOrderByVisitor : ExpressionVisitor
         {
             public (string sortColumn, string sortType) OrderParam { get; set; }

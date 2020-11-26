@@ -8,11 +8,17 @@ namespace EFCore.Sharding.SqlServer
 {
     internal class ShardingSqlServerMigrationsSqlGenerator : SqlServerMigrationsSqlGenerator
     {
+#if EFCORE5
+        public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider migrationsAnnotations) : base(dependencies, migrationsAnnotations)
+        {
+        }
+#endif
+#if EFCORE3||EFCORE2
         public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IMigrationsAnnotationProvider migrationsAnnotations)
             : base(dependencies, migrationsAnnotations)
         {
         }
-
+#endif
         protected override void Generate(
             MigrationOperation operation,
             IModel model,

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>$(EFCore_Sharding_3x)</Version>
+    <LangVersion>8.0</LangVersion>
+    <AssemblyName>EFCore.Sharding.PostgreSql</AssemblyName>
+    <RootNamespace>EFCore.Sharding.PostgreSql</RootNamespace>
+    <DefineConstants>EFCORE3</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\EFCore.Sharding.PostgreSql\**\*.cs" />
+    <Compile Remove="..\EFCore.Sharding.PostgreSql\obj\**" />
+    <Compile Remove="..\EFCore.Sharding.PostgreSql\bin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EFCore.Sharding.3x\EFCore.Sharding.3x.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.4" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" Version="3.1.4" />
+  </ItemGroup>
+</Project>
