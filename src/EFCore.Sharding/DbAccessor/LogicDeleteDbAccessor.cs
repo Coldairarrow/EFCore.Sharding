@@ -147,6 +147,10 @@ namespace EFCore.Sharding
         {
             return FullDbAccessor.UpdateSqlAsync(source, values);
         }
+        public override Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters)
+        {
+            return FullDbAccessor.GetListBySqlAsync<T>(sqlStr, parameters);
+        }
 
         #endregion
     }

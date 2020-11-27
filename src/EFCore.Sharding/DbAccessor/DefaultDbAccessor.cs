@@ -70,13 +70,13 @@ namespace EFCore.Sharding
         {
             return AsyncHelper.RunSync(() => GetDataSetWithSqlAsync(sql, parameters));
         }
-        public T GetEntity<T>(params object[] keyValue) where T : class
-        {
-            return AsyncHelper.RunSync(() => GetEntityAsync<T>(keyValue));
-        }
         public List<T> GetListBySql<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class
         {
             return AsyncHelper.RunSync(() => GetListBySqlAsync<T>(sqlStr, parameters));
+        }
+        public T GetEntity<T>(params object[] keyValue) where T : class
+        {
+            return AsyncHelper.RunSync(() => GetEntityAsync<T>(keyValue));
         }
         public int SaveChanges(bool tracking = true)
         {
@@ -93,12 +93,6 @@ namespace EFCore.Sharding
         public Task<int> UpdateSqlAsync<T>(Expression<Func<T, bool>> where, params (string field, UpdateType updateType, object value)[] values) where T : class
         {
             return UpdateSqlAsync(GetIQueryable<T>().Where(where), values);
-        }
-        public async Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class
-        {
-            var table = await GetDataTableWithSqlAsync(sqlStr, parameters);
-
-            return table.ToList<T>();
         }
         public async override Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where)
         {
@@ -149,6 +143,7 @@ namespace EFCore.Sharding
         public abstract Task<int> SaveChangesAsync(bool tracking = true);
         public abstract Task<int> UpdateSqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values);
         public abstract EntityEntry Entry(object entity);
+        public abstract Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class;
 
         #endregion
     }

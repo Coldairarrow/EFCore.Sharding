@@ -182,5 +182,9 @@ namespace EFCore.Sharding
         {
             return WriteDb.UpdateAsync(entities, properties, tracking);
         }
+        public override Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters)
+        {
+            return ReadDb.GetListBySqlAsync<T>(sqlStr, parameters);
+        }
     }
 }

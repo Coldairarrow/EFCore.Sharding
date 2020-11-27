@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="4.4.1" />
+    <PackageReference Include="Dapper" Version="2.0.78" />
     <PackageReference Include="Dynamitey" Version="2.0.10.189" />
     <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="5.0.21" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0" />
