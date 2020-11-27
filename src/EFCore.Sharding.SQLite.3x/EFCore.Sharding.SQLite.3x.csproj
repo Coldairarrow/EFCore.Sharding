@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>$(EFCore_Sharding_3x)</Version>
+    <Version>$(EFCORE3)</Version>
     <LangVersion>8.0</LangVersion>
     <DefineConstants>TRACE;DEBUG;EFCORE3</DefineConstants>
     <AssemblyName>EFCore.Sharding.SQLite</AssemblyName>

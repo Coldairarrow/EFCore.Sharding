@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>$(EFCore_Sharding_2x)</Version>
+    <Version>$(EFCORE2)</Version>
     <LangVersion>8.0</LangVersion>
     <AssemblyName>EFCore.Sharding.Oracle</AssemblyName>
     <RootNamespace>EFCore.Sharding.Oracle</RootNamespace>
