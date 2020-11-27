@@ -19,7 +19,8 @@ namespace EFCore.Sharding
         {
             _shardingConfig = shardingConfig;
             _dbFactory = dbFactory;
-            _db = _dbFactory.GetDbAccessor(string.Empty, shardingConfig.FindADbType());
+            var dbType = shardingConfig.FindADbType();
+            _db = _dbFactory.GetDbAccessor(dbType.GetDefaultString(), dbType);
         }
 
         #endregion
