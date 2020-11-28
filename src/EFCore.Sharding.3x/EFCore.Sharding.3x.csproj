@@ -4,6 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Version>$(EFCORE3)</Version>
     <DefineConstants>TRACE;DEBUG;EFCORE3</DefineConstants>
+    <AssemblyName>EFCore.Sharding</AssemblyName>
+    <RootNamespace>EFCore.Sharding</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

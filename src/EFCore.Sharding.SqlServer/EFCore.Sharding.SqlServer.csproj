@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Version>$(EFCORE5)</Version>
-    <DefineConstants>TRACE;EFCORE3</DefineConstants>
     <LangVersion>8.0</LangVersion>
     <DefineConstants>EFCORE5</DefineConstants>
   </PropertyGroup>

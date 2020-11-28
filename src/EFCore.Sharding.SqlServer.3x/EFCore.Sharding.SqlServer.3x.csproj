@@ -7,7 +7,6 @@
     <LangVersion>8.0</LangVersion>
     <AssemblyName>EFCore.Sharding.SqlServer</AssemblyName>
     <RootNamespace>EFCore.Sharding.SqlServer</RootNamespace>
-    <DefineConstants>EFCORE3</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
