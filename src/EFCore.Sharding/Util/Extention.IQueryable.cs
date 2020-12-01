@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace EFCore.Sharding
 {
@@ -126,7 +127,11 @@ namespace EFCore.Sharding
         public static (string sql, IReadOnlyDictionary<string, object> parameters) ToSql(this IQueryable query)
         {
 #if EFCORE5
-            return (query.ToQueryString(), null);
+            var yourQuery = query;//Query Code
+            var visitor = new ChangeVarsToLiteralsVisitor();
+            var changedExpression = visitor.Visit(yourQuery.Expression);
+            var newQuery = query.Provider.CreateQuery(changedExpression);
+            return (newQuery.ToQueryString(), null);
 #endif
 #if EFCORE3
             var enumerator = query.Provider.Execute<IEnumerable>(query.Expression).GetEnumerator();
@@ -173,6 +178,37 @@ namespace EFCore.Sharding
         }
 
         #region 自定义类
+
+        public class ChangeVarsToLiteralsVisitor : ExpressionVisitor
+        {
+            protected override Expression VisitMember(MemberExpression memberExpression)
+            {
+                // Recurse down to see if we can simplify...
+                var expression = Visit(memberExpression.Expression);
+
+                // If we've ended up with a constant, and it's a property or a field,
+                // we can simplify ourselves to a constant
+                if (expression is ConstantExpression)
+                {
+                    object container = ((ConstantExpression)expression).Value;
+                    var member = memberExpression.Member;
+
+                    if (member is FieldInfo)
+                    {
+                        object value = ((FieldInfo)member).GetValue(container);
+                        return Expression.Constant(value);
+                    }
+
+                    if (member is PropertyInfo)
+                    {
+                        object value = ((PropertyInfo)member).GetValue(container, null);
+                        return Expression.Constant(value);
+                    }
+                }
+
+                return base.VisitMember(memberExpression);
+            }
+        }
 
 #if !EFCORE5
         class ReplaceQueryableVisitor : ExpressionVisitor
