@@ -70,11 +70,12 @@ namespace EFCore.Sharding
             List<(string paramterName, object paramterValue)> paramters =
                 new List<(string paramterName, object paramterValue)>();
             var querySql = query.ToSql();
-            string theSql = querySql.sql.Replace("\r\n", "\n").Replace("\n", " ");
+            var theSql = querySql.sql.Replace("\r\n", "\n").Replace("\n", " ");
 
             //替换AS
             var asPattern = "FROM (.*?) AS (.*?) ";
-            var asMatchs = Regex.Matches(theSql, asPattern);
+            //倒排防止别名出错
+            var asMatchs = Regex.Matches(theSql, asPattern).Cast<Match>().Reverse();
             foreach (Match aMatch in asMatchs)
             {
                 var tableName = aMatch.Groups[1].ToString();

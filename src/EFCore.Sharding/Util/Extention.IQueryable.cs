@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -126,11 +127,14 @@ namespace EFCore.Sharding
         public static (string sql, IReadOnlyDictionary<string, object> parameters) ToSql(this IQueryable query)
         {
 #if EFCORE5
-            var yourQuery = query;//Query Code
-            var visitor = new ChangeVarsToLiteralsVisitor();
-            var changedExpression = visitor.Visit(yourQuery.Expression);
-            var newQuery = query.Provider.CreateQuery(changedExpression);
-            return (newQuery.ToQueryString(), null);
+            var cmd = query.CreateDbCommand();
+            Dictionary<string, object> paramters = new Dictionary<string, object>();
+            foreach (DbParameter aCmd in cmd.Parameters)
+            {
+                paramters.Add(aCmd.ParameterName, aCmd.Value);
+            }
+
+            return (cmd.CommandText, paramters);
 #endif
 #if EFCORE3
             var enumerator = query.Provider.Execute<IEnumerable>(query.Expression).GetEnumerator();
@@ -177,50 +181,6 @@ namespace EFCore.Sharding
         }
 
         #region 自定义类
-
-        internal class ChangeVarsToLiteralsVisitor : ExpressionVisitor
-        {
-            protected override Expression VisitMember(MemberExpression memberExpression)
-            {
-                // Recurse down to see if we can simplify...
-                var expression = Visit(memberExpression.Expression);
-
-                // If we've ended up with a constant, and it's a property or a field,
-                // we can simplify ourselves to a constant
-                if (expression is ConstantExpression)
-                {
-                    object container = ((ConstantExpression)expression).Value;
-                    var member = memberExpression.Member;
-                    if (member is FieldInfo)
-                    {
-                        object value = ((FieldInfo)member).GetValue(container);
-                        if (!IsEntityQueryable(value))
-                        {
-                            return Expression.Constant(value);
-                        }
-                    }
-
-                    if (member is PropertyInfo)
-                    {
-                        object value = ((PropertyInfo)member).GetValue(container, null);
-                        if (!IsEntityQueryable(value))
-                        {
-                            return Expression.Constant(value);
-                        }
-                    }
-                }
-
-                return base.VisitMember(memberExpression);
-            }
-
-            private bool IsEntityQueryable(object value)
-            {
-#pragma warning disable EF1001 // Internal EF Core API usage.
-                return value.GetType().IsGenericType && value.GetType().GetGenericTypeDefinition() == typeof(EntityQueryable<>);
-#pragma warning restore EF1001 // Internal EF Core API usage.
-            }
-        }
-
 #if !EFCORE5
         class ReplaceQueryableVisitor : ExpressionVisitor
         {
