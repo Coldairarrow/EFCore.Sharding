@@ -9,7 +9,7 @@
 
         protected override string FormatFieldName(string name)
         {
-            return $"[{name}]";
+            return $"\"{name}\"";
         }
 
         protected override string GetSchema(string schema)

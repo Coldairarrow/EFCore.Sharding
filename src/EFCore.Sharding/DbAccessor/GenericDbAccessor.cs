@@ -70,28 +70,26 @@ namespace EFCore.Sharding
             List<(string paramterName, object paramterValue)> paramters =
                 new List<(string paramterName, object paramterValue)>();
             var querySql = query.ToSql();
-            string theQSql = querySql.sql.Replace("\r\n", "\n").Replace("\n", " ");
+            string theSql = querySql.sql.Replace("\r\n", "\n").Replace("\n", " ");
+
+            //替换AS
+            var asPattern = "FROM (.*?) AS (.*?) ";
+            var asMatchs = Regex.Matches(theSql, asPattern);
+            foreach (Match aMatch in asMatchs)
+            {
+                var tableName = aMatch.Groups[1].ToString();
+                var asName = aMatch.Groups[2].ToString();
+
+                theSql = theSql.Replace(aMatch.Groups[0].ToString(), $"FROM {tableName} ");
+                theSql = theSql.Replace(asName, tableName);
+            }
+
             //无筛选
-            if (!theQSql.Contains("WHERE"))
+            if (!theSql.Contains("WHERE"))
                 return (" 1=1 ", paramters);
 
-            string pattern1 = "^SELECT.*?FROM.*? AS (.*?) WHERE .*?$";
-            string pattern2 = "^SELECT.*?FROM .*? (.*?) WHERE .*?$";
-            string asTmp = string.Empty;
-            if (Regex.IsMatch(theQSql, pattern1))
-            {
-                var match = Regex.Match(theQSql, pattern1);
-                asTmp = match.Groups[1]?.ToString();
-            }
-            else if (Regex.IsMatch(theQSql, pattern2))
-            {
-                var match = Regex.Match(theQSql, pattern2);
-                asTmp = match.Groups[1]?.ToString();
-            }
-            if (asTmp.IsNullOrEmpty())
-                throw new Exception("SQL解析失败!");
-
-            string whereSql = querySql.sql.Split(new string[] { "WHERE" }, StringSplitOptions.None)[1].Replace($"{asTmp}.", "");
+            var firstIndex = theSql.IndexOf("WHERE") + 5;
+            string whereSql = theSql.Substring(firstIndex, theSql.Length - firstIndex);
 
             querySql.parameters?.ForEach(aData =>
             {

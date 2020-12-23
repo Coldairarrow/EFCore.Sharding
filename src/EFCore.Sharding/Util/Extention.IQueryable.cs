@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using System.Collections;
 #elif EFCORE2
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 #endif
 #if EFCORE5
@@ -11,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 #endif
 
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -178,7 +178,7 @@ namespace EFCore.Sharding
 
         #region 自定义类
 
-        public class ChangeVarsToLiteralsVisitor : ExpressionVisitor
+        internal class ChangeVarsToLiteralsVisitor : ExpressionVisitor
         {
             protected override Expression VisitMember(MemberExpression memberExpression)
             {
@@ -191,21 +191,33 @@ namespace EFCore.Sharding
                 {
                     object container = ((ConstantExpression)expression).Value;
                     var member = memberExpression.Member;
-
                     if (member is FieldInfo)
                     {
                         object value = ((FieldInfo)member).GetValue(container);
-                        return Expression.Constant(value);
+                        if (!IsEntityQueryable(value))
+                        {
+                            return Expression.Constant(value);
+                        }
                     }
 
                     if (member is PropertyInfo)
                     {
                         object value = ((PropertyInfo)member).GetValue(container, null);
-                        return Expression.Constant(value);
+                        if (!IsEntityQueryable(value))
+                        {
+                            return Expression.Constant(value);
+                        }
                     }
                 }
 
                 return base.VisitMember(memberExpression);
+            }
+
+            private bool IsEntityQueryable(object value)
+            {
+#pragma warning disable EF1001 // Internal EF Core API usage.
+                return value.GetType().IsGenericType && value.GetType().GetGenericTypeDefinition() == typeof(EntityQueryable<>);
+#pragma warning restore EF1001 // Internal EF Core API usage.
             }
         }
 
