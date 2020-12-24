@@ -82,7 +82,7 @@ namespace EFCore.Sharding
                 var asName = aMatch.Groups[2].ToString();
 
                 theSql = theSql.Replace(aMatch.Groups[0].ToString(), $"FROM {tableName} ");
-                theSql = theSql.Replace(asName, tableName);
+                theSql = theSql.Replace(asName + ".", tableName + ".");
             }
 
             //无筛选
