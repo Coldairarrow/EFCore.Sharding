@@ -89,7 +89,7 @@ namespace EFCore.Sharding
 
                 if (!string.IsNullOrEmpty(Paramter.Suffix))
                 {
-                    entity.ToTable($"{AnnotationHelper.GetDbTableName(aEntity)}_{Paramter.Suffix}");
+                    entity.ToTable($"{AnnotationHelper.GetDbTableName(aEntity)}_{Paramter.Suffix}", AnnotationHelper.GetDbSchemaName(aEntity));
                 }
             });
 

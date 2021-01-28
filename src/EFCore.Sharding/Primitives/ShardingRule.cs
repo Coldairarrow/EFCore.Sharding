@@ -26,7 +26,7 @@ namespace EFCore.Sharding
                         }
                         else
                         {
-                            suffix = Math.Abs(fieldValue.GetHashCode()) % Mod;
+                            suffix = Math.Abs(fieldValue.ToString().GetStableHashCode()) % Mod;
                         }
 
                         return suffix.ToString();
