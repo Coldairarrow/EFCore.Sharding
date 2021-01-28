@@ -1,7 +1,7 @@
 ::定义版本
-set EFCORE5=5.0.0.5
-set EFCORE3=3.1.10.5
-set EFCORE2=2.40.10.5
+set EFCORE5=5.0.0.6
+set EFCORE3=3.1.10.6
+set EFCORE2=2.40.10.6
 
 ::删除所有bin与obj下的文件
 @echo off
@@ -19,7 +19,7 @@ echo 清理完成
 ::构建
 dotnet build -c Release
 ::推送
-for /r %nowpath% %%i in (*.nupkg) do (dotnet nuget push %%i --api-key --source https://api.nuget.org/v3/index.json)
+for /r %nowpath% %%i in (*.nupkg) do (dotnet nuget push %%i --api-key  --source https://api.nuget.org/v3/index.json)
 
 echo 完成
 pause
