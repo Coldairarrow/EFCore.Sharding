@@ -92,7 +92,9 @@ namespace EFCore.Sharding
                             {
                                 try
                                 {
-                                    types.AddRange(aAssembly.GetTypes());
+                                    types.AddRange(aAssembly.GetTypes()
+                                          .Where(p => p.GetConstructor(new Type[] { }) != null && p.GetConstructor(new Type[] { }).IsPublic)
+                                        );
                                 }
                                 catch
                                 {
