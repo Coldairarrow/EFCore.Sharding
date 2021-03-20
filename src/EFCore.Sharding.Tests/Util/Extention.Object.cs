@@ -1,12 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
-using System.IO;
 using System.Reflection;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 
-namespace EFCore.Sharding.Tests.Util
+namespace EFCore.Sharding.Tests
 {
     internal static partial class Extention
     {
@@ -27,21 +24,6 @@ namespace EFCore.Sharding.Tests.Util
 
         private static BindingFlags _bindingFlags { get; }
             = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
-
-        /// <summary>
-        /// 将一个object对象序列化，返回一个byte[]         
-        /// </summary> 
-        /// <param name="obj">能序列化的对象</param>
-        /// <returns></returns> 
-        public static byte[] ToBytes(this object obj)
-        {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(ms, obj);
-                return ms.GetBuffer();
-            }
-        }
 
         /// <summary>
         /// 判断是否为Null或者空
@@ -89,20 +71,6 @@ namespace EFCore.Sharding.Tests.Util
             }
             jsonStr += "}";
             return jsonStr;
-        }
-
-        /// <summary>
-        /// 深复制
-        /// </summary>
-        /// <typeparam name="T">类型</typeparam>
-        /// <param name="obj">对象</param>
-        /// <returns></returns>
-        public static T DeepClone<T>(this T obj) where T : class
-        {
-            if (obj == null)
-                return null;
-
-            return obj.ToJson().ToObject<T>();
         }
 
         /// <summary>

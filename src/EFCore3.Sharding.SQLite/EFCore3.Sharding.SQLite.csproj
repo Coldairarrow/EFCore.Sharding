@@ -2,11 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>$(EFCORE3)</Version>
-    <LangVersion>8.0</LangVersion>
     <DefineConstants>TRACE;DEBUG;EFCORE3</DefineConstants>
     <AssemblyName>EFCore.Sharding.SQLite</AssemblyName>
     <RootNamespace>EFCore.Sharding.SQLite</RootNamespace>
+    <PackageId>EFCore3.Sharding.SQLite</PackageId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -20,11 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="3.1.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="3.1.13" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EFCore.Sharding.3x\EFCore.Sharding.3x.csproj" />
+    <ProjectReference Include="..\EFCore3.Sharding\EFCore3.Sharding.csproj" />
   </ItemGroup>
 </Project>

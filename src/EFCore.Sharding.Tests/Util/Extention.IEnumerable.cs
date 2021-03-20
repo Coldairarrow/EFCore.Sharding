@@ -5,7 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 
-namespace EFCore.Sharding.Tests.Util
+namespace EFCore.Sharding.Tests
 {
     internal static partial class Extention
     {

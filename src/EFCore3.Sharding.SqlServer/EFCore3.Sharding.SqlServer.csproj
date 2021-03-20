@@ -2,11 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>$(EFCORE2)</Version>
-    <DefineConstants>TRACE;DEBUG;EFCORE2</DefineConstants>
-    <LangVersion>8.0</LangVersion>
+    <DefineConstants>TRACE;DEBUG;EFCORE3</DefineConstants>
     <AssemblyName>EFCore.Sharding.SqlServer</AssemblyName>
     <RootNamespace>EFCore.Sharding.SqlServer</RootNamespace>
+    <PackageId>EFCore3.Sharding.SqlServer</PackageId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -20,11 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="2.2.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="3.1.13" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\EFCore.Sharding.2x\EFCore.Sharding.2x.csproj" />
+    <ProjectReference Include="..\EFCore3.Sharding\EFCore3.Sharding.csproj" />
   </ItemGroup>
 </Project>

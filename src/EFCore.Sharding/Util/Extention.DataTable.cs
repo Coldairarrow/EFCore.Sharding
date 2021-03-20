@@ -1,22 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Text;
 
 namespace EFCore.Sharding
 {
     internal static partial class Extention
     {
-        /// <summary>
-        /// DataTable转List
-        /// </summary>
-        /// <typeparam name="T">转换类型</typeparam>
-        /// <param name="dt">数据源</param>
-        /// <returns></returns>
-        public static List<T> ToList<T>(this DataTable dt)
-        {
-            return dt.ToJson().ToObject<List<T>>();
-        }
-
         /// <summary>
         ///将DataTable转换为标准的CSV字符串
         /// </summary>

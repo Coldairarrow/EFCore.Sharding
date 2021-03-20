@@ -1,11 +1,12 @@
-﻿using EFCore.Sharding.Util;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Namotion.Reflection;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace EFCore.Sharding
 {
@@ -126,23 +127,35 @@ namespace EFCore.Sharding
                 }
             }
 
-#if !EFCORE2
             //字段注释,需要开启程序集XML文档
             if (ShardingOption.EnableComments)
             {
                 foreach (var entityType in modelBuilder.Model.GetEntityTypes())
                 {
-                    var comments = XmlHelper.GetProperyCommentBySummary(entityType.ClrType) ?? new Dictionary<string, string>();
                     foreach (var property in entityType.GetProperties())
                     {
-                        if (comments.ContainsKey(property.Name))
+                        if (property.PropertyInfo == null)
                         {
-                            property.SetComment(comments[property.Name]);
+                            continue;
                         }
+
+                        StringBuilder comment = new StringBuilder(property.PropertyInfo.GetXmlDocsSummary());
+
+                        if (property.PropertyInfo.PropertyType.IsEnum)
+                        {
+                            foreach (var aValue in Enum.GetValues(property.PropertyInfo.PropertyType))
+                            {
+                                var memberComment = property.PropertyInfo.PropertyType.GetMembers()
+                                    .Where(x => x.Name == aValue.ToString())
+                                    .FirstOrDefault()?
+                                    .GetXmlDocsSummary();
+                                comment.Append($" {(int)aValue}={memberComment}");
+                            }
+                        }
+                        property.SetComment(comment.ToString());
                     }
                 }
             }
-#endif
         }
 
         /// <summary>

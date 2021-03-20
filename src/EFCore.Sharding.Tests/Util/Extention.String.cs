@@ -12,7 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace EFCore.Sharding.Tests.Util
+namespace EFCore.Sharding.Tests
 {
     internal static partial class Extention
     {

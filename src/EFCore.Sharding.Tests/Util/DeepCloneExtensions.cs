@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace EFCore.Sharding
+namespace EFCore.Sharding.Tests
 {
     internal static class DeepCloneExtensions
     {

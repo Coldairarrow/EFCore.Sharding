@@ -10,7 +10,9 @@ namespace EFCore.Sharding.Oracle
 {
     internal class ShardingOracleMigrationsSqlGenerator : OracleMigrationsSqlGenerator
     {
+#pragma warning disable EF1001 // Internal EF Core API usage.
         public ShardingOracleMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IOracleOptions options) : base(dependencies, options)
+#pragma warning restore EF1001 // Internal EF Core API usage.
         {
         }
 

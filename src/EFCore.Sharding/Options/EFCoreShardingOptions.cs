@@ -60,7 +60,7 @@ namespace EFCore.Sharding
         /// <summary>
         /// 是否启用注释
         /// </summary>
-        public bool EnableComments { get; set; } = true;
+        public bool EnableComments { get; set; } = false;
 
         private Type[] _types;
         private readonly object _typesLock = new object();

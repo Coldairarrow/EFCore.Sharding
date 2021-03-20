@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>$(EFCORE2)</Version>
-    <LangVersion>8.0</LangVersion>
     <AssemblyName>EFCore.Sharding.Oracle</AssemblyName>
     <RootNamespace>EFCore.Sharding.Oracle</RootNamespace>
+    <PackageId>EFCore3.Sharding.Oracle</PackageId>
+    <DefineConstants>TRACE;DEBUG;EFCORE3</DefineConstants>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -19,9 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Oracle.EntityFrameworkCore" Version="2.19.90" />
+    <PackageReference Include="Oracle.EntityFrameworkCore" Version="3.19.80" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\EFCore.Sharding.2x\EFCore.Sharding.2x.csproj" />
+    <ProjectReference Include="..\EFCore3.Sharding\EFCore3.Sharding.csproj" />
   </ItemGroup>
 </Project>

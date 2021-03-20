@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 
 namespace EFCore.Sharding
 {
@@ -20,17 +18,6 @@ namespace EFCore.Sharding
             {
                 func(item);
             }
-        }
-
-        /// <summary>
-        /// IEnumerable转换为List'T'
-        /// </summary>
-        /// <typeparam name="T">参数</typeparam>
-        /// <param name="source">数据源</param>
-        /// <returns></returns>
-        public static List<T> CastToList<T>(this IEnumerable source)
-        {
-            return new List<T>(source.Cast<T>());
         }
 
         /// <summary>

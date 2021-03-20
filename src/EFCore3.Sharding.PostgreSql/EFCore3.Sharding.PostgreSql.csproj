@@ -2,10 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>$(EFCORE3)</Version>
-    <LangVersion>8.0</LangVersion>
     <AssemblyName>EFCore.Sharding.PostgreSql</AssemblyName>
     <RootNamespace>EFCore.Sharding.PostgreSql</RootNamespace>
+    <PackageId>EFCore3.Sharding.PostgreSql</PackageId>
     <DefineConstants>EFCORE3</DefineConstants>
   </PropertyGroup>
 
@@ -18,12 +17,11 @@
     <Compile Remove="..\EFCore.Sharding.PostgreSql\obj\**" />
     <Compile Remove="..\EFCore.Sharding.PostgreSql\bin\**" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\EFCore.Sharding.3x\EFCore.Sharding.3x.csproj" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.11" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" Version="3.1.11" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.4" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" Version="3.1.4" />
+    <ProjectReference Include="..\EFCore3.Sharding\EFCore3.Sharding.csproj" />
   </ItemGroup>
 </Project>
