@@ -25,15 +25,22 @@
 # 开始
 ## 准备
 首先根据需要安装对应的Nuget包 
+最新版基于EFCore5，若需要使用EFCore3请使用EFCore3.Sharding
 
 | 包名 | 说明 |
 |--|--|
-| EFCore.Sharding | 必装包,3.x版本对应EF Core3.x,2.x版本对应EF Core2.x |
+| EFCore.Sharding | 必装包 |
 | EFCore.Sharding.MySql | MySql支持 |
 | EFCore.Sharding.PostgreSql | PostgreSql支持 |
 | EFCore.Sharding.SQLite | SQLite支持 |
-| EFCore.Sharding.SqlServer | SqlServer支持(3.x版本需要SqlServer2012+,若要用低版本则用2.x版本) |
-| EFCore.Sharding.Oracle | Oracle支持(暂不支持3.x) |
+| EFCore.Sharding.SqlServer | SqlServer支持 |
+| EFCore.Sharding.Oracle | Oracle支持 |
+| EFCore3.Sharding | 必装包 |
+| EFCore3.Sharding.MySql | MySql支持 |
+| EFCore3.Sharding.PostgreSql | PostgreSql支持 |
+| EFCore3.Sharding.SQLite | SQLite支持 |
+| EFCore3.Sharding.SqlServer | SqlServer支持 |
+| EFCore3.Sharding.Oracle | Oracle支持 |
 
 ## 配置
 ```c#
