@@ -11,9 +11,9 @@ namespace Demo.DbMigrator.Migrations
                 name: "AuditLog",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(nullable: false),
-                    CreateTime = table.Column<DateTime>(nullable: false),
-                    Content = table.Column<string>(nullable: true)
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, comment: ""),
+                    CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false, comment: ""),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true, comment: "")
                 },
                 constraints: table =>
                 {
@@ -24,11 +24,12 @@ namespace Demo.DbMigrator.Migrations
                 name: "Order",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(nullable: false, comment: "主键"),
-                    CreateTime = table.Column<DateTime>(nullable: false, comment: "创建时间"),
-                    OrderNum = table.Column<string>(maxLength: 50, nullable: true, comment: "订单号"),
-                    Name = table.Column<string>(nullable: true, comment: "订单名"),
-                    Count = table.Column<int>(nullable: false, comment: "商品数量")
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, comment: "主键"),
+                    CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false, comment: "创建时间"),
+                    OrderNum = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true, comment: "订单号"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true, comment: "订单名"),
+                    Count = table.Column<int>(type: "int", nullable: false, comment: "商品数量"),
+                    OrderType = table.Column<int>(type: "int", nullable: false, comment: "订单类型 0=未知 1=正常")
                 },
                 constraints: table =>
                 {
@@ -39,8 +40,8 @@ namespace Demo.DbMigrator.Migrations
                 name: "OrderItem",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(nullable: false, comment: "主键"),
-                    OrderId = table.Column<Guid>(nullable: false, comment: "订单Id")
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, comment: "主键"),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, comment: "订单Id")
                 },
                 constraints: table =>
                 {

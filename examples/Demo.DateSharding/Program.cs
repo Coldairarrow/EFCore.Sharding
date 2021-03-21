@@ -20,6 +20,8 @@ namespace Demo.DateSharding
             });
             services.AddEFCoreSharding(config =>
             {
+                config.SetEntityAssemblies(typeof(Base_UnitTest).Assembly);
+
                 //添加数据源
                 config.AddDataSource(Config.CONSTRING1, ReadWriteType.Read | ReadWriteType.Write, DatabaseType.SqlServer);
 

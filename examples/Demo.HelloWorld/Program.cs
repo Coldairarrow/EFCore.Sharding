@@ -19,6 +19,8 @@ namespace Demo.HelloWorld
             });
             services.AddEFCoreSharding(config =>
             {
+                config.SetEntityAssemblies(typeof(Base_UnitTest).Assembly);
+
                 config.UseDatabase(Config.SQLITE1, DatabaseType.SQLite);
             });
             var serviceProvider = services.BuildServiceProvider();

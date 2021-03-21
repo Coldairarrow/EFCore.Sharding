@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -33,9 +31,9 @@ namespace EFCore.Sharding
         public string DeletedField { get; set; } = "Deleted";
 
         /// <summary>
-        /// 程序集路径
+        /// 实体程序集
         /// </summary>
-        public readonly List<string> AssemblyPaths = new List<string>();
+        public Assembly[] EntityAssemblies { get; set; } = Array.Empty<Assembly>();
 
         /// <summary>
         /// 实体模型构建过滤器
@@ -58,51 +56,23 @@ namespace EFCore.Sharding
         public bool EnableShardingMigration { get; set; } = false;
 
         /// <summary>
-        /// 是否启用注释
+        /// 是否启用注释，默认false，建议在数据库迁移时开启
         /// </summary>
         public bool EnableComments { get; set; } = false;
 
-        private Type[] _types;
-        private readonly object _typesLock = new object();
+        private Type[] _types = Array.Empty<Type>();
         internal Type[] Types
         {
             get
             {
-                if (_types == null)
+                if (_types.Length == 0)
                 {
-                    lock (_typesLock)
+                    if (EntityAssemblies.Length == 0)
                     {
-                        if (_types == null)
-                        {
-                            string rootPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                            AssemblyPaths.Add(rootPath);
-
-                            var assemblies = AssemblyPaths.Distinct()
-                                .SelectMany(x => Directory.GetFiles(x, "*.dll"))
-                                .Where(x => !new FileInfo(x).Name.StartsWith("System")
-                                    && !new FileInfo(x).Name.StartsWith("Microsoft"))
-                                .Select(x => Assembly.LoadFrom(x))
-                                .Where(x => !x.IsDynamic)
-                                .Concat(new Assembly[] { Assembly.GetEntryAssembly() })
-                                .Distinct()
-                                .ToList();
-
-                            List<Type> types = new List<Type>();
-                            assemblies.ForEach(aAssembly =>
-                            {
-                                try
-                                {
-                                    types.AddRange(aAssembly.GetTypes());
-                                }
-                                catch
-                                {
-
-                                }
-                            });
-
-                            _types = types.ToArray();
-                        }
+                        throw new Exception("请通过SetEntityAssemblies指定实体程序集");
                     }
+
+                    _types = EntityAssemblies.SelectMany(x => x.GetTypes()).ToArray();
                 }
 
                 return _types;

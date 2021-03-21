@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Demo.DbMigrator.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -34,6 +35,11 @@ namespace Demo.DbMigrator
         /// 商品数量
         /// </summary>
         public int Count { get; set; }
+
+        /// <summary>
+        /// 订单类型
+        /// </summary>
+        public OrderTypes OrderType { get; set; }
 
         public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     }

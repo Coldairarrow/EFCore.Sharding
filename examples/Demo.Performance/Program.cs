@@ -16,6 +16,8 @@ namespace Demo.Performance
             ServiceCollection services = new ServiceCollection();
             services.AddEFCoreSharding(config =>
             {
+                config.SetEntityAssemblies(typeof(Base_UnitTest).Assembly);
+
                 config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
 
                 //添加数据源

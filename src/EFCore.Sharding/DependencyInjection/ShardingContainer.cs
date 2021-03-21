@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace EFCore.Sharding
 {
@@ -155,11 +156,11 @@ namespace EFCore.Sharding
 
         #region 配置构建
 
-        public IShardingBuilder SetEntityAssemblyPath(params string[] entityAssemblyPaths)
+        public IShardingBuilder SetEntityAssemblies(params Assembly[] assemblies)
         {
             _services.Configure<EFCoreShardingOptions>(x =>
             {
-                x.AssemblyPaths.AddRange(entityAssemblyPaths);
+                x.EntityAssemblies = assemblies;
             });
 
             return this;

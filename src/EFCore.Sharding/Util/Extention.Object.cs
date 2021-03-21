@@ -1,7 +1,5 @@
 ﻿using Castle.DynamicProxy;
 using Dynamitey;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System;
 using System.ComponentModel;
 using System.Reflection;
@@ -10,17 +8,6 @@ namespace EFCore.Sharding
 {
     internal static partial class Extention
     {
-        static Extention()
-        {
-            JsonConvert.DefaultSettings = () => DefaultJsonSetting;
-        }
-        public static JsonSerializerSettings DefaultJsonSetting = new JsonSerializerSettings
-        {
-            ContractResolver = new DefaultContractResolver(),
-            DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-            DateFormatString = "yyyy-MM-dd HH:mm:ss.fff"
-        };
-
         private static readonly BindingFlags _bindingFlags
             = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
         private static readonly ProxyGenerator Generator = new ProxyGenerator();
@@ -39,16 +26,6 @@ namespace EFCore.Sharding
                 string objStr = obj.ToString();
                 return string.IsNullOrEmpty(objStr);
             }
-        }
-
-        /// <summary>
-        /// 将对象序列化成Json字符串
-        /// </summary>
-        /// <param name="obj">需要序列化的对象</param>
-        /// <returns></returns>
-        public static string ToJson(this object obj)
-        {
-            return JsonConvert.SerializeObject(obj);
         }
 
         /// <summary>
@@ -103,28 +80,6 @@ namespace EFCore.Sharding
         public static void SetFieldValue(this object obj, string fieldName, object value)
         {
             obj.GetType().GetField(fieldName, _bindingFlags).SetValue(obj, value);
-        }
-
-        /// <summary>
-        /// 改变实体类型
-        /// </summary>
-        /// <param name="obj">对象</param>
-        /// <param name="targetType">目标类型</param>
-        /// <returns></returns>
-        public static object ChangeType(this object obj, Type targetType)
-        {
-            return obj.ToJson().ToObject(targetType);
-        }
-
-        /// <summary>
-        /// 改变实体类型
-        /// </summary>
-        /// <typeparam name="T">目标泛型</typeparam>
-        /// <param name="obj">对象</param>
-        /// <returns></returns>
-        public static T ChangeType<T>(this object obj)
-        {
-            return obj.ToJson().ToObject<T>();
         }
 
         /// <summary>

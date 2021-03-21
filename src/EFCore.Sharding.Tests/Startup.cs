@@ -17,6 +17,8 @@ namespace EFCore.Sharding.Tests
             ServiceCollection services = new ServiceCollection();
             services.AddEFCoreSharding(config =>
             {
+                config.SetEntityAssemblies(typeof(Startup).Assembly);
+
                 config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
                 config.UseDatabase<ISQLiteDb1>(Config.SQLITE1, DatabaseType.SQLite);
                 config.UseDatabase<ISQLiteDb2>(Config.SQLITE2, DatabaseType.SQLite);

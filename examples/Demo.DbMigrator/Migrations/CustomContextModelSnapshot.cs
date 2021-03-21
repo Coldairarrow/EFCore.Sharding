@@ -15,21 +15,24 @@ namespace Demo.DbMigrator.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
+                .HasAnnotation("ProductVersion", "5.0.4")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Demo.DbMigrator.Entities.AuditLog", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("");
 
                     b.Property<string>("Content")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("");
 
                     b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("");
 
                     b.HasKey("Id");
 
@@ -58,9 +61,13 @@ namespace Demo.DbMigrator.Migrations
                         .HasComment("订单名");
 
                     b.Property<string>("OrderNum")
+                        .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
-                        .HasComment("订单号")
-                        .HasMaxLength(50);
+                        .HasComment("订单号");
+
+                    b.Property<int>("OrderType")
+                        .HasColumnType("int")
+                        .HasComment("订单类型 0=未知 1=正常");
 
                     b.HasKey("Id");
 
@@ -96,6 +103,11 @@ namespace Demo.DbMigrator.Migrations
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Demo.DbMigrator.Order", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

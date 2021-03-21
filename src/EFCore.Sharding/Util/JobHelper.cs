@@ -2,6 +2,7 @@
 using Quartz.Impl;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Specialized;
 using System.Threading.Tasks;
 
 namespace EFCore.Sharding
@@ -25,7 +26,12 @@ namespace EFCore.Sharding
                     {
                         if (__scheduler == null)
                         {
-                            __scheduler = AsyncHelper.RunSync(() => StdSchedulerFactory.GetDefaultScheduler());
+                            var props = new NameValueCollection
+                            {
+                                { StdSchedulerFactory.PropertySchedulerInstanceName, typeof(JobHelper).FullName }
+                            };
+                            var factory = new StdSchedulerFactory(props);
+                            __scheduler = AsyncHelper.RunSync(() => factory.GetScheduler());
                             AsyncHelper.RunSync(() => __scheduler.Start());
                         }
                     }
@@ -85,7 +91,33 @@ namespace EFCore.Sharding
                 .WithCronSchedule($"{s} {m} {h} * * ?")//每天定时
                 .Build();
             AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
+            return key;
+        }
 
+        /// <summary>
+        /// 设置定时任务
+        /// </summary>
+        /// <param name="action">执行的任务</param>
+        /// <param name="delay">执行时间</param>
+        /// <returns>任务标识Id</returns>
+        public static string SetOnlyJob(Action action, DateTime delay)
+        {
+            string key = Guid.NewGuid().ToString();
+            action += () =>
+            {
+                RemoveJob(key);
+            };
+            _jobs[key] = action;
+
+            IJobDetail job = JobBuilder.Create<Job>()
+               .WithIdentity(key)
+               .Build();
+            ITrigger trigger = TriggerBuilder.Create()
+                .WithIdentity(key)
+                .StartAt(delay)
+                .WithSimpleSchedule(x => x.WithRepeatCount(0).WithInterval(TimeSpan.FromSeconds(10)))
+                .Build();
+            AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
             return key;
         }
 

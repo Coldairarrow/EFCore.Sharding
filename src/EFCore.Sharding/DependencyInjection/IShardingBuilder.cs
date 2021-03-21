@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
+using System.Reflection;
 
 namespace EFCore.Sharding
 {
@@ -9,11 +10,11 @@ namespace EFCore.Sharding
     public interface IShardingBuilder
     {
         /// <summary>
-        /// 设置实体的程序集路径
+        /// 设置实体的程序集
         /// </summary>
-        /// <param name="entityAssemblyPaths">程序集路径</param>
+        /// <param name="assemblies">程序集</param>
         /// <returns></returns>
-        IShardingBuilder SetEntityAssemblyPath(params string[] entityAssemblyPaths);
+        IShardingBuilder SetEntityAssemblies(params Assembly[] assemblies);
 
         /// <summary>
         /// 设置SQL执行超时时间(单位秒,默认30)
@@ -50,7 +51,7 @@ namespace EFCore.Sharding
         IShardingBuilder EnableShardingMigration(bool enable);
 
         /// <summary>
-        /// 是否启用注释,默认true
+        /// 是否启用注释,默认false
         /// </summary>
         /// <param name="enable">是否启用</param>
         /// <returns></returns>

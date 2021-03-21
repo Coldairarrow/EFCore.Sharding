@@ -15,6 +15,9 @@ namespace Demo.DbMigrator
             ServiceCollection services = new ServiceCollection();
             services.AddEFCoreSharding(x =>
             {
+                x.SetEntityAssemblies(typeof(DesignTimeDbContextFactory).Assembly);
+                x.EnableComments(true);
+
                 //取消建表
                 x.CreateShardingTableOnStarting(false);
 

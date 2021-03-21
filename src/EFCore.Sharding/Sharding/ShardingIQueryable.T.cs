@@ -174,7 +174,7 @@ namespace EFCore.Sharding
                 var newQ = noPaginSource.ReplaceQueryable(targetIQ);
                 return newQ
                     .Cast<object>()
-                    .Select(x => x.ChangeType<T>())
+                    .Select(x => (T)x)
                     .ToListAsync();
             }).ToList();
             List<T> all = new List<T>();
@@ -202,7 +202,7 @@ namespace EFCore.Sharding
             var list = await GetStatisDataAsync(async x =>
             {
                 var data = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync((dynamic)x);
-                return (data as object)?.ChangeType<T>();
+                return (T)data;
             });
             list.RemoveAll(x => x == null);
             var q = list.AsQueryable();

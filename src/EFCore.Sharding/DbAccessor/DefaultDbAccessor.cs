@@ -32,7 +32,7 @@ namespace EFCore.Sharding
             keys.ForEach(aKey =>
             {
                 object newData = Activator.CreateInstance(type);
-                var value = aKey.ChangeType(theProperty.PropertyType);
+                var value = Convert.ChangeType(aKey, theProperty.PropertyType);
                 theProperty.SetValue(newData, value);
                 deleteList.Add(newData);
             });
