@@ -1,3 +1,4 @@
+[![Build Status](https://coldairarrow.visualstudio.com/Colder/_apis/build/status/EFCore.Sharding-ci?branchName=master)](https://coldairarrow.visualstudio.com/Colder/_build/latest?definitionId=4&branchName=master)
 - [简介](#简介)
 - [引言](#引言)
 - [开始](#开始)
