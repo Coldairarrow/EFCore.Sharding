@@ -1,8 +1,10 @@
 ﻿using EFCore.Sharding.Config;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,6 +27,10 @@ namespace EFCore.Sharding
         {
             _serviceProvider = serviceProvider;
             _shardingOptions = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+
+            DiagnosticListener.AllListeners.Subscribe(
+                new DiagnosticObserver(serviceProvider.GetService<ILoggerFactory>(), 
+                _shardingOptions.MinCommandElapsedMilliseconds));
 
             Cache.ServiceProvider = serviceProvider;
         }

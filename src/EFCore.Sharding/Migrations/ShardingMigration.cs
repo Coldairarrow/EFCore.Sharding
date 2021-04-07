@@ -1,5 +1,4 @@
-﻿#if !EFCORE2
-using EFCore.Sharding.Config;
+﻿using EFCore.Sharding.Config;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -70,5 +69,3 @@ namespace EFCore.Sharding
 #endif
     }
 }
-
-#endif

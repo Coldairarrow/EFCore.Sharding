@@ -66,6 +66,13 @@ namespace EFCore.Sharding
         IShardingBuilder UseLogicDelete(string keyField = "Id", string deletedField = "Deleted");
 
         /// <summary>
+        /// 设置记录执行SQL的最小执行时长，默认50ms
+        /// </summary>
+        /// <param name="minCommandElapsedMilliseconds"></param>
+        /// <returns></returns>
+        IShardingBuilder SetMinCommandElapsedMilliseconds(int minCommandElapsedMilliseconds);
+
+        /// <summary>
         /// 使用默认数据库
         /// 注入IDbAccessor
         /// </summary>

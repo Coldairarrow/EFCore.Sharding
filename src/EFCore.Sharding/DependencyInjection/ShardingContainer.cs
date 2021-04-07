@@ -230,6 +230,15 @@ namespace EFCore.Sharding
 
             return this;
         }
+        public IShardingBuilder SetMinCommandElapsedMilliseconds(int minCommandElapsedMilliseconds)
+        {
+            _services.Configure<EFCoreShardingOptions>(x =>
+            {
+                x.MinCommandElapsedMilliseconds = minCommandElapsedMilliseconds;
+            });
+
+            return this;
+        }
         public IShardingBuilder UseDatabase(string conString, DatabaseType dbType, string entityNamespace = null)
         {
             return UseDatabase<IDbAccessor>(conString, dbType, entityNamespace);

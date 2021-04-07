@@ -13,7 +13,7 @@ namespace EFCore.Sharding.SqlServer
         {
         }
 #endif
-#if EFCORE3||EFCORE2
+#if EFCORE3
         public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IMigrationsAnnotationProvider migrationsAnnotations)
             : base(dependencies, migrationsAnnotations)
         {

@@ -347,13 +347,7 @@ namespace EFCore.Sharding
 
         public override async Task<int> ExecuteSqlAsync(string sql, params (string paramterName, object paramterValue)[] parameters)
         {
-#if EFCORE3||EFCORE5
             return await _db.Database.ExecuteSqlRawAsync(sql, CreateDbParamters(parameters).ToArray());
-#endif
-
-#if EFCORE2
-            return await _db.Database.ExecuteSqlCommandAsync(sql, CreateDbParamters(parameters).ToArray());
-#endif
         }
 
         #endregion

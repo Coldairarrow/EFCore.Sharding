@@ -60,6 +60,11 @@ namespace EFCore.Sharding
         /// </summary>
         public bool EnableComments { get; set; } = false;
 
+        /// <summary>
+        /// 记录执行SQL的最小执行时长，默认50ms
+        /// </summary>
+        public int MinCommandElapsedMilliseconds { get; set; } = 50;
+
         private Type[] _types = Array.Empty<Type>();
         internal Type[] Types
         {

@@ -1,13 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using System.Data.Common;
 using Microsoft.EntityFrameworkCore.Migrations;
-
-#if EFCORE2
-using System.Data.SqlClient;
-#else
-using Microsoft.Data.SqlClient;
-#endif
+using System.Data.Common;
 
 namespace EFCore.Sharding.SqlServer
 {
@@ -24,9 +19,6 @@ namespace EFCore.Sharding.SqlServer
             dbContextOptionsBuilder.UseSqlServer(dbConnection, x =>
             {
                 x.UseNetTopologySuite();
-#if EFCORE2
-                x.UseRowNumberForPaging();
-#endif
             });
             dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingSqlServerMigrationsSqlGenerator>();
         }

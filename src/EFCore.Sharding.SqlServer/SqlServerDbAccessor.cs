@@ -1,15 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Linq;
-
-#if EFCORE2
-using System.Data.SqlClient;
-#else
-using Microsoft.Data.SqlClient;
-#endif
 
 namespace EFCore.Sharding.SqlServer
 {
