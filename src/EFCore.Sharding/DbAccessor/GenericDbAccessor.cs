@@ -129,6 +129,13 @@ namespace EFCore.Sharding
                     case UpdateType.Minus: setValueBody = $" {formatedField} - {paramterName} "; break;
                     case UpdateType.Multiply: setValueBody = $" {formatedField} * {paramterName} "; break;
                     case UpdateType.Divide: setValueBody = $" {formatedField} / {paramterName} "; break;
+                    case UpdateType.Concat:
+                        {
+                            var symbol = new DatabaseType[] { DatabaseType.PostgreSql, DatabaseType.Oracle, DatabaseType.SQLite }
+                                .Contains(_db.Paramter.DbType) ? "||" : "+";
+                            setValueBody = $" {formatedField} {symbol} {paramterName} ";
+                        }; break;
+
                     default: throw new Exception("updateType无效");
                 }
 
