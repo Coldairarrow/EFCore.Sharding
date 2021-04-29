@@ -124,8 +124,24 @@ namespace EFCore.Sharding
             private object _obj;
             public void Intercept(IInvocation invocation)
             {
-                var name = new InvokeMemberName(invocation.Method.Name, invocation.Method.GetGenericArguments());
+                var method = invocation.Method;
 
+                //属性处理
+                if (method.Name.StartsWith("get_"))
+                {
+                    invocation.ReturnValue = Dynamic.InvokeGet(_obj, method.Name.Substring(4));
+
+                    return;
+                }
+                else if (method.Name.StartsWith("set_"))
+                {
+                    Dynamic.InvokeSet(_obj, method.Name.Substring(4), invocation.Arguments[0]);
+
+                    return;
+                }
+
+                //方法处理
+                var name = new InvokeMemberName(method.Name, method.GetGenericArguments());
                 if (invocation.Method.ReturnType != typeof(void))
                 {
                     invocation.ReturnValue = Dynamic.InvokeMember(_obj, name, invocation.Arguments);
