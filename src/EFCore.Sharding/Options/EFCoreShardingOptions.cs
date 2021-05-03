@@ -33,7 +33,7 @@ namespace EFCore.Sharding
         /// <summary>
         /// 实体程序集
         /// </summary>
-        public Assembly[] EntityAssemblies { get; set; } = Array.Empty<Assembly>();
+        public Assembly[] EntityAssemblies { get; set; }
 
         /// <summary>
         /// 实体模型构建过滤器
@@ -65,24 +65,24 @@ namespace EFCore.Sharding
         /// </summary>
         public int MinCommandElapsedMilliseconds { get; set; } = 50;
 
-        private Type[] _types = Array.Empty<Type>();
+        private Type[] _types;
         internal Type[] Types
         {
             get
             {
-                if (_types.Length == 0)
+                if (_types == null || _types.Length == 0)
                 {
-                    if (EntityAssemblies.Length == 0)
-                    {
-                        throw new Exception("请通过SetEntityAssemblies指定实体程序集");
-                    }
-
-                    _types = EntityAssemblies.SelectMany(x => x.GetTypes()).ToArray();
+                    _types = (EntityAssemblies ?? Array.Empty<Assembly>()).SelectMany(x => x.GetTypes()).ToArray();
                 }
 
                 return _types;
             }
+            set
+            {
+                _types = value;
+            }
         }
-        internal Action<IServiceProvider> Bootstrapper;
+
+        internal static Action<IServiceProvider> Bootstrapper;
     }
 }

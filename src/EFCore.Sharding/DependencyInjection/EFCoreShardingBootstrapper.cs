@@ -42,7 +42,7 @@ namespace EFCore.Sharding
         /// <returns></returns>
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _shardingOptions.Bootstrapper?.Invoke(_serviceProvider);
+            EFCoreShardingOptions.Bootstrapper?.Invoke(_serviceProvider);
 
             return Task.CompletedTask;
         }

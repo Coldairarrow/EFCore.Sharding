@@ -186,56 +186,6 @@ namespace EFCore.Sharding
         /// <returns></returns>
         IQueryable<T> GetIQueryable<T>(bool tracking = false) where T : class;
 
-        /// <summary>
-        /// 通过SQL获取DataTable
-        /// </summary>
-        /// <param name="sql">SQL语句</param>
-        /// <param name="parameters">SQL参数</param>
-        /// <returns></returns>
-        DataTable GetDataTableWithSql(string sql, params (string paramterName, object value)[] parameters);
-
-        /// <summary>
-        /// 通过SQL获取DataTable
-        /// </summary>
-        /// <param name="sql">SQL语句</param>
-        /// <param name="parameters">SQL参数</param>
-        /// <returns></returns>
-        Task<DataTable> GetDataTableWithSqlAsync(string sql, params (string paramterName, object value)[] parameters);
-
-        /// <summary>
-        /// 通过SQL获取DataTable
-        /// </summary>
-        /// <param name="sql">SQL语句</param>
-        /// <param name="parameters">SQL参数</param>
-        /// <returns></returns>
-        DataSet GetDataSetWithSql(string sql, params (string paramterName, object value)[] parameters);
-
-        /// <summary>
-        /// 通过SQL获取DataTable
-        /// </summary>
-        /// <param name="sql">SQL语句</param>
-        /// <param name="parameters">SQL参数</param>
-        /// <returns></returns>
-        Task<DataSet> GetDataSetWithSqlAsync(string sql, params (string paramterName, object value)[] parameters);
-
-        /// <summary>
-        /// 通过SQL获取List
-        /// </summary>
-        /// <typeparam name="T">实体泛型</typeparam>
-        /// <param name="sqlStr">SQL语句</param>
-        /// <param name="parameters">SQL参数</param>
-        /// <returns></returns>
-        List<T> GetListBySql<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class;
-
-        /// <summary>
-        /// 通过SQL获取List
-        /// </summary>
-        /// <typeparam name="T">实体泛型</typeparam>
-        /// <param name="sqlStr">SQL语句</param>
-        /// <param name="parameters">SQL参数</param>
-        /// <returns></returns>
-        Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class;
-
         #endregion
 
         #region 执行Sql语句

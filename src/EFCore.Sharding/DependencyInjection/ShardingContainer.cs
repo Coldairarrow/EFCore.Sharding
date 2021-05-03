@@ -239,17 +239,30 @@ namespace EFCore.Sharding
 
             return this;
         }
-        public IShardingBuilder UseDatabase(string conString, DatabaseType dbType, string entityNamespace = null)
+        public IShardingBuilder UseDatabase(string conString, DatabaseType dbType, string entityNamespace = null, Action<EFCoreShardingOptions> optionsBuilder = null)
         {
-            return UseDatabase<IDbAccessor>(conString, dbType, entityNamespace);
+            return UseDatabase<IDbAccessor>(conString, dbType, entityNamespace, optionsBuilder);
         }
-        public IShardingBuilder UseDatabase<TDbAccessor>(string conString, DatabaseType dbType, string entityNamespace) where TDbAccessor : class, IDbAccessor
+        public IShardingBuilder UseDatabase<TDbAccessor>(string conString, DatabaseType dbType, string entityNamespace, Action<EFCoreShardingOptions> optionsBuilder = null) where TDbAccessor : class, IDbAccessor
         {
+            var optionName = typeof(TDbAccessor).FullName;
+            _services.AddOptions<EFCoreShardingOptions>(optionName);
+
+            if (optionsBuilder != null)
+            {
+                _services.Configure(optionName, optionsBuilder);
+            }
+
             _services.AddScoped(serviceProvider =>
             {
                 var dbFactory = serviceProvider.GetService<IDbFactory>();
                 var options = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
-                IDbAccessor db = dbFactory.GetDbAccessor(conString, dbType, entityNamespace);
+                IDbAccessor db = dbFactory.GetDbAccessor(new DbContextParamters
+                {
+                    ConnectionString = conString,
+                    DbType = dbType,
+                    EntityNamespace = entityNamespace
+                }, optionName);
                 if (options.LogicDelete)
                     db = new LogicDeleteDbAccessor(db, options);
 
@@ -261,12 +274,20 @@ namespace EFCore.Sharding
 
             return this;
         }
-        public IShardingBuilder UseDatabase((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace = null)
+        public IShardingBuilder UseDatabase((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace = null, Action<EFCoreShardingOptions> optionsBuilder = null)
         {
-            return UseDatabase<IDbAccessor>(dbs, dbType, entityNamespace);
+            return UseDatabase<IDbAccessor>(dbs, dbType, entityNamespace, optionsBuilder);
         }
-        public IShardingBuilder UseDatabase<TDbAccessor>((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace) where TDbAccessor : class, IDbAccessor
+        public IShardingBuilder UseDatabase<TDbAccessor>((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace, Action<EFCoreShardingOptions> optionsBuilder = null) where TDbAccessor : class, IDbAccessor
         {
+            var optionName = typeof(TDbAccessor).FullName;
+            _services.AddOptions<EFCoreShardingOptions>(optionName);
+
+            if (optionsBuilder != null)
+            {
+                _services.Configure(optionName, optionsBuilder);
+            }
+
             if (!(dbs.Any(x => x.readWriteType.HasFlag(ReadWriteType.Read))
                 && dbs.Any(x => x.readWriteType.HasFlag(ReadWriteType.Write))))
                 throw new Exception("dbs必须包含写库与读库");
@@ -278,7 +299,7 @@ namespace EFCore.Sharding
                     dbType,
                     entityNamespace,
                     serviceProvider.GetService<IDbFactory>(),
-                    serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value
+                    serviceProvider.GetService<IOptionsSnapshot<EFCoreShardingOptions>>().BuildOption(optionName)
                     );
 
                 if (typeof(TDbAccessor) == typeof(IDbAccessor))
@@ -321,70 +342,67 @@ namespace EFCore.Sharding
             };
             _shardingRules.Add(shardingRule);
 
-            _services.Configure<EFCoreShardingOptions>(x =>
+            EFCoreShardingOptions.Bootstrapper += serviceProvider =>
             {
-                x.Bootstrapper += serviceProvider =>
+                var sharingOption = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+
+                (string conExpression, string startTimeFormat, Func<DateTime, DateTime> nextTime) paramter =
+                    expandByDateMode switch
+                    {
+                        ExpandByDateMode.PerMinute => ("0 * * * * ? *", "yyyy/MM/dd HH:mm:00", x => x.AddMinutes(1)),
+                        ExpandByDateMode.PerHour => ("0 0 * * * ? *", "yyyy/MM/dd HH:00:00", x => x.AddHours(1)),
+                        ExpandByDateMode.PerDay => ("0 0 0 * * ? *", "yyyy/MM/dd 00:00:00", x => x.AddDays(1)),
+                        ExpandByDateMode.PerMonth => ("0 0 0 1 * ? *", "yyyy/MM/01 00:00:00", x => x.AddMonths(1)),
+                        ExpandByDateMode.PerYear => ("0 0 0 1 1 ? *", "yyyy/01/01 00:00:00", x => x.AddYears(1)),
+                        _ => throw new Exception("expandByDateMode参数无效")
+                    };
+
+                //确保之前的表已存在
+                var theTime = ranges.Min(x => x.startTime);
+                theTime = DateTime.Parse(theTime.ToString(paramter.startTimeFormat));
+
+                DateTime endTime = paramter.nextTime(DateTime.Parse(DateTime.Now.ToString(paramter.startTimeFormat)));
+
+                while (theTime <= endTime)
                 {
-                    var sharingOption = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+                    var theSourceName = GetSourceName(theTime);
+                    string suffix = shardingRule.GetTableSuffixByField(theTime);
 
-                    (string conExpression, string startTimeFormat, Func<DateTime, DateTime> nextTime) paramter =
-                        expandByDateMode switch
-                        {
-                            ExpandByDateMode.PerMinute => ("0 * * * * ? *", "yyyy/MM/dd HH:mm:00", x => x.AddMinutes(1)),
-                            ExpandByDateMode.PerHour => ("0 0 * * * ? *", "yyyy/MM/dd HH:00:00", x => x.AddHours(1)),
-                            ExpandByDateMode.PerDay => ("0 0 0 * * ? *", "yyyy/MM/dd 00:00:00", x => x.AddDays(1)),
-                            ExpandByDateMode.PerMonth => ("0 0 0 1 * ? *", "yyyy/MM/01 00:00:00", x => x.AddMonths(1)),
-                            ExpandByDateMode.PerYear => ("0 0 0 1 1 ? *", "yyyy/01/01 00:00:00", x => x.AddYears(1)),
-                            _ => throw new Exception("expandByDateMode参数无效")
-                        };
+                    string absTableName = AnnotationHelper.GetDbTableName(typeof(TEntity));
+                    string fullTableName = $"{absTableName}_{suffix}";
+                    AddShardingTable(absTableName, fullTableName);
 
-                    //确保之前的表已存在
-                    var theTime = ranges.Min(x => x.startTime);
-                    theTime = DateTime.Parse(theTime.ToString(paramter.startTimeFormat));
-
-                    DateTime endTime = paramter.nextTime(DateTime.Parse(DateTime.Now.ToString(paramter.startTimeFormat)));
-
-                    while (theTime <= endTime)
+                    //启动时建表
+                    if (sharingOption.CreateShardingTableOnStarting)
                     {
-                        var theSourceName = GetSourceName(theTime);
-                        string suffix = shardingRule.GetTableSuffixByField(theTime);
-
-                        string absTableName = AnnotationHelper.GetDbTableName(typeof(TEntity));
-                        string fullTableName = $"{absTableName}_{suffix}";
-                        AddShardingTable(absTableName, fullTableName);
-
-                        //启动时建表
-                        if (sharingOption.CreateShardingTableOnStarting)
-                        {
-                            CreateTable<TEntity>(serviceProvider, theSourceName, suffix);
-                        }
-
-                        AddPhysicTable<TEntity>(suffix, theSourceName);
-
-                        theTime = paramter.nextTime(theTime);
-                    }
-
-                    //定时自动建表
-                    JobHelper.SetCronJob(() =>
-                    {
-                        DateTime trueDate = paramter.nextTime(DateTime.Parse(DateTime.Now.ToString(paramter.startTimeFormat)));
-                        var theSourceName = GetSourceName(trueDate);
-                        string suffix = shardingRule.GetTableSuffixByField(trueDate);
-                        //添加物理表
                         CreateTable<TEntity>(serviceProvider, theSourceName, suffix);
-                        AddPhysicTable<TEntity>(suffix, theSourceName);
-                    }, paramter.conExpression);
-
-                    string GetSourceName(DateTime time)
-                    {
-                        return ranges
-                            .Where(x => time >= DateTime.Parse(x.startTime.ToString(paramter.startTimeFormat))
-                                && time < x.endTime)
-                            .FirstOrDefault()
-                            .sourceName;
                     }
-                };
-            });
+
+                    AddPhysicTable<TEntity>(suffix, theSourceName);
+
+                    theTime = paramter.nextTime(theTime);
+                }
+
+                //定时自动建表
+                JobHelper.SetCronJob(() =>
+                {
+                    DateTime trueDate = paramter.nextTime(DateTime.Parse(DateTime.Now.ToString(paramter.startTimeFormat)));
+                    var theSourceName = GetSourceName(trueDate);
+                    string suffix = shardingRule.GetTableSuffixByField(trueDate);
+                    //添加物理表
+                    CreateTable<TEntity>(serviceProvider, theSourceName, suffix);
+                    AddPhysicTable<TEntity>(suffix, theSourceName);
+                }, paramter.conExpression);
+
+                string GetSourceName(DateTime time)
+                {
+                    return ranges
+                        .Where(x => time >= DateTime.Parse(x.startTime.ToString(paramter.startTimeFormat))
+                            && time < x.endTime)
+                        .FirstOrDefault()
+                        .sourceName;
+                }
+            };
 
             return this;
         }
@@ -405,31 +423,28 @@ namespace EFCore.Sharding
             };
             _shardingRules.Add(rule);
 
-            _services.Configure<EFCoreShardingOptions>(x =>
+            EFCoreShardingOptions.Bootstrapper += serviceProvider =>
             {
-                x.Bootstrapper += serviceProvider =>
+                var sharingOption = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+
+                //建表
+                for (int i = 0; i < mod; i++)
                 {
-                    var sharingOption = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+                    var sourceName = ranges.Where(x => i >= x.start && i < x.end).FirstOrDefault().sourceName;
 
-                    //建表
-                    for (int i = 0; i < mod; i++)
+                    string absTableName = AnnotationHelper.GetDbTableName(typeof(TEntity));
+                    string fullTableName = $"{absTableName}_{i}";
+                    AddShardingTable(absTableName, fullTableName);
+
+                    //启动时建表
+                    if (sharingOption.CreateShardingTableOnStarting)
                     {
-                        var sourceName = ranges.Where(x => i >= x.start && i < x.end).FirstOrDefault().sourceName;
-
-                        string absTableName = AnnotationHelper.GetDbTableName(typeof(TEntity));
-                        string fullTableName = $"{absTableName}_{i}";
-                        AddShardingTable(absTableName, fullTableName);
-
-                        //启动时建表
-                        if (sharingOption.CreateShardingTableOnStarting)
-                        {
-                            CreateTable<TEntity>(serviceProvider, sourceName, i.ToString());
-                        }
-
-                        AddPhysicTable<TEntity>(i.ToString(), sourceName);
+                        CreateTable<TEntity>(serviceProvider, sourceName, i.ToString());
                     }
-                };
-            });
+
+                    AddPhysicTable<TEntity>(i.ToString(), sourceName);
+                }
+            };
 
             return this;
         }

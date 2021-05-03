@@ -45,7 +45,12 @@ namespace EFCore.Sharding
                 if (_shardingDb.OpenedTransaction)
                     db = _shardingDb.GetMapDbAccessor(aTable.conString, aTable.dbType, aTable.suffix);
                 else
-                    db = _dbFactory.GetDbAccessor(aTable.conString, aTable.dbType, null, aTable.suffix);
+                    db = _dbFactory.GetDbAccessor(new DbContextParamters
+                    {
+                        ConnectionString = aTable.conString,
+                        DbType = aTable.dbType,
+                        Suffix = aTable.suffix
+                    });
 
                 dbs.Add(db);
                 var targetIQ = db.GetIQueryable<T>();
@@ -167,7 +172,12 @@ namespace EFCore.Sharding
                 if (_shardingDb.OpenedTransaction)
                     db = _shardingDb.GetMapDbAccessor(aTable.conString, aTable.dbType, aTable.suffix);
                 else
-                    db = _dbFactory.GetDbAccessor(aTable.conString, aTable.dbType, null, aTable.suffix);
+                    db = _dbFactory.GetDbAccessor(new DbContextParamters
+                    {
+                        ConnectionString = aTable.conString,
+                        DbType = aTable.dbType,
+                        Suffix = aTable.suffix
+                    });
                 dbs.Add(db);
 
                 var targetIQ = db.GetIQueryable<T>();

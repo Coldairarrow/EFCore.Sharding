@@ -41,7 +41,12 @@ namespace EFCore.Sharding
                 if (_allDbs == null)
                 {
                     _allDbs = _dbConfigs
-                        .Select(x => (_dbFactory.GetDbAccessor(x.connectionString, _dbType, _entityNamespace), x.readWriteType))
+                        .Select(x => (_dbFactory.GetDbAccessor(new DbContextParamters
+                        {
+                            ConnectionString = x.connectionString,
+                            DbType = _dbType,
+                            EntityNamespace = _entityNamespace
+                        }), x.readWriteType))
                         .ToArray();
                 }
 
@@ -124,14 +129,6 @@ namespace EFCore.Sharding
         {
             return WriteDb.ExecuteSqlAsync(sql, parameters);
         }
-        public override Task<DataTable> GetDataTableWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
-        {
-            return ReadDb.GetDataTableWithSqlAsync(sql, parameters);
-        }
-        public override Task<DataSet> GetDataSetWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
-        {
-            return ReadDb.GetDataSetWithSqlAsync(sql, parameters);
-        }
         public override Task<T> GetEntityAsync<T>(params object[] keyValue)
         {
             return ReadDb.GetEntityAsync<T>(keyValue);
@@ -181,10 +178,6 @@ namespace EFCore.Sharding
         public override Task<int> UpdateAsync<T>(List<T> entities, List<string> properties, bool tracking = false)
         {
             return WriteDb.UpdateAsync(entities, properties, tracking);
-        }
-        public override Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters)
-        {
-            return ReadDb.GetListBySqlAsync<T>(sqlStr, parameters);
         }
     }
 }

@@ -111,14 +111,6 @@ namespace EFCore.Sharding
         {
             return FullDbAccessor.ExecuteSqlAsync(sql, parameters);
         }
-        public override Task<DataTable> GetDataTableWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
-        {
-            return FullDbAccessor.GetDataTableWithSqlAsync(sql, parameters);
-        }
-        public override Task<DataSet> GetDataSetWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
-        {
-            return FullDbAccessor.GetDataSetWithSqlAsync(sql, parameters);
-        }
         public override Task<T> GetEntityAsync<T>(params object[] keyValue)
         {
             return FullDbAccessor.GetEntityAsync<T>(keyValue);
@@ -146,10 +138,6 @@ namespace EFCore.Sharding
         public override Task<int> UpdateSqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
         {
             return FullDbAccessor.UpdateSqlAsync(source, values);
-        }
-        public override Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters)
-        {
-            return FullDbAccessor.GetListBySqlAsync<T>(sqlStr, parameters);
         }
 
         #endregion

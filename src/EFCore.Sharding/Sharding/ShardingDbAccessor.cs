@@ -20,7 +20,7 @@ namespace EFCore.Sharding
             _shardingConfig = shardingConfig;
             _dbFactory = dbFactory;
             var dbType = shardingConfig.FindADbType();
-            _db = _dbFactory.GetDbAccessor(dbType.GetDefaultString(), dbType);
+            _db = _dbFactory.GetDbAccessor(new DbContextParamters { ConnectionString = dbType.GetDefaultString() });
         }
 
         #endregion
@@ -113,7 +113,12 @@ namespace EFCore.Sharding
         public IDbAccessor GetMapDbAccessor(string conString, DatabaseType dbType, string suffix)
         {
             var dbId = GetDbId(conString, dbType, suffix);
-            IDbAccessor db = _dbs.GetOrAdd(dbId, key => _dbFactory.GetDbAccessor(conString, dbType, null, suffix));
+            IDbAccessor db = _dbs.GetOrAdd(dbId, key => _dbFactory.GetDbAccessor(new DbContextParamters
+            {
+                ConnectionString = conString,
+                DbType = dbType,
+                Suffix = suffix
+            }));
 
             if (OpenedTransaction)
                 _transaction.AddDbAccessor(db);

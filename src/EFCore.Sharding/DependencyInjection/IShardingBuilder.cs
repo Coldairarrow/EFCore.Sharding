@@ -79,8 +79,9 @@ namespace EFCore.Sharding
         /// <param name="conString">连接字符串</param>
         /// <param name="dbType">数据库类型</param>
         /// <param name="entityNamespace">实体命名空间</param>
+        /// <param name="optionsBuilder">自定义配置</param>
         /// <returns></returns>
-        IShardingBuilder UseDatabase(string conString, DatabaseType dbType, string entityNamespace = null);
+        IShardingBuilder UseDatabase(string conString, DatabaseType dbType, string entityNamespace = null, Action<EFCoreShardingOptions> optionsBuilder = null);
 
         /// <summary>
         /// 使用数据库
@@ -89,8 +90,9 @@ namespace EFCore.Sharding
         /// <param name="conString">连接字符串</param>
         /// <param name="dbType">数据库类型</param>
         /// <param name="entityNamespace">实体命名空间</param>
+        /// <param name="optionsBuilder">自定义配置</param>
         /// <returns></returns>
-        IShardingBuilder UseDatabase<TDbAccessor>(string conString, DatabaseType dbType, string entityNamespace = null) where TDbAccessor : class, IDbAccessor;
+        IShardingBuilder UseDatabase<TDbAccessor>(string conString, DatabaseType dbType, string entityNamespace = null, Action<EFCoreShardingOptions> optionsBuilder = null) where TDbAccessor : class, IDbAccessor;
 
         /// <summary>
         /// 使用默认数据库
@@ -99,8 +101,9 @@ namespace EFCore.Sharding
         /// <param name="dbs">读写数据库配置</param>
         /// <param name="dbType">数据库类型</param>
         /// <param name="entityNamespace">实体命名空间</param>
+        /// <param name="optionsBuilder">自定义配置</param>
         /// <returns></returns>
-        IShardingBuilder UseDatabase((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace = null);
+        IShardingBuilder UseDatabase((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace = null, Action<EFCoreShardingOptions> optionsBuilder = null);
 
         /// <summary>
         /// 使用数据库
@@ -109,8 +112,9 @@ namespace EFCore.Sharding
         /// <param name="dbs">读写数据库配置</param>
         /// <param name="dbType">数据库类型</param>
         /// <param name="entityNamespace">实体命名空间</param>
+        /// <param name="optionsBuilder">自定义配置</param>
         /// <returns></returns>
-        IShardingBuilder UseDatabase<TDbAccessor>((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace = null) where TDbAccessor : class, IDbAccessor;
+        IShardingBuilder UseDatabase<TDbAccessor>((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace = null, Action<EFCoreShardingOptions> optionsBuilder = null) where TDbAccessor : class, IDbAccessor;
 
         /// <summary>
         /// 添加数据源

@@ -62,18 +62,6 @@ namespace EFCore.Sharding
         {
             return AsyncHelper.RunSync(() => ExecuteSqlAsync(sql, parameters));
         }
-        public DataTable GetDataTableWithSql(string sql, params (string paramterName, object value)[] parameters)
-        {
-            return AsyncHelper.RunSync(() => GetDataTableWithSqlAsync(sql, parameters));
-        }
-        public DataSet GetDataSetWithSql(string sql, params (string paramterName, object value)[] parameters)
-        {
-            return AsyncHelper.RunSync(() => GetDataSetWithSqlAsync(sql, parameters));
-        }
-        public List<T> GetListBySql<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class
-        {
-            return AsyncHelper.RunSync(() => GetListBySqlAsync<T>(sqlStr, parameters));
-        }
         public T GetEntity<T>(params object[] keyValue) where T : class
         {
             return AsyncHelper.RunSync(() => GetEntityAsync<T>(keyValue));
@@ -136,14 +124,11 @@ namespace EFCore.Sharding
         public abstract void BulkInsert<T>(List<T> entities, string tableName = null) where T : class;
         public abstract Task<int> DeleteSqlAsync(IQueryable source);
         public abstract Task<int> ExecuteSqlAsync(string sql, params (string paramterName, object paramterValue)[] parameters);
-        public abstract Task<DataTable> GetDataTableWithSqlAsync(string sql, params (string paramterName, object value)[] parameters);
-        public abstract Task<DataSet> GetDataSetWithSqlAsync(string sql, params (string paramterName, object value)[] parameters);
         public abstract Task<T> GetEntityAsync<T>(params object[] keyValue) where T : class;
         public abstract IQueryable<T> GetIQueryable<T>(bool tracking = false) where T : class;
         public abstract Task<int> SaveChangesAsync(bool tracking = true);
         public abstract Task<int> UpdateSqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values);
         public abstract EntityEntry Entry(object entity);
-        public abstract Task<List<T>> GetListBySqlAsync<T>(string sqlStr, params (string paramterName, object value)[] parameters) where T : class;
 
         #endregion
     }

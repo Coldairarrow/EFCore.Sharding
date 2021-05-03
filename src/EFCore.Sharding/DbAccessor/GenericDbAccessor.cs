@@ -1,5 +1,4 @@
-﻿using Dapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
@@ -144,17 +143,6 @@ namespace EFCore.Sharding
             string sql = $"UPDATE {tableName} SET {string.Join(",", propertySetStr)} WHERE {whereSql.sql}";
 
             return (sql, whereSql.paramters);
-        }
-        private DynamicParameters CreateDynamicParameters((string paramterName, object paramterValue)[] paramters)
-        {
-            DynamicParameters dynamicParameters = new DynamicParameters();
-
-            paramters?.ForEach(aParamter =>
-            {
-                dynamicParameters.Add(aParamter.paramterName, aParamter.paramterValue);
-            });
-
-            return dynamicParameters;
         }
         private List<DbParameter> CreateDbParamters((string paramterName, object paramterValue)[] paramters)
         {
@@ -304,48 +292,6 @@ namespace EFCore.Sharding
                 q = q.AsNoTracking();
 
             return q;
-        }
-        public override async Task<DataTable> GetDataTableWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
-        {
-            var conn = _db.Database.GetDbConnection();
-            using var reader = await conn.ExecuteReaderAsync(
-                sql, CreateDynamicParameters(parameters), _transaction?.GetDbTransaction(), _db.ShardingOption.CommandTimeout);
-            DataTable table = new DataTable();
-
-            table.Load(reader);
-
-            return table;
-        }
-        public override async Task<DataSet> GetDataSetWithSqlAsync(string sql, params (string paramterName, object value)[] parameters)
-        {
-            DbProviderFactory dbProviderFactory = _provider.DbProviderFactory;
-            DbConnection conn = _db.Database.GetDbConnection();
-
-            if (conn.State != ConnectionState.Open)
-                await conn.OpenAsync();
-
-            using (DbCommand cmd = conn.CreateCommand())
-            {
-                cmd.Connection = conn;
-                cmd.CommandText = sql;
-                cmd.CommandTimeout = _db.ShardingOption.CommandTimeout;
-                if (parameters != null && parameters.Count() > 0)
-                    cmd.Parameters.AddRange(CreateDbParamters(parameters).ToArray());
-
-                DbDataAdapter adapter = dbProviderFactory.CreateDataAdapter();
-                adapter.SelectCommand = cmd;
-                DataSet ds = new DataSet();
-
-                adapter.Fill(ds);
-                cmd.Parameters.Clear();
-                return ds;
-            }
-        }
-        public override async Task<List<T>> GetListBySqlAsync<T>(string sql, params (string paramterName, object value)[] parameters)
-        {
-            var conn = _db.Database.GetDbConnection();
-
-            return (await conn.QueryAsync<T>(sql, CreateDynamicParameters(parameters), _transaction?.GetDbTransaction(), _db.ShardingOption.CommandTimeout)).ToList();
         }
 
         #endregion

@@ -6,20 +6,19 @@
     public interface IDbFactory
     {
         /// <summary>
-        /// 根据配置文件获取数据库类型，并返回对应的工厂接口
+        /// 获取DbAccessor
         /// </summary>
-        /// <param name="conString">完整数据库链接字符串</param>
-        /// <param name="dbType">数据库类型</param>
-        /// <param name="entityNamespace">实体命名空间</param>
-        /// <param name="suffix">表明后缀</param>
+        /// <param name="dbContextParamters">参数</param>
+        /// <param name="optionName">选项名</param>
         /// <returns></returns>
-        IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, string entityNamespace = null, string suffix = null);
+        IDbAccessor GetDbAccessor(DbContextParamters dbContextParamters, string optionName = null);
 
         /// <summary>
         /// 获取DbContext
         /// </summary>
-        /// <param name="options">选项</param>
+        /// <param name="dbContextParamters">参数</param>
+        /// <param name="eFCoreShardingOptions">参数</param>
         /// <returns></returns>
-        GenericDbContext GetDbContext(DbContextParamters options);
+        GenericDbContext GetDbContext(DbContextParamters dbContextParamters, EFCoreShardingOptions eFCoreShardingOptions = null);
     }
 }

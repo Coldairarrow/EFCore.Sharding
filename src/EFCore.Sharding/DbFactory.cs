@@ -13,26 +13,13 @@ namespace EFCore.Sharding
     internal class DbFactory : IDbFactory
     {
         private readonly ILoggerFactory _loggerFactory;
-        private readonly EFCoreShardingOptions _shardingOptions;
-        public DbFactory(ILoggerFactory loggerFactory, IOptions<EFCoreShardingOptions> shardingOptions)
+        private readonly IOptionsSnapshot<EFCoreShardingOptions> _optionsSnapshot;
+        public DbFactory(ILoggerFactory loggerFactory, IOptionsSnapshot<EFCoreShardingOptions> optionsSnapshot)
         {
             _loggerFactory = loggerFactory;
-            _shardingOptions = shardingOptions.Value;
+            _optionsSnapshot = optionsSnapshot;
         }
-        public IDbAccessor GetDbAccessor(string conString, DatabaseType dbType, string entityNamespace = null, string suffix = null)
-        {
-            DbContextParamters options = new DbContextParamters
-            {
-                ConnectionString = conString,
-                DbType = dbType,
-                EntityNamespace = entityNamespace,
-                Suffix = suffix,
-            };
 
-            var dbContext = GetDbContext(options);
-
-            return GetProvider(dbType).GetDbAccessor(dbContext);
-        }
         public void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
         {
             DbContextParamters options = new DbContextParamters
@@ -43,7 +30,7 @@ namespace EFCore.Sharding
                 Suffix = suffix
             };
 
-            using DbContext dbContext = GetDbContext(options);
+            using DbContext dbContext = GetDbContext(options, _optionsSnapshot.BuildOption(null));
             var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
             try
             {
@@ -54,12 +41,27 @@ namespace EFCore.Sharding
 
             }
         }
-        public GenericDbContext GetDbContext(DbContextParamters options)
+
+        public IDbAccessor GetDbAccessor(DbContextParamters dbContextParamters, string optionName = null)
         {
-            AbstractProvider provider = GetProvider(options.DbType);
+            EFCoreShardingOptions eFCoreShardingOptions = _optionsSnapshot.BuildOption(optionName);
+
+            var dbContext = GetDbContext(dbContextParamters, eFCoreShardingOptions);
+
+            return GetProvider(dbContextParamters.DbType).GetDbAccessor(dbContext);
+        }
+
+        public GenericDbContext GetDbContext(DbContextParamters dbContextParamters, EFCoreShardingOptions eFCoreShardingOptions)
+        {
+            if (eFCoreShardingOptions == null)
+            {
+                eFCoreShardingOptions = _optionsSnapshot.BuildOption(null);
+            }
+
+            AbstractProvider provider = GetProvider(dbContextParamters.DbType);
 
             DbConnection dbConnection = provider.GetDbConnection();
-            dbConnection.ConnectionString = options.ConnectionString;
+            dbConnection.ConnectionString = dbContextParamters.ConnectionString;
 
             DbContextOptionsBuilder builder = new DbContextOptionsBuilder();
             builder.UseLoggerFactory(_loggerFactory);
@@ -68,8 +70,9 @@ namespace EFCore.Sharding
             builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();
             builder.ReplaceService<IMigrationsModelDiffer, ShardingMigration>();
 
-            return new GenericDbContext(builder.Options, options, _shardingOptions);
+            return new GenericDbContext(builder.Options, dbContextParamters, eFCoreShardingOptions);
         }
+
         public static AbstractProvider GetProvider(DatabaseType databaseType)
         {
             string assemblyName = $"EFCore.Sharding.{databaseType}";
