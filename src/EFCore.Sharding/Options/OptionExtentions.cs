@@ -22,7 +22,7 @@ namespace EFCore.Sharding
                     var defaultValue = aProperty.GetValue(defaultOption);
                     var globalValue = aProperty.GetValue(globalOption);
 
-                    var value = selfValue == defaultValue ? globalValue : selfValue;
+                    var value = Equals(selfValue, defaultValue) ? globalValue : selfValue;
                     aProperty.SetValue(selfOption, value);
                 }
 
