@@ -256,7 +256,7 @@ namespace EFCore.Sharding
             _services.AddScoped(serviceProvider =>
             {
                 var dbFactory = serviceProvider.GetService<IDbFactory>();
-                var options = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+                var options = serviceProvider.GetService<IOptionsMonitor<EFCoreShardingOptions>>().BuildOption(optionName);
                 IDbAccessor db = dbFactory.GetDbAccessor(new DbContextParamters
                 {
                     ConnectionString = conString,
@@ -294,12 +294,14 @@ namespace EFCore.Sharding
 
             _services.AddScoped(serviceProvider =>
             {
+                var options = serviceProvider.GetService<IOptionsMonitor<EFCoreShardingOptions>>().BuildOption(optionName);
+
                 IDbAccessor db = new ReadWriteDbAccessor(
                     dbs,
                     dbType,
                     entityNamespace,
                     serviceProvider.GetService<IDbFactory>(),
-                    serviceProvider.GetService<IOptionsSnapshot<EFCoreShardingOptions>>().BuildOption(optionName)
+                    options
                     );
 
                 if (typeof(TDbAccessor) == typeof(IDbAccessor))

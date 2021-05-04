@@ -13,11 +13,11 @@ namespace EFCore.Sharding
     internal class DbFactory : IDbFactory
     {
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IOptionsSnapshot<EFCoreShardingOptions> _optionsSnapshot;
-        public DbFactory(ILoggerFactory loggerFactory, IOptionsSnapshot<EFCoreShardingOptions> optionsSnapshot)
+        private readonly IOptionsMonitor<EFCoreShardingOptions> _optionsMonitor;
+        public DbFactory(ILoggerFactory loggerFactory, IOptionsMonitor<EFCoreShardingOptions> optionsMonitor)
         {
             _loggerFactory = loggerFactory;
-            _optionsSnapshot = optionsSnapshot;
+            _optionsMonitor = optionsMonitor;
         }
 
         public void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
@@ -30,7 +30,7 @@ namespace EFCore.Sharding
                 Suffix = suffix
             };
 
-            using DbContext dbContext = GetDbContext(options, _optionsSnapshot.BuildOption(null));
+            using DbContext dbContext = GetDbContext(options, _optionsMonitor.BuildOption(null));
             var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
             try
             {
@@ -44,7 +44,7 @@ namespace EFCore.Sharding
 
         public IDbAccessor GetDbAccessor(DbContextParamters dbContextParamters, string optionName = null)
         {
-            EFCoreShardingOptions eFCoreShardingOptions = _optionsSnapshot.BuildOption(optionName);
+            EFCoreShardingOptions eFCoreShardingOptions = _optionsMonitor.BuildOption(optionName);
 
             var dbContext = GetDbContext(dbContextParamters, eFCoreShardingOptions);
 
@@ -55,7 +55,7 @@ namespace EFCore.Sharding
         {
             if (eFCoreShardingOptions == null)
             {
-                eFCoreShardingOptions = _optionsSnapshot.BuildOption(null);
+                eFCoreShardingOptions = _optionsMonitor.BuildOption(null);
             }
 
             AbstractProvider provider = GetProvider(dbContextParamters.DbType);
