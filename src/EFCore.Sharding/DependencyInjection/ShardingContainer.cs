@@ -158,10 +158,7 @@ namespace EFCore.Sharding
 
         public IShardingBuilder SetEntityAssemblies(params Assembly[] assemblies)
         {
-            _services.Configure<EFCoreShardingOptions>(x =>
-            {
-                x.EntityAssemblies = assemblies;
-            });
+            EFCoreShardingOptions.EntityAssemblies = assemblies;
 
             return this;
         }

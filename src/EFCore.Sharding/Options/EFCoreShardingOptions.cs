@@ -31,11 +31,6 @@ namespace EFCore.Sharding
         public string DeletedField { get; set; } = "Deleted";
 
         /// <summary>
-        /// 实体程序集
-        /// </summary>
-        public Assembly[] EntityAssemblies { get; set; }
-
-        /// <summary>
         /// 实体模型构建过滤器
         /// </summary>
         public Action<EntityTypeBuilder> EntityTypeBuilderFilter { get; set; }
@@ -65,21 +60,34 @@ namespace EFCore.Sharding
         /// </summary>
         public int MinCommandElapsedMilliseconds { get; set; } = 50;
 
-        private Type[] _types;
-        internal Type[] Types
+        /// <summary>
+        /// 实体程序集
+        /// </summary>
+        internal static Assembly[] EntityAssemblies { get; set; } = Array.Empty<Assembly>();
+
+        private static readonly object _typeLock = new object();
+        private static Type[] _types;
+        internal static Type[] Types
         {
             get
             {
-                if (_types == null || _types.Length == 0)
+                if (_types == null)
                 {
-                    _types = (EntityAssemblies ?? Array.Empty<Assembly>()).SelectMany(x => x.GetTypes()).ToArray();
+                    lock (_typeLock)
+                    {
+                        if (_types == null)
+                        {
+                            if (EntityAssemblies == null || EntityAssemblies.Length == 0)
+                            {
+                                throw new Exception("EFCore.Sharding:请使用SetEntityAssemblies指定实体程序集");
+                            }
+
+                            _types = (EntityAssemblies ?? Array.Empty<Assembly>()).SelectMany(x => x.GetTypes()).ToArray();
+                        }
+                    }
                 }
 
                 return _types;
-            }
-            set
-            {
-                _types = value;
             }
         }
 

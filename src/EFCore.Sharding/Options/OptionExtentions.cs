@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using System;
 
 namespace EFCore.Sharding
 {
@@ -13,9 +12,10 @@ namespace EFCore.Sharding
             }
             else
             {
-                var selfOption = optionsSnapshot.Get(optionName);
+                var selfOption = optionsSnapshot.Get(optionName).DeepClone();
                 var defaultOption = new EFCoreShardingOptions();
                 var globalOption = optionsSnapshot.CurrentValue;
+
                 foreach (var aProperty in typeof(EFCoreShardingOptions).GetProperties())
                 {
                     var selfValue = aProperty.GetValue(selfOption);
@@ -26,19 +26,8 @@ namespace EFCore.Sharding
                     aProperty.SetValue(selfOption, value);
                 }
 
-                if (selfOption.Types.Length == 0)
-                {
-                    selfOption.Types = globalOption.Types;
-                }
-
-                if (selfOption.Types.Length == 0)
-                {
-                    throw new Exception("EFCore.Sharding:请配置EFCoreShardingOptions.EntityAssemblies指定实体程序集");
-                }
-
                 return selfOption;
             }
         }
-
     }
 }

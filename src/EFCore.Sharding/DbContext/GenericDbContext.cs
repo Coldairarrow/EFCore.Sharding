@@ -71,7 +71,7 @@ namespace EFCore.Sharding
             }
             else
             {
-                var q = ShardingOption.Types.Where(x => x.GetCustomAttribute(typeof(TableAttribute), false) != null);
+                var q = EFCoreShardingOptions.Types.Where(x => x.GetCustomAttribute(typeof(TableAttribute), false) != null);
 
                 //通过Namespace解决同表名问题
                 if (!Paramter.EntityNamespace.IsNullOrEmpty())
@@ -97,7 +97,7 @@ namespace EFCore.Sharding
             //支持IEntityTypeConfiguration配置
             entityTypes.ForEach(aEntityType =>
             {
-                var entityTypeConfigurationTypes = ShardingOption.Types
+                var entityTypeConfigurationTypes = EFCoreShardingOptions.Types
                     .Where(x => x.GetInterfaces().Any(y =>
                         y.IsGenericType
                         && y.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)
