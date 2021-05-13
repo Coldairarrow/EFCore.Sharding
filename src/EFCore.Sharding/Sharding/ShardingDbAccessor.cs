@@ -20,7 +20,7 @@ namespace EFCore.Sharding
             _shardingConfig = shardingConfig;
             _dbFactory = dbFactory;
             var dbType = shardingConfig.FindADbType();
-            _db = _dbFactory.GetDbAccessor(new DbContextParamters { ConnectionString = dbType.GetDefaultString() });
+            _db = _dbFactory.GetDbAccessor(new DbContextParamters { ConnectionString = dbType.GetDefaultString(), DbType = dbType });
         }
 
         #endregion
