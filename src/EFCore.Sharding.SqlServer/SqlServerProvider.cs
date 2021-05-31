@@ -18,7 +18,7 @@ namespace EFCore.Sharding.SqlServer
         {
             dbContextOptionsBuilder.UseSqlServer(dbConnection, x =>
             {
-                x.UseNetTopologySuite();
+                x.UseNetTopologySuite().EnableRetryOnFailure();
             });
             dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingSqlServerMigrationsSqlGenerator>();
         }

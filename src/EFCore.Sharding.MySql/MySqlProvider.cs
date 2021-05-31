@@ -29,7 +29,7 @@ namespace EFCore.Sharding.MySql
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = x => x.UseNetTopologySuite();
+            Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = x => x.UseNetTopologySuite().EnableRetryOnFailure();
 #if EFCORE3
             dbContextOptionsBuilder.UseMySql(dbConnection, mySqlOptionsAction);
 #endif
