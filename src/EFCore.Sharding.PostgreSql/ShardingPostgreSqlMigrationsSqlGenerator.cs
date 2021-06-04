@@ -10,7 +10,7 @@ namespace EFCore.Sharding.PostgreSql
 {
     internal class ShardingPostgreSqlMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
     {
-#if EFCORE5
+#if EFCORE6
 #pragma warning disable EF1001 // Internal EF Core API usage.
         public ShardingPostgreSqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies,  INpgsqlOptions npgsqlOptions) : base(dependencies, npgsqlOptions)
 #pragma warning restore EF1001 // Internal EF Core API usage.

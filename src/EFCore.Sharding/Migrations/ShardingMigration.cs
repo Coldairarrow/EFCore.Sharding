@@ -29,7 +29,7 @@ namespace EFCore.Sharding
         {
 
         }
-#if EFCORE5
+#if EFCORE6
         public override IReadOnlyList<MigrationOperation> GetDifferences(IRelationalModel source, IRelationalModel target)
         {
             var shardingOption = Cache.ServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;

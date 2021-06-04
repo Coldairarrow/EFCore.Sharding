@@ -8,7 +8,7 @@ namespace EFCore.Sharding.SqlServer
 {
     internal class ShardingSqlServerMigrationsSqlGenerator : SqlServerMigrationsSqlGenerator
     {
-#if EFCORE5
+#if EFCORE6
         public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider migrationsAnnotations) : base(dependencies, migrationsAnnotations)
         {
         }

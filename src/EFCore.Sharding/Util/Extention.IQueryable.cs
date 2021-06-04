@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using System.Collections;
 #endif
 
-#if EFCORE5
+#if EFCORE6
 using Microsoft.EntityFrameworkCore;
 #endif
 
@@ -124,7 +124,7 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static (string sql, IReadOnlyDictionary<string, object> parameters) ToSql(this IQueryable query)
         {
-#if EFCORE5
+#if EFCORE6
             var cmd = query.CreateDbCommand();
             Dictionary<string, object> paramters = new Dictionary<string, object>();
             foreach (DbParameter aCmd in cmd.Parameters)
@@ -149,7 +149,7 @@ namespace EFCore.Sharding
         }
 
         #region 自定义类
-#if !EFCORE5
+#if !EFCORE6
         class ReplaceQueryableVisitor : ExpressionVisitor
         {
             private readonly IQueryable _newQuery;
@@ -169,7 +169,7 @@ namespace EFCore.Sharding
             }
         }
 #endif
-#if EFCORE5
+#if EFCORE6
         class ReplaceQueryableVisitor : ExpressionVisitor
         {
             private readonly QueryRootExpression _queryRootExpression;

@@ -9,7 +9,7 @@ using System.Text;
 #if EFCORE3
 using MySql.Data.MySqlClient;
 #endif
-#if EFCORE5
+#if EFCORE6
 using MySqlConnector;
 #endif
 

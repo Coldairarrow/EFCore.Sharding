@@ -25,7 +25,7 @@
 # 开始
 ## 准备
 首先根据需要安装对应的Nuget包 
-最新版基于EFCore5，若需要使用EFCore3请使用EFCore3.Sharding
+最新版基于EFCORE6，若需要使用EFCore3请使用EFCore3.Sharding
 
 | 包名 | 说明 |
 |--|--|

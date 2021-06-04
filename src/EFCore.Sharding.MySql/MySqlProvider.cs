@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 #if EFCORE3
 using MySql.Data.MySqlClient;
 #endif
-#if EFCORE5
+#if EFCORE6
 using MySqlConnector;
 #endif
 
@@ -20,7 +20,7 @@ namespace EFCore.Sharding.MySql
 #if EFCORE3
             => MySqlClientFactory.Instance;
 #endif
-#if EFCORE5
+#if EFCORE6
             => MySqlConnectorFactory.Instance;
 #endif
         public override ModelBuilder GetModelBuilder() => new ModelBuilder(MySqlConventionSetBuilder.Build());
@@ -33,7 +33,7 @@ namespace EFCore.Sharding.MySql
 #if EFCORE3
             dbContextOptionsBuilder.UseMySql(dbConnection, mySqlOptionsAction);
 #endif
-#if EFCORE5
+#if EFCORE6
             dbContextOptionsBuilder.UseMySql(dbConnection, MySqlServerVersion.LatestSupportedServerVersion, mySqlOptionsAction);
 #endif
             dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();

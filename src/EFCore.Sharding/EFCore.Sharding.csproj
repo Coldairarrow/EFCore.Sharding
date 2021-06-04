@@ -3,7 +3,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<DefineConstants>EFCORE5</DefineConstants>
+		<DefineConstants>EFCORE6</DefineConstants>
+		<AssemblyName>EFCore.Sharding</AssemblyName>
 	</PropertyGroup>
 
   <ItemGroup>

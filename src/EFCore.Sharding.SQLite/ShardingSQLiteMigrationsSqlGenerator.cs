@@ -8,7 +8,7 @@ namespace EFCore.Sharding.SQLite
 {
     internal class ShardingSQLiteMigrationsSqlGenerator : SqliteMigrationsSqlGenerator
     {
-#if EFCORE5
+#if EFCORE6
         public ShardingSQLiteMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider migrationsAnnotations) : base(dependencies, migrationsAnnotations)
         {
         }
