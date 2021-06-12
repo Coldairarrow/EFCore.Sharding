@@ -44,7 +44,13 @@ namespace EFCore.Sharding
                     || p.Value is DateTime
                     || p.Value is DateTimeOffset)
                     ? "'" : "";
-                result = result.Replace(p.ParameterName.ToString(), isQuted + p.Value.ToString() + isQuted);
+
+                var valueString = p.Value.ToString();
+                //超过2000不展示详情
+                if (valueString.Length < 2000)
+                {
+                    result = result.Replace(p.ParameterName.ToString(), isQuted + valueString + isQuted);
+                }
             }
             return result;
         }
