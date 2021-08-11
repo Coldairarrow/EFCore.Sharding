@@ -1,12 +1,31 @@
 <Project>
 
   <PropertyGroup>
+    <LibraryTargetFrameworks>netstandard2.0;netstandard2.1</LibraryTargetFrameworks>
     <LangVersion>latestMajor</LangVersion>
     <!--默认统一输出XML注释文档，不需要输出的项目可以单独关闭-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageProjectUrl>https://github.com/Coldairarrow/EFCore.Sharding</PackageProjectUrl>
     <Authors>Coldairarrow</Authors>
     <Company>Coldairarrow</Company>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <DefineConstants>$(DefineConstants);EFCORE3</DefineConstants>
+
+    <EntityFrameworkCoreVersion>3.1.13</EntityFrameworkCoreVersion>
+    <MySqlVersion>3.2.4</MySqlVersion>
+    <OracleVersion>3.19.80</OracleVersion>
+    <PostgreSqlVersion>3.1.11</PostgreSqlVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <DefineConstants>$(DefineConstants);EFCORE5</DefineConstants>
+
+    <EntityFrameworkCoreVersion>5.0.5</EntityFrameworkCoreVersion>
+    <MySqlVersion>5.0.0</MySqlVersion>
+    <OracleVersion>5.21.1</OracleVersion>
+    <PostgreSqlVersion>5.0.5.1</PostgreSqlVersion>
   </PropertyGroup>
 
   <ItemGroup>
