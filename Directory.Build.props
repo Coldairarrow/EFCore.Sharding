@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <LibraryTargetFrameworks>netstandard2.0;netstandard2.1</LibraryTargetFrameworks>
+    <LibraryTargetFrameworks>netstandard2.1</LibraryTargetFrameworks>
     <LangVersion>latestMajor</LangVersion>
     <!--默认统一输出XML注释文档，不需要输出的项目可以单独关闭-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
