@@ -1,9 +1,13 @@
-﻿using EFCore.Sharding;
+﻿using Demo.DbMigrator;
+using EFCore.Sharding;
 using EFCore.Sharding.Tests;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NpgsqlTypes;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Demo.HelloWorld
@@ -19,9 +23,10 @@ namespace Demo.HelloWorld
             });
             services.AddEFCoreSharding(config =>
             {
-                config.SetEntityAssemblies(typeof(Base_UnitTest).Assembly);
+                config.SetMinCommandElapsedMilliseconds(0);
+                config.SetEntityAssemblies(typeof(Base_UnitTest).Assembly, typeof(Order).Assembly);
 
-                config.UseDatabase(Config.SQLITE1, DatabaseType.SQLite);
+                config.UseDatabase("Server=127.0.0.1;Port=5432;Database=EFCore.Sharding1;User Id=postgres;Password=postgres;", DatabaseType.PostgreSql);
             });
             var serviceProvider = services.BuildServiceProvider();
             new EFCoreShardingBootstrapper(serviceProvider).StartAsync(default).Wait();
@@ -29,23 +34,31 @@ namespace Demo.HelloWorld
             using var scop = serviceProvider.CreateScope();
             //拿到注入的IDbAccessor即可进行所有数据库操作
             var db = scop.ServiceProvider.GetService<IDbAccessor>();
-            var logger = scop.ServiceProvider.GetService<ILogger<Program>>();
-            while (true)
-            {
-                await db.InsertAsync(new Base_UnitTest
-                {
-                    Age = 100,
-                    CreateTime = DateTime.Now,
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = Guid.NewGuid().ToString(),
-                    UserName = Guid.NewGuid().ToString()
-                });
-                var count = await db.GetIQueryable<Base_UnitTest>().CountAsync();
+            //var theData = await db.GetIQueryable<Order>().AsTracking().Where(x => x.Id == "0").FirstOrDefaultAsync();
+            //theData.Name = "22222222";
+            //await db.SaveChangesAsync();
 
-                logger.LogWarning("当前数量:{Count}", count);
+            //{7026e1b9-7d5c-4fb0-8bd4-fbc9eaa75f63,7ec6420f-923e-49dd-9e50-2beea328ed85}
 
-                await Task.Delay(1000);
-            }
+            //47759f8c-5620-4e4a-a6db-b783d547e343
+            //var ids = new string[] { "47759f8c-5620-4e4a-a6db-b783d547e343", "7ec6420f-923e-49dd-9e50-2beea328ed85" };
+            var ids = new int[] { 1, 2 };
+
+            var list = await db.GetIQueryable<Order>().Where(x => ids.Any(y => x.IntIds.Contains(y))).ToListAsync();
+            //List<Order> insertList = new List<Order>();
+            //for (int i = 0; i < 10000; i++)
+            //{
+            //    insertList.Add(new Order
+            //    {
+            //        Id = i.ToString(),
+            //        Tags = new string[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }
+            //        //OrderNum = Guid.NewGuid().ToString()
+            //    });
+            //}
+
+            //await db.InsertAsync(insertList);
+
+            Console.WriteLine("OK");
         }
     }
 }

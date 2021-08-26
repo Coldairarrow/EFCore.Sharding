@@ -3,8 +3,9 @@ using System;
 using Demo.DbMigrator;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using NpgsqlTypes;
 
 namespace Demo.DbMigrator.Migrations
 {
@@ -15,23 +16,23 @@ namespace Demo.DbMigrator.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.4")
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63)
+                .HasAnnotation("ProductVersion", "5.0.5")
+                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("Demo.DbMigrator.Entities.AuditLog", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasComment("");
 
                     b.Property<string>("Content")
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("text")
                         .HasComment("");
 
                     b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp without time zone")
                         .HasComment("");
 
                     b.HasKey("Id");
@@ -43,37 +44,49 @@ namespace Demo.DbMigrator.Migrations
 
             modelBuilder.Entity("Demo.DbMigrator.Order", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<string>("Id")
+                        .HasColumnType("text")
                         .HasComment("主键");
 
                     b.Property<int>("Count")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasComment("商品数量");
 
                     b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp without time zone")
                         .HasComment("创建时间");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)")
+                        .HasColumnType("text")
                         .HasComment("订单名");
 
                     b.Property<string>("OrderNum")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasComment("订单号");
 
                     b.Property<int>("OrderType")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasComment("订单类型 0=未知 1=正常");
+
+                    b.Property<NpgsqlTsVector>("SearchVector")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("tsvector")
+                        .HasComment("")
+                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
+                        .HasAnnotation("Npgsql:TsVectorProperties", new[] { "Name", "OrderNum" });
+
+                    b.Property<string[]>("Tags")
+                        .HasColumnType("text[]")
+                        .HasComment("");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderNum")
-                        .IsUnique()
-                        .HasFilter("[OrderNum] IS NOT NULL");
+                    b.HasIndex("SearchVector")
+                        .HasMethod("GIN");
+
+                    b.HasIndex("Tags")
+                        .HasMethod("GIN");
 
                     b.ToTable("Order");
                 });
@@ -82,11 +95,11 @@ namespace Demo.DbMigrator.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasComment("主键");
 
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uniqueidentifier")
+                    b.Property<string>("OrderId")
+                        .HasColumnType("text")
                         .HasComment("订单Id");
 
                     b.HasKey("Id");
@@ -100,9 +113,7 @@ namespace Demo.DbMigrator.Migrations
                 {
                     b.HasOne("Demo.DbMigrator.Order", null)
                         .WithMany("Items")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("OrderId");
                 });
 
             modelBuilder.Entity("Demo.DbMigrator.Order", b =>

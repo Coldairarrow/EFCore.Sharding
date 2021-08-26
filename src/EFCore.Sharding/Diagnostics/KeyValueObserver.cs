@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 
 namespace EFCore.Sharding
 {
@@ -32,6 +34,13 @@ namespace EFCore.Sharding
                         payload.Duration.TotalMilliseconds, GetGeneratedSql(payload.Command));
                 }
             }
+            if (value.Key == RelationalEventId.CommandError.Name)
+            {
+                var payload = (CommandErrorEventData)value.Value;
+
+                _loggerFactory?.CreateLogger(GetType())?.LogError(payload.Exception, @"执行SQL耗时({ElapsedMilliseconds:N}ms) SQL:{SQL}",
+                    payload.Duration.TotalMilliseconds, GetGeneratedSql(payload.Command));
+            }
         }
 
         private string GetGeneratedSql(DbCommand cmd)
@@ -39,20 +48,53 @@ namespace EFCore.Sharding
             string result = cmd.CommandText.ToString();
             foreach (DbParameter p in cmd.Parameters)
             {
-                string isQuted = (
-                    p.Value is string
-                    || p.Value is DateTime
-                    || p.Value is DateTimeOffset)
-                    ? "'" : "";
+                var formattedValue = GetFormattedValue(p.Value);
 
-                var valueString = p.Value.ToString();
-                //超过2000不展示详情
-                if (valueString.Length < 2000)
+                //最大记录10M数据
+                if (formattedValue.Length < 10 * 1024 * 1024)
                 {
-                    result = result.Replace(p.ParameterName.ToString(), isQuted + valueString + isQuted);
+                    result = result.Replace(p.ParameterName.ToString(), GetFormattedValue(p.Value));
                 }
             }
             return result;
+        }
+
+        private string GetFormattedValue(object value)
+        {
+            string formattedValue = string.Empty;
+            if (IsNumber(value))
+            {
+                formattedValue = value.ToString();
+            }
+            else if (value is string || value is DateTime || value is DateTimeOffset)
+            {
+                formattedValue = $"'{value}'";
+            }
+            else if (value is IEnumerable ienumerable)
+            {
+                formattedValue = $"array[{string.Join(",", ienumerable.Cast<object>().Select(x => GetFormattedValue(x)).ToArray())}]";
+            }
+            else
+            {
+                formattedValue = $"'{value}'";
+            }
+
+            return formattedValue;
+        }
+
+        private bool IsNumber(object value)
+        {
+            return value is sbyte
+                || value is byte
+                || value is short
+                || value is ushort
+                || value is int
+                || value is uint
+                || value is long
+                || value is ulong
+                || value is float
+                || value is double
+                || value is decimal;
         }
     }
 }

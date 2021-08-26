@@ -13,6 +13,7 @@
     <ProjectReference Include="..\..\src\EFCore.Sharding.SQLite\EFCore.Sharding.SQLite.csproj" />
     <ProjectReference Include="..\..\src\EFCore.Sharding.Tests\EFCore.Sharding.Tests.csproj" />
     <ProjectReference Include="..\..\src\EFCore.Sharding\EFCore.Sharding.csproj" />
+    <ProjectReference Include="..\Demo.DbMigrator\Demo.DbMigrator.csproj" />
   </ItemGroup>
 
 </Project>

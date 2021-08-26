@@ -8,7 +8,7 @@ namespace Demo.DbMigrator
 {
     public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<CustomContext>
     {
-        private static readonly string _connectionString = "Data Source=localhost;Initial Catalog=DbMigrator;Integrated Security=True";
+        private static readonly string _connectionString = "Server=127.0.0.1;Port=5432;Database=EFCore.Sharding1;User Id=postgres;Password=postgres;";
         static DesignTimeDbContextFactory()
         {
             DateTime startTime = DateTime.Parse("2020/7/1");
@@ -25,13 +25,13 @@ namespace Demo.DbMigrator
                 x.MigrationsWithoutForeignKey();
 
                 //使用分表迁移
-                x.EnableShardingMigration(true);
+                //x.EnableShardingMigration(true);
 
                 //添加数据源
-                x.AddDataSource(_connectionString, ReadWriteType.Read | ReadWriteType.Write, DatabaseType.SqlServer);
+                //x.AddDataSource(_connectionString, ReadWriteType.Read | ReadWriteType.Write, DatabaseType.SqlServer);
 
                 //按月分表
-                x.SetDateSharding<AuditLog>(nameof(Order.CreateTime), ExpandByDateMode.PerMonth, startTime);
+                //x.SetDateSharding<AuditLog>(nameof(Order.CreateTime), ExpandByDateMode.PerMonth, startTime);
 
                 x.UseDatabase(_connectionString, DatabaseType.SqlServer);
             });
@@ -53,7 +53,7 @@ namespace Demo.DbMigrator
                 .GetDbContext(new DbContextParamters
                 {
                     ConnectionString = _connectionString,
-                    DbType = DatabaseType.SqlServer,
+                    DbType = DatabaseType.PostgreSql,
                 });
 
             return new CustomContext(db);

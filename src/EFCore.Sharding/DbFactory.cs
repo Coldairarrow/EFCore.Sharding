@@ -65,6 +65,7 @@ namespace EFCore.Sharding
 
             DbContextOptionsBuilder builder = new DbContextOptionsBuilder();
             builder.UseLoggerFactory(_loggerFactory);
+            builder.EnableSensitiveDataLogging();
 
             provider.UseDatabase(builder, dbConnection);
             builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();

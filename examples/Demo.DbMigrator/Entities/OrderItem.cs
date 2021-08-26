@@ -16,6 +16,6 @@ namespace Demo.DbMigrator
         /// <summary>
         /// 订单Id
         /// </summary>
-        public Guid OrderId { get; set; }
+        public string OrderId { get; set; }
     }
 }

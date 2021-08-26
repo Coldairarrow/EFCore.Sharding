@@ -1,4 +1,5 @@
 ﻿using Demo.DbMigrator.Entities;
+using NpgsqlTypes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -13,7 +14,7 @@ namespace Demo.DbMigrator
         /// 主键
         /// </summary>
         [Key]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// 创建时间
@@ -31,6 +32,8 @@ namespace Demo.DbMigrator
         /// </summary>
         public string Name { get; set; }
 
+        public NpgsqlTsVector SearchVector { get; private set; }
+
         /// <summary>
         /// 商品数量
         /// </summary>
@@ -40,6 +43,10 @@ namespace Demo.DbMigrator
         /// 订单类型
         /// </summary>
         public OrderTypes OrderType { get; set; }
+
+        public string[] Tags { get; set; }
+
+        public int[] IntIds { get; set; }
 
         public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     }
