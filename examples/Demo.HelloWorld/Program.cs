@@ -42,17 +42,22 @@ namespace Demo.HelloWorld
 
             //47759f8c-5620-4e4a-a6db-b783d547e343
             //var ids = new string[] { "47759f8c-5620-4e4a-a6db-b783d547e343", "7ec6420f-923e-49dd-9e50-2beea328ed85" };
-            var ids = new int[] { 1, 2 };
+            //var ids = new int[] { 1, 2 };
 
-            var list = await db.GetIQueryable<Order>().Where(x => ids.Any(y => x.IntIds.Contains(y))).ToListAsync();
+            var list = await db.GetIQueryable<Order>().Where(x => !x.Tags.Contains("5000")).ToListAsync();
+
+            list = await db.GetIQueryable<Order>().Where(x => !x.Tags.Contains("5000")).ToListAsync();
+
+            list = await db.GetIQueryable<Order>().Where(x => !x.Tags.Contains("5000")).ToListAsync();
+
             //List<Order> insertList = new List<Order>();
             //for (int i = 0; i < 10000; i++)
             //{
             //    insertList.Add(new Order
             //    {
             //        Id = i.ToString(),
-            //        Tags = new string[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }
-            //        //OrderNum = Guid.NewGuid().ToString()
+            //        Tags = new string[] { i.ToString() },
+            //        Tags2 = new string[] { i.ToString() }
             //    });
             //}
 

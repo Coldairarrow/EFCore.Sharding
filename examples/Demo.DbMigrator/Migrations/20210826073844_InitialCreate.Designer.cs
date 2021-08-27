@@ -6,12 +6,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using NpgsqlTypes;
 
 namespace Demo.DbMigrator.Migrations
 {
     [DbContext(typeof(CustomContext))]
-    [Migration("20210820002132_InitialCreate")]
+    [Migration("20210826073844_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,45 +49,13 @@ namespace Demo.DbMigrator.Migrations
                         .HasColumnType("text")
                         .HasComment("主键");
 
-                    b.Property<int>("Count")
-                        .HasColumnType("integer")
-                        .HasComment("商品数量");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp without time zone")
-                        .HasComment("创建时间");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text")
-                        .HasComment("订单名");
-
-                    b.Property<string>("OrderNum")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasComment("订单号");
-
-                    b.Property<int>("OrderType")
-                        .HasColumnType("integer")
-                        .HasComment("订单类型 0=未知 1=正常");
-
-                    b.Property<NpgsqlTsVector>("SearchVector")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("tsvector")
-                        .HasComment("")
-                        .HasAnnotation("Npgsql:TsVectorConfig", "english")
-                        .HasAnnotation("Npgsql:TsVectorProperties", new[] { "Name", "OrderNum" });
-
                     b.Property<string[]>("Tags")
                         .HasColumnType("text[]")
                         .HasComment("");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SearchVector")
-                        .HasMethod("GIN");
-
-                    b.HasIndex("Tags")
-                        .HasMethod("GIN");
+                    b.HasIndex("Tags");
 
                     b.ToTable("Order");
                 });
@@ -106,21 +73,7 @@ namespace Demo.DbMigrator.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
-
                     b.ToTable("OrderItem");
-                });
-
-            modelBuilder.Entity("Demo.DbMigrator.OrderItem", b =>
-                {
-                    b.HasOne("Demo.DbMigrator.Order", null)
-                        .WithMany("Items")
-                        .HasForeignKey("OrderId");
-                });
-
-            modelBuilder.Entity("Demo.DbMigrator.Order", b =>
-                {
-                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

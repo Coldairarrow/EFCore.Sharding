@@ -1,9 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 
 namespace EFCore.Sharding
@@ -12,6 +14,12 @@ namespace EFCore.Sharding
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly int _minCommandElapsedMilliseconds;
+        private readonly IMemoryCache _commandStackTraceCache = new MemoryCache(new MemoryCacheOptions()
+        {
+            //及时过期
+            ExpirationScanFrequency = TimeSpan.FromSeconds(1)
+        });
+
         public KeyValueObserver(ILoggerFactory loggerFactory, int minCommandElapsedMilliseconds)
         {
             _loggerFactory = loggerFactory;
@@ -25,21 +33,38 @@ namespace EFCore.Sharding
 
         public void OnNext(KeyValuePair<string, object> value)
         {
+            var logger = _loggerFactory?.CreateLogger(GetType());
+            LogLevel logLevel = LogLevel.Information;
+            Exception ex = null;
+            if (value.Key == RelationalEventId.CommandCreated.Name)
+            {
+                //只有CommandCreated时能拿到堆栈行号
+                _commandStackTraceCache.Set(((CommandCorrelatedEventData)value.Value).CommandId, new StackTrace(true), TimeSpan.FromMinutes(5));
+            }
             if (value.Key == RelationalEventId.CommandExecuted.Name)
             {
-                var payload = (CommandExecutedEventData)value.Value;
-                if (payload.Duration.TotalMilliseconds > _minCommandElapsedMilliseconds)
-                {
-                    _loggerFactory?.CreateLogger(GetType())?.LogInformation(@"执行SQL耗时({ElapsedMilliseconds:N}ms) SQL:{SQL}",
-                        payload.Duration.TotalMilliseconds, GetGeneratedSql(payload.Command));
-                }
+                logLevel = LogLevel.Information;
             }
             if (value.Key == RelationalEventId.CommandError.Name)
             {
-                var payload = (CommandErrorEventData)value.Value;
-
-                _loggerFactory?.CreateLogger(GetType())?.LogError(payload.Exception, @"执行SQL耗时({ElapsedMilliseconds:N}ms) SQL:{SQL}",
-                    payload.Duration.TotalMilliseconds, GetGeneratedSql(payload.Command));
+                logLevel = LogLevel.Information;
+                ex = ((CommandErrorEventData)value.Value).Exception;
+            }
+            if (value.Key == RelationalEventId.CommandExecuted.Name || value.Key == RelationalEventId.CommandError.Name)
+            {
+                var commandEndEventData = value.Value as CommandEndEventData;
+                if (logLevel == LogLevel.Error || commandEndEventData.Duration.TotalMilliseconds > _minCommandElapsedMilliseconds)
+                {
+                    var message = @"执行SQL耗时({ElapsedMilliseconds:N}ms)
+{SQL} 
+{StackTrace}";
+                    logger?.Log(
+                        logLevel,
+                        ex, message,
+                        commandEndEventData.Duration.TotalMilliseconds,
+                        GetGeneratedSql(commandEndEventData.Command),
+                        _commandStackTraceCache.Get(commandEndEventData.CommandId));
+                }
             }
         }
 
