@@ -33,7 +33,9 @@ namespace EFCore.Sharding
         public void OnNext(KeyValuePair<string, object> value)
         {
             var logger = _loggerFactory?.CreateLogger(GetType());
+
             LogLevel logLevel = LogLevel.Information;
+
             Exception ex = null;
             if (value.Key == RelationalEventId.CommandCreated.Name)
             {
@@ -52,17 +54,21 @@ namespace EFCore.Sharding
             if (value.Key == RelationalEventId.CommandExecuted.Name || value.Key == RelationalEventId.CommandError.Name)
             {
                 var commandEndEventData = value.Value as CommandEndEventData;
+
                 if (logLevel == LogLevel.Error || commandEndEventData.Duration.TotalMilliseconds > _minCommandElapsedMilliseconds)
                 {
+                    using var scop = logger.BeginScope(new Dictionary<string, object>
+                    {
+                        { "StackTrace",_commandStackTraceCache.Get(commandEndEventData.CommandId)}
+                    });
+
                     var message = @"执行SQL耗时({ElapsedMilliseconds:N}ms)
-{SQL} 
-{StackTrace}";
+{SQL}";
                     logger?.Log(
                         logLevel,
                         ex, message,
                         commandEndEventData.Duration.TotalMilliseconds,
-                        GetGeneratedSql(commandEndEventData.Command),
-                        _commandStackTraceCache.Get(commandEndEventData.CommandId));
+                        GetGeneratedSql(commandEndEventData.Command));
                 }
             }
         }
