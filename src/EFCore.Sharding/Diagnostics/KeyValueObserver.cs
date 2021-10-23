@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
@@ -14,11 +14,8 @@ namespace EFCore.Sharding
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly int _minCommandElapsedMilliseconds;
-        private readonly IMemoryCache _commandStackTraceCache = new MemoryCache(new MemoryCacheOptions()
-        {
-            //及时过期
-            ExpirationScanFrequency = TimeSpan.FromSeconds(1)
-        });
+        private static readonly ConcurrentDictionary<Guid, StackTrace> _commandStackTraceDic
+            = new ConcurrentDictionary<Guid, StackTrace>();
         public KeyValueObserver(ILoggerFactory loggerFactory, int minCommandElapsedMilliseconds)
         {
             _loggerFactory = loggerFactory;
@@ -40,7 +37,7 @@ namespace EFCore.Sharding
             if (value.Key == RelationalEventId.CommandCreated.Name)
             {
                 //只有CommandCreated时能拿到堆栈行号
-                _commandStackTraceCache.Set(((CommandCorrelatedEventData)value.Value).CommandId, new StackTrace(true), TimeSpan.FromMinutes(5));
+                _commandStackTraceDic[((CommandCorrelatedEventData)value.Value).CommandId] = new StackTrace(true);
             }
             if (value.Key == RelationalEventId.CommandExecuted.Name)
             {
@@ -59,7 +56,7 @@ namespace EFCore.Sharding
                 {
                     using var scop = logger.BeginScope(new Dictionary<string, object>
                     {
-                        { "StackTrace",_commandStackTraceCache.Get(commandEndEventData.CommandId)}
+                        { "StackTrace",_commandStackTraceDic[commandEndEventData.CommandId]}
                     });
 
                     var message = @"执行SQL耗时({ElapsedMilliseconds:N}ms)
@@ -70,6 +67,8 @@ namespace EFCore.Sharding
                         commandEndEventData.Duration.TotalMilliseconds,
                         GetGeneratedSql(commandEndEventData.Command));
                 }
+
+                _commandStackTraceDic.TryRemove(commandEndEventData.CommandId, out _);
             }
         }
 
