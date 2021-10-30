@@ -14,7 +14,6 @@ namespace Demo.DateSharding
             DateTime startTime = DateTime.Now.AddMinutes(-5);
             ServiceCollection services = new ServiceCollection();
             //配置初始化
-
             services.AddLogging(x =>
             {
                 x.AddConsole();
