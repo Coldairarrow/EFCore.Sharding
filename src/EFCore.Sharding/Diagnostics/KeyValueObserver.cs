@@ -79,8 +79,8 @@ namespace EFCore.Sharding
             {
                 var formattedValue = GetFormattedValue(p.Value);
 
-                //最大记录10M数据
-                if (formattedValue.Length < 10 * 1024 * 1024)
+                //最大记录1KB数据
+                if (formattedValue.Length < 1024)
                 {
                     result = result.Replace(p.ParameterName.ToString(), GetFormattedValue(p.Value));
                 }
