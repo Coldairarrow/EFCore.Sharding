@@ -29,7 +29,6 @@ namespace EFCore.Sharding
         {
 
         }
-#if EFCORE5
         public override IReadOnlyList<MigrationOperation> GetDifferences(IRelationalModel source, IRelationalModel target)
         {
             var shardingOption = Cache.ServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
@@ -47,25 +46,5 @@ namespace EFCore.Sharding
 
             return sourceOperations;
         }
-#endif
-#if EFCORE3
-        public override IReadOnlyList<MigrationOperation> GetDifferences(IModel source, IModel target)
-        {
-            var shardingOption = Cache.ServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
-            var sourceOperations = base.GetDifferences(source, target).ToList();
-
-            //忽略外键
-            if (shardingOption.MigrationsWithoutForeignKey)
-            {
-                sourceOperations.RemoveAll(x => x is AddForeignKeyOperation || x is DropForeignKeyOperation);
-                foreach (var operation in sourceOperations.OfType<CreateTableOperation>())
-                {
-                    operation.ForeignKeys?.Clear();
-                }
-            }
-
-            return sourceOperations;
-        }
-#endif
     }
 }

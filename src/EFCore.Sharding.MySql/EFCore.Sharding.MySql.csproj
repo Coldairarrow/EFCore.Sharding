@@ -2,13 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <DefineConstants>EFCORE5</DefineConstants>
     <!--打包-->
     <GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.NetTopologySuite" Version="5.0.0" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.*" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.NetTopologySuite" Version="5.*" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EFCore.Sharding\EFCore.Sharding.csproj" />

@@ -1,19 +1,9 @@
-﻿#if EFCORE3
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using System.Collections;
-#endif
-
-#if EFCORE5
-using Microsoft.EntityFrameworkCore;
-#endif
-
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace EFCore.Sharding
 {
@@ -124,7 +114,6 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static (string sql, IReadOnlyDictionary<string, object> parameters) ToSql(this IQueryable query)
         {
-#if EFCORE5
             var cmd = query.CreateDbCommand();
             Dictionary<string, object> paramters = new Dictionary<string, object>();
             foreach (DbParameter aCmd in cmd.Parameters)
@@ -133,43 +122,9 @@ namespace EFCore.Sharding
             }
 
             return (cmd.CommandText, paramters);
-#endif
-#if EFCORE3
-            var enumerator = query.Provider.Execute<IEnumerable>(query.Expression).GetEnumerator();
-            var queryContext = enumerator.GetGetFieldValue("_relationalQueryContext") as RelationalQueryContext;
-            var relationalCommandCache = enumerator.GetGetFieldValue("_relationalCommandCache");
-            var selectExpression = relationalCommandCache.GetGetFieldValue("_selectExpression") as SelectExpression;
-            var factory = relationalCommandCache.GetGetFieldValue("_querySqlGeneratorFactory") as IQuerySqlGeneratorFactory;
-
-            var sqlGenerator = factory.Create();
-            var command = sqlGenerator.GetCommand(selectExpression);
-
-            return (command.CommandText, queryContext.ParameterValues);
-#endif
         }
 
         #region 自定义类
-#if !EFCORE5
-        class ReplaceQueryableVisitor : ExpressionVisitor
-        {
-            private readonly IQueryable _newQuery;
-            public ReplaceQueryableVisitor(IQueryable newQuery)
-            {
-                _newQuery = newQuery;
-            }
-
-            protected override Expression VisitConstant(ConstantExpression node)
-            {
-                if (node.Value is IQueryable)
-                {
-                    return Expression.Constant(_newQuery);
-                }
-
-                return base.VisitConstant(node);
-            }
-        }
-#endif
-#if EFCORE5
         class ReplaceQueryableVisitor : ExpressionVisitor
         {
             private readonly QueryRootExpression _queryRootExpression;
@@ -203,7 +158,6 @@ namespace EFCore.Sharding
                 return base.VisitExtension(node);
             }
         }
-#endif
         class GetOrderByVisitor : ExpressionVisitor
         {
             public (string sortColumn, string sortType) OrderParam { get; set; }

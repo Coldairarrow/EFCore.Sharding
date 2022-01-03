@@ -10,20 +10,11 @@ namespace EFCore.Sharding.MySql
 {
     internal class ShardingMySqlMigrationsSqlGenerator : MySqlMigrationsSqlGenerator
     {
-#if EFCORE5
 #pragma warning disable EF1001 // Internal EF Core API usage.
         public ShardingMySqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider annotationProvider, IMySqlOptions options) : base(dependencies, annotationProvider, options)
 #pragma warning restore EF1001 // Internal EF Core API usage.
         {
         }
-#endif
-#if EFCORE3
-        public ShardingMySqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IMigrationsAnnotationProvider migrationsAnnotations, IMySqlOptions options) 
-            : base(dependencies, migrationsAnnotations, options)
-        {
-        }
-#endif
-
         protected override void Generate(
             MigrationOperation operation,
             IModel model,

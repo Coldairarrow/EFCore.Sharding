@@ -1,12 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFCore.Sharding.Config;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Namotion.Reflection;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
@@ -30,6 +34,9 @@ namespace EFCore.Sharding
         /// </summary>
         public DbContextParamters Paramter { get; }
 
+        internal readonly StackTrace CreateStackTrace;
+        internal readonly DateTimeOffset CreateTime;
+
         /// <summary>
         /// 
         /// </summary>
@@ -39,6 +46,10 @@ namespace EFCore.Sharding
         public GenericDbContext(DbContextOptions contextOptions, DbContextParamters paramter, EFCoreShardingOptions shardingOptions)
             : base(contextOptions)
         {
+            CreateTime = DateTimeOffset.Now;
+            CreateStackTrace = new StackTrace(true);
+            Cache.DbContexts.Add(this);
+
             DbContextOption = contextOptions;
             Paramter = paramter;
             ShardingOption = shardingOptions;
@@ -168,6 +179,63 @@ namespace EFCore.Sharding
                 if (aEntry.State != EntityState.Detached)
                     aEntry.State = EntityState.Detached;
             });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override int SaveChanges()
+        {
+            int count = 0;
+
+            if (ShardingOption.OnSaveChanges != null)
+            {
+                AsyncHelper.RunSync(() => ShardingOption.OnSaveChanges?.Invoke(Cache.ServiceProvider, this, async () =>
+                {
+                    count = await base.SaveChangesAsync();
+                }));
+            }
+            else
+            {
+                count = base.SaveChanges();
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            int count = 0;
+
+            if (ShardingOption.OnSaveChanges != null)
+            {
+                await ShardingOption.OnSaveChanges?.Invoke(Cache.ServiceProvider, this, async () =>
+                {
+                    count = await base.SaveChangesAsync();
+                });
+            }
+            else
+            {
+                count = await base.SaveChangesAsync();
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override void Dispose()
+        {
+            Cache.DbContexts.Remove(this);
+
+            base.Dispose();
         }
     }
 }

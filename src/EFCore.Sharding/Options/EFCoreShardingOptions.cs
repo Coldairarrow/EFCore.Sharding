@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace EFCore.Sharding
 {
@@ -34,6 +36,11 @@ namespace EFCore.Sharding
         /// 实体模型构建过滤器
         /// </summary>
         public Action<EntityTypeBuilder> EntityTypeBuilderFilter { get; set; }
+
+        /// <summary>
+        /// 保存过滤器,参数依次为：ServiceProvider，DbContext，真正执行SaveChanges
+        /// </summary>
+        public Func<IServiceProvider, DbContext, Func<Task>, Task> OnSaveChanges { get; set; }
 
         /// <summary>
         /// 使用Code First进行迁移时是否忽略外键（即不生成数据库外键）,默认为false(即默认生成外键)
