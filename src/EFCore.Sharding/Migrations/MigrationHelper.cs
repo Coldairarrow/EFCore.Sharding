@@ -28,14 +28,19 @@ namespace EFCore.Sharding.Migrations
                 return;
             }
 
+            var migrationCommands = (List<MigrationCommand>)builder.GetGetFieldValue("_commands");
             addCmds.ForEach(aAddCmd =>
             {
                 var shardingCmds = BuildShardingCmds(operation, aAddCmd.CommandText, sqlGenerationHelper);
-                shardingCmds.ForEach(aShardingCmd =>
+                if (shardingCmds.Any())
                 {
-                    builder.Append(aShardingCmd)
-                        .EndCommand();
-                });
+                    migrationCommands.Remove(aAddCmd);
+                    shardingCmds.ForEach(aShardingCmd =>
+                    {
+                        builder.Append(aShardingCmd)
+                            .EndCommand();
+                    });
+                }
             });
         }
 
