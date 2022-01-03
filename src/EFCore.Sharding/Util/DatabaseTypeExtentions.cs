@@ -17,7 +17,7 @@ namespace EFCore.Sharding
                 case DatabaseType.Oracle:
                     return "Data Source=127.0.0.1/ORCL;User ID=EFCORESHARDING;Password=123456;Connect Timeout=3";
                 case DatabaseType.SQLite:
-                    return "EFCoreSharding.db";
+                    return "Data Source=EFCoreSharding.db";
                 default:
                     throw new Exception($"DatabaseType:{dbType} 无效");
             }
