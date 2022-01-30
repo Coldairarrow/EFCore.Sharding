@@ -34,9 +34,17 @@ namespace EFCore.Sharding
             }
             protected bool IsParamter(Expression expression)
             {
-                return expression is MemberExpression member
-                    && member.Expression.Type == _rule.EntityType
-                    && member.Member.Name == _rule.ShardingField;
+                //nullable类型转换
+                if (expression is UnaryExpression unaryExpression && unaryExpression.NodeType == ExpressionType.Convert)
+                {
+                    return IsParamter(unaryExpression.Operand);
+                }
+                else
+                {
+                    return expression is MemberExpression memberExpression
+                    && memberExpression.Expression.Type == _rule.EntityType
+                    && memberExpression.Member.Name == _rule.ShardingField;
+                }
             }
             protected bool IsConstant(Expression expression)
             {
