@@ -31,7 +31,7 @@ namespace EFCore.Sharding
         }
         public override IReadOnlyList<MigrationOperation> GetDifferences(IRelationalModel source, IRelationalModel target)
         {
-            var shardingOption = Cache.ServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+            var shardingOption = Cache.RootServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
             var sourceOperations = base.GetDifferences(source, target).ToList();
 
             //忽略外键

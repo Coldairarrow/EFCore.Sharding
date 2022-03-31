@@ -24,8 +24,8 @@ namespace EFCore.Sharding
             services.AddSingleton(container);
             services.AddSingleton<IShardingBuilder>(container);
             services.AddSingleton<IShardingConfig>(container);
-            services.AddSingleton<DbFactory>();
-            services.AddSingleton<IDbFactory, DbFactory>();
+            services.AddScoped<DbFactory>();
+            services.AddScoped<IDbFactory, DbFactory>();
             services.AddScoped<IShardingDbAccessor, ShardingDbAccessor>();
 
             services.AddHostedService<EFCoreShardingBootstrapper>();

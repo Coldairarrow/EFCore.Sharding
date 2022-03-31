@@ -22,7 +22,7 @@ namespace EFCore.Sharding.Migrations
             List<MigrationCommand> addCmds
             )
         {
-            var shardingOption = Cache.ServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+            var shardingOption = Cache.RootServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
             if(!shardingOption.EnableShardingMigration)
             {
                 return;
@@ -51,7 +51,7 @@ namespace EFCore.Sharding.Migrations
             //ColumnOperation仅替换Table
             //其余其余都是将Name和Table使用分表名替换
             Dictionary<string, List<string>> _existsShardingTables
-                = Cache.ServiceProvider.GetService<ShardingContainer>().ExistsShardingTables;
+                = Cache.RootServiceProvider.GetService<ShardingContainer>().ExistsShardingTables;
 
             List<string> resList = new List<string>();
             string absTableName = string.Empty;

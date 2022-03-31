@@ -20,6 +20,11 @@ namespace EFCore.Sharding
     public class GenericDbContext : DbContext
     {
         /// <summary>
+        /// 当前DbContext所在注入周期
+        /// </summary>
+        public IServiceProvider ServiceProvider;
+
+        /// <summary>
         /// DbContext原生配置
         /// </summary>
         public DbContextOptions DbContextOption { get; }
@@ -43,9 +48,12 @@ namespace EFCore.Sharding
         /// <param name="contextOptions"></param>
         /// <param name="paramter"></param>
         /// <param name="shardingOptions"></param>
-        public GenericDbContext(DbContextOptions contextOptions, DbContextParamters paramter, EFCoreShardingOptions shardingOptions)
+        /// <param name="serviceProvider"></param>
+        public GenericDbContext(DbContextOptions contextOptions, DbContextParamters paramter, EFCoreShardingOptions shardingOptions, IServiceProvider serviceProvider)
             : base(contextOptions)
         {
+            ServiceProvider = serviceProvider;
+
             CreateTime = DateTimeOffset.Now;
             CreateStackTrace = new StackTrace(true);
             Cache.DbContexts.Add(this);
@@ -62,7 +70,7 @@ namespace EFCore.Sharding
         /// </summary>
         /// <param name="dbContext"></param>
         public GenericDbContext(GenericDbContext dbContext)
-            : this(dbContext.DbContextOption, dbContext.Paramter, dbContext.ShardingOption)
+            : this(dbContext.DbContextOption, dbContext.Paramter, dbContext.ShardingOption, dbContext.ServiceProvider)
         {
 
         }
@@ -191,7 +199,7 @@ namespace EFCore.Sharding
 
             if (ShardingOption.OnSaveChanges != null)
             {
-                AsyncHelper.RunSync(() => ShardingOption.OnSaveChanges?.Invoke(Cache.ServiceProvider, this, async () =>
+                AsyncHelper.RunSync(() => ShardingOption.OnSaveChanges?.Invoke(ServiceProvider, this, async () =>
                 {
                     count = await base.SaveChangesAsync();
                 }));
@@ -215,7 +223,7 @@ namespace EFCore.Sharding
 
             if (ShardingOption.OnSaveChanges != null)
             {
-                await ShardingOption.OnSaveChanges?.Invoke(Cache.ServiceProvider, this, async () =>
+                await ShardingOption.OnSaveChanges?.Invoke(ServiceProvider, this, async () =>
                 {
                     count = await base.SaveChangesAsync();
                 });

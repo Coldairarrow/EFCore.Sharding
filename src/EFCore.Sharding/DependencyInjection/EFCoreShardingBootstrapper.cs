@@ -34,7 +34,7 @@ namespace EFCore.Sharding
                 new DiagnosticObserver(serviceProvider.GetService<ILoggerFactory>(),
                 _shardingOptions.MinCommandElapsedMilliseconds));
 
-            Cache.ServiceProvider = serviceProvider;
+            Cache.RootServiceProvider = serviceProvider;
             _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
         }
 
@@ -45,7 +45,8 @@ namespace EFCore.Sharding
         /// <returns></returns>
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            EFCoreShardingOptions.Bootstrapper?.Invoke(_serviceProvider);
+            using var scope = _serviceProvider.CreateScope();
+            EFCoreShardingOptions.Bootstrapper?.Invoke(scope.ServiceProvider);
 
             //长时间未释放监控,5分钟
             JobHelper.SetIntervalJob(() =>
