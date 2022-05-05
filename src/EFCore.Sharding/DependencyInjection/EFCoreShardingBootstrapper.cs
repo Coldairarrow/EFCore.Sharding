@@ -51,8 +51,8 @@ namespace EFCore.Sharding
                 var list = Cache.DbContexts.Where(x => (DateTimeOffset.Now - x.CreateTime).TotalMinutes > 5).ToList();
                 list.ForEach(x =>
                 {
-                    var logger = x.ServiceProvider.GetService<ILoggerFactory>();
-                    logger?.CreateLogger(GetType())?.LogWarning("DbContext长时间({ElapsedMinutes}m)未释放 CreateStackTrace:{CreateStackTrace} FirstCallStackTrace:{FirstCallStackTrace}",
+                    var logger = x.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
+                    logger?.LogWarning("DbContext长时间({ElapsedMinutes}m)未释放 CreateStackTrace:{CreateStackTrace} FirstCallStackTrace:{FirstCallStackTrace}",
                         (long)(DateTimeOffset.Now - x.CreateTime).TotalMinutes, x.CreateStackTrace, x.FirstCallStackTrace);
                 });
             }, TimeSpan.FromMinutes(5));
