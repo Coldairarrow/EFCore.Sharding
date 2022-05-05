@@ -39,8 +39,9 @@ namespace EFCore.Sharding
         /// </summary>
         public DbContextParamters Paramter { get; }
 
-        internal readonly StackTrace CreateStackTrace;
+        internal readonly string CreateStackTrace;
         internal readonly DateTimeOffset CreateTime;
+        internal string FirstCallStackTrace;
 
         /// <summary>
         /// 
@@ -55,7 +56,7 @@ namespace EFCore.Sharding
             ServiceProvider = serviceProvider;
 
             CreateTime = DateTimeOffset.Now;
-            CreateStackTrace = new StackTrace(true);
+            CreateStackTrace = Environment.StackTrace;
             Cache.DbContexts.Add(this);
 
             DbContextOption = contextOptions;
@@ -83,6 +84,8 @@ namespace EFCore.Sharding
         /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            FirstCallStackTrace = Environment.StackTrace;
+
             List<Type> entityTypes;
             if (Paramter.EntityTypes?.Length > 0)
             {

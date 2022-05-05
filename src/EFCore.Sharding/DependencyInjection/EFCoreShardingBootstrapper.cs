@@ -19,8 +19,6 @@ namespace EFCore.Sharding
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly EFCoreShardingOptions _shardingOptions;
-        private readonly ILogger _logger;
-
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -35,7 +33,6 @@ namespace EFCore.Sharding
                 _shardingOptions.MinCommandElapsedMilliseconds));
 
             Cache.RootServiceProvider = serviceProvider;
-            _logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
         }
 
         /// <summary>
@@ -54,8 +51,9 @@ namespace EFCore.Sharding
                 var list = Cache.DbContexts.Where(x => (DateTimeOffset.Now - x.CreateTime).TotalMinutes > 5).ToList();
                 list.ForEach(x =>
                 {
-                    _logger?.LogWarning("DbContext长时间({ElapsedMinutes}m)未释放 StackTrace:{StackTrace}",
-                        (DateTimeOffset.Now - x.CreateTime).TotalMinutes, x.CreateStackTrace);
+                    var logger = x.ServiceProvider.GetService<ILoggerFactory>();
+                    logger?.CreateLogger(GetType())?.LogWarning("DbContext长时间({ElapsedMinutes}m)未释放 CreateStackTrace:{CreateStackTrace} FirstCallStackTrace:{FirstCallStackTrace}",
+                        (long)(DateTimeOffset.Now - x.CreateTime).TotalMinutes, x.CreateStackTrace, x.FirstCallStackTrace);
                 });
             }, TimeSpan.FromMinutes(5));
 
