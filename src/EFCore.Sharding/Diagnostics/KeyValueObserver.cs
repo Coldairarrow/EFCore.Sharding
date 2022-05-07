@@ -85,6 +85,12 @@ namespace EFCore.Sharding
                     result = result.Replace(p.ParameterName.ToString(), GetFormattedValue(p.Value));
                 }
             }
+
+            if (result.Length > 100 * 1024)
+            {
+                result = result.Substring(0, 100 * 1024) + $"...剩余{result.Length - 100 * 1024}字符";
+            }
+
             return result;
         }
 
