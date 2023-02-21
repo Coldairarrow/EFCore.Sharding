@@ -2,16 +2,29 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using Microsoft.EntityFrameworkCore.Update;
 using System.Linq;
 
 namespace EFCore.Sharding.SqlServer
 {
     internal class ShardingSqlServerMigrationsSqlGenerator : SqlServerMigrationsSqlGenerator
     {
+
+#if NET7_0
+        public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, ICommandBatchPreparer commandBatchPreparer) : base(dependencies, commandBatchPreparer)
+        {
+        }
+#endif
+#if NET6_0
         public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider migrationsAnnotations) : base(dependencies, migrationsAnnotations)
         {
         }
-
+#endif
+#if NETSTANDARD2_1
+        public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IRelationalAnnotationProvider migrationsAnnotations) : base(dependencies, migrationsAnnotations)
+        {
+        }
+#endif
         protected override void Generate(
             MigrationOperation operation,
             IModel model,

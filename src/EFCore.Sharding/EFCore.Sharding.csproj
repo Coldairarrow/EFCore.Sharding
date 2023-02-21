@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net6.0;net7.0</TargetFrameworks>
     <!--打包-->
     <GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
   </PropertyGroup>
@@ -50,4 +50,10 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.*" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'=='net7.0'">
+    <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="7.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.*" />
+  </ItemGroup>
 </Project>

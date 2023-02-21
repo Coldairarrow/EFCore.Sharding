@@ -10,23 +10,28 @@ namespace EFCore.Sharding.PostgreSql
 {
     internal class ShardingPostgreSqlMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
     {
-#pragma warning disable EF1001 // Internal EF Core API usage.
-        public ShardingPostgreSqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies,  INpgsqlOptions npgsqlOptions) : base(dependencies, npgsqlOptions)
-#pragma warning restore EF1001 // Internal EF Core API usage.
+#if NET6_0_OR_GREATER
+        public ShardingPostgreSqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, INpgsqlSingletonOptions npgsqlSingletonOptions) : base(dependencies, npgsqlSingletonOptions)
         {
         }
+#else
+        public ShardingPostgreSqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, INpgsqlOptions npgsqlOptions) : base(dependencies, npgsqlOptions)
 
-        protected override void Generate(
-            MigrationOperation operation,
-            IModel model,
-            MigrationCommandListBuilder builder)
         {
-            var oldCmds = builder.GetCommandList().ToList();
-            base.Generate(operation, model, builder);
-            var newCmds = builder.GetCommandList().ToList();
-            var addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
-
-            MigrationHelper.Generate(operation, builder, Dependencies.SqlGenerationHelper, addCmds);
         }
+#endif
+
+    protected override void Generate(
+        MigrationOperation operation,
+        IModel model,
+        MigrationCommandListBuilder builder)
+    {
+        var oldCmds = builder.GetCommandList().ToList();
+        base.Generate(operation, model, builder);
+        var newCmds = builder.GetCommandList().ToList();
+        var addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
+
+        MigrationHelper.Generate(operation, builder, Dependencies.SqlGenerationHelper, addCmds);
     }
+}
 }
