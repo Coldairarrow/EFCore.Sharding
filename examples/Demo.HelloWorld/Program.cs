@@ -19,6 +19,7 @@ namespace Demo.HelloWorld
             });
             services.AddEFCoreSharding(config =>
             {
+                config.EnableComments(true);
                 config.SetEntityAssemblies(typeof(Base_UnitTest).Assembly);
 
                 config.UseDatabase(Config.SQLITE1, DatabaseType.SQLite);
