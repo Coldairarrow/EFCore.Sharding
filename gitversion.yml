@@ -10,7 +10,7 @@
 #   Mainline                 主线模式             https://gitversion.net/docs/reference/versioning-modes/mainline-development
 # ********************************************************************
 
-next-version: 7.0.0
+next-version: 7.0
 assembly-versioning-scheme: Major
 mode: Mainline
 ignore:
