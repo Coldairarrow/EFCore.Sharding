@@ -16,7 +16,13 @@ namespace EFCore.Sharding.Oracle
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
+
+#if NET8_0
+dbContextOptionsBuilder.UseOracle(dbConnection, x => x.UseOracleSQLCompatibility(OracleSQLCompatibility.DatabaseVersion19));
+
+#else   
             dbContextOptionsBuilder.UseOracle(dbConnection, x => x.UseOracleSQLCompatibility("11"));
+#endif            
             dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingOracleMigrationsSqlGenerator>();
         }
     }
