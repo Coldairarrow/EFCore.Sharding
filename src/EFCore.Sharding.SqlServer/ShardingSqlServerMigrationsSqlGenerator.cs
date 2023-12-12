@@ -9,6 +9,11 @@ namespace EFCore.Sharding.SqlServer
 {
     internal class ShardingSqlServerMigrationsSqlGenerator : SqlServerMigrationsSqlGenerator
     {
+#if NET8_0
+        public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, ICommandBatchPreparer commandBatchPreparer) : base(dependencies, commandBatchPreparer)
+        {
+        }
+#endif
 
 #if NET7_0
         public ShardingSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, ICommandBatchPreparer commandBatchPreparer) : base(dependencies, commandBatchPreparer)
