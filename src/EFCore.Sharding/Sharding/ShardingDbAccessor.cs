@@ -215,6 +215,7 @@ namespace EFCore.Sharding
             _disposed = true;
             _transaction?.Dispose();
             ClearDbs();
+            _db.Dispose();
         }
 
         #endregion

@@ -42,7 +42,7 @@ namespace EFCore.Sharding
         /// <returns></returns>
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            using var scope = _serviceProvider.CreateScope();
+            var scope = _serviceProvider.CreateScope();
             EFCoreShardingOptions.Bootstrapper?.Invoke(scope.ServiceProvider);
 
             //长时间未释放监控,5分钟
