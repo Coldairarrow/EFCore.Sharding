@@ -12,7 +12,8 @@ namespace EFCore.Sharding
             }
             else
             {
-                var selfOption = optionsSnapshot.Get(optionName).DeepClone();
+                //var selfOption = optionsSnapshot.Get(optionName).DeepClone();
+                var selfOption = optionsSnapshot.Get(optionName);
                 var defaultOption = new EFCoreShardingOptions();
                 var globalOption = optionsSnapshot.CurrentValue;
 
