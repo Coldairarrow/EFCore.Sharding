@@ -123,11 +123,11 @@ namespace EFCore.Sharding
         }
         public Task<int> UpdateAsync<T>(T entity, bool tracking = false) where T : class
         {
-            return UpdateAsync(new List<T> { entity }, tracking);
+            return UpdateAsync<T>(new List<T> { entity }, tracking);
         }
         public Task<int> UpdateAsync<T>(T entity, List<string> properties, bool tracking = false) where T : class
         {
-            return UpdateAsync(new List<T> { entity }, properties, tracking);
+            return UpdateAsync<T>(new List<T> { entity }, properties, tracking);
         }
 
         #endregion
