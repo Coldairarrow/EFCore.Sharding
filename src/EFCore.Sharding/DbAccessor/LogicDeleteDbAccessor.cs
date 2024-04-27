@@ -50,11 +50,11 @@ namespace EFCore.Sharding
                         aData.SetPropertyValue(_deletedField, true);
                     });
 
-                    return await UpdateAsync(entities);
+                    return await UpdateAsync<T>(entities);
                 }
                 else
                 {
-                    return await FullDbAccessor.DeleteAsync(entities);
+                    return await FullDbAccessor.DeleteAsync<T>(entities);
                 }
             }
             else

@@ -165,7 +165,7 @@ namespace EFCore.Sharding
         }
         public override Task<int> DeleteAsync<T>(List<T> entities)
         {
-            return WriteDb.DeleteAsync(entities);
+            return WriteDb.DeleteAsync<T>(entities);
         }
         public override Task<int> InsertAsync<T>(List<T> entities, bool tracking = false)
         {

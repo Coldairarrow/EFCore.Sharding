@@ -218,7 +218,8 @@ namespace EFCore.Sharding
         }
         public override async Task<int> InsertAsync<T>(List<T> entities, bool tracking = false)
         {
-            await _db.AddRangeAsync(entities);
+            await _db.Set<T>().AddRangeAsync(entities);
+            //await _db.AddRangeAsync(entities);
 
             return await SaveChangesAsync(tracking);
         }
@@ -235,7 +236,8 @@ namespace EFCore.Sharding
         }
         public override async Task<int> DeleteAsync<T>(List<T> entities)
         {
-            _db.RemoveRange(entities);
+            //_db.RemoveRange(entities);
+            _db.Set<T>().RemoveRange(entities);
 
             return await SaveChangesAsync(false);
         }
@@ -248,7 +250,7 @@ namespace EFCore.Sharding
         {
             entities.ForEach(aEntity =>
             {
-                _db.Entry(aEntity).State = EntityState.Modified;
+                _db.Entry<T>(aEntity).State = EntityState.Modified;
             });
 
             return await SaveChangesAsync(tracking);
@@ -259,7 +261,7 @@ namespace EFCore.Sharding
             {
                 properties.ForEach(aProperty =>
                 {
-                    _db.Entry(aEntity).Property(aProperty).IsModified = true;
+                    _db.Entry<T>(aEntity).Property(aProperty).IsModified = true;
                 });
             });
 
