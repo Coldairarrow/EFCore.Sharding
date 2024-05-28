@@ -22,16 +22,16 @@ namespace EFCore.Sharding
 
             return properties;
         }
-        private List<object> GetDeleteList(Type type, List<string> keys)
+        private List<T> GetDeleteList<T>(List<string> keys)
         {
-            var theProperty = GetKeyPropertys(type).FirstOrDefault();
+            var theProperty = GetKeyPropertys(typeof(T)).FirstOrDefault();
             if (theProperty == null)
                 throw new Exception("该实体没有主键标识！请使用[Key]标识主键！");
 
-            List<object> deleteList = new List<object>();
+            List<T> deleteList = new List<T>();
             keys.ForEach(aKey =>
             {
-                object newData = Activator.CreateInstance(type);
+                T newData = Activator.CreateInstance<T>();
                 var value = Convert.ChangeType(aKey, theProperty.PropertyType);
                 theProperty.SetValue(newData, value);
                 deleteList.Add(newData);
@@ -103,7 +103,7 @@ namespace EFCore.Sharding
                 set(aData);
             });
 
-            return await UpdateAsync(list, tracking);
+            return await UpdateAsync<T>(list, tracking);
         }
         public override async Task<int> DeleteAllAsync<T>()
         {
@@ -111,7 +111,7 @@ namespace EFCore.Sharding
         }
         public virtual async Task<int> DeleteAsync<T>(List<string> keys) where T : class
         {
-            return await DeleteAsync(GetDeleteList(typeof(T), keys));
+            return await DeleteAsync<T>(GetDeleteList<T>(keys));
         }
 
         #endregion
