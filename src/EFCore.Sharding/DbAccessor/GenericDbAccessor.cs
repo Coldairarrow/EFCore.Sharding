@@ -237,8 +237,11 @@ namespace EFCore.Sharding
         public override async Task<int> DeleteAsync<T>(List<T> entities)
         {
             //_db.RemoveRange(entities);
-            _db.Set<T>().RemoveRange(entities);
-
+            //_db.Set<T>().RemoveRange(entities);
+            foreach (var entity in entities)
+            {
+                _db.Entry<T>(entity).State = EntityState.Deleted;
+            }
             return await SaveChangesAsync(false);
         }
 
