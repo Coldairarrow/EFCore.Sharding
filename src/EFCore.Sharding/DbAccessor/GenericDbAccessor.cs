@@ -48,7 +48,6 @@ namespace EFCore.Sharding
         }
         private string GetFormatedSchemaAndTableName(Type entityType)
         {
-            string fullName = string.Empty;
             string schema = AnnotationHelper.GetDbSchemaName(entityType);
             schema = GetSchema(schema);
             string table = AnnotationHelper.GetDbTableName(entityType);
@@ -57,28 +56,25 @@ namespace EFCore.Sharding
                 table += $"_{_db.Paramter.Suffix}";
             }
 
-            if (schema.IsNullOrEmpty())
-                fullName = FormatFieldName(table);
-            else
-                fullName = $"{FormatFieldName(schema)}.{FormatFieldName(table)}";
+            string fullName = schema.IsNullOrEmpty() ? FormatFieldName(table) : $"{FormatFieldName(schema)}.{FormatFieldName(table)}";
 
             return fullName;
         }
         private (string sql, List<(string paramterName, object paramterValue)> paramters) GetWhereSql(IQueryable query)
         {
             List<(string paramterName, object paramterValue)> paramters =
-                new List<(string paramterName, object paramterValue)>();
-            var querySql = query.ToSql();
-            var theSql = querySql.sql.Replace("\r\n", "\n").Replace("\n", " ");
+                [];
+            (string sql, IReadOnlyDictionary<string, object> parameters) = query.ToSql();
+            string theSql = sql.Replace("\r\n", "\n").Replace("\n", " ");
 
             //替换AS
-            var asPattern = "FROM (.*?) AS (.*?) ";
+            string asPattern = "FROM (.*?) AS (.*?) ";
             //倒排防止别名出错
-            var asMatchs = Regex.Matches(theSql, asPattern).Cast<Match>().Reverse();
+            IEnumerable<Match> asMatchs = Regex.Matches(theSql, asPattern).Cast<Match>().Reverse();
             foreach (Match aMatch in asMatchs)
             {
-                var tableName = aMatch.Groups[1].ToString();
-                var asName = aMatch.Groups[2].ToString();
+                string tableName = aMatch.Groups[1].ToString();
+                string asName = aMatch.Groups[2].ToString();
 
                 theSql = theSql.Replace(aMatch.Groups[0].ToString(), $"FROM {tableName} ");
                 theSql = theSql.Replace(asName + ".", tableName + ".");
@@ -86,15 +82,19 @@ namespace EFCore.Sharding
 
             //无筛选
             if (!theSql.Contains("WHERE"))
+            {
                 return (" 1=1 ", paramters);
+            }
 
-            var firstIndex = theSql.IndexOf("WHERE") + 5;
-            string whereSql = theSql.Substring(firstIndex, theSql.Length - firstIndex);
+            int firstIndex = theSql.IndexOf("WHERE") + 5;
+            string whereSql = theSql[firstIndex..];
 
-            querySql.parameters?.ForEach(aData =>
+            parameters?.ForEach(aData =>
             {
                 if (whereSql.Contains(aData.Key))
+                {
                     paramters.Add((aData.Key, aData.Value));
+                }
             });
 
             return (whereSql, paramters);
@@ -102,7 +102,7 @@ namespace EFCore.Sharding
         private (string sql, List<(string paramterName, object paramterValue)> paramters) GetDeleteSql(IQueryable iq)
         {
             string tableName = GetFormatedSchemaAndTableName(iq.ElementType);
-            var whereSql = GetWhereSql(iq);
+            (string sql, List<(string paramterName, object paramterValue)> paramters) whereSql = GetWhereSql(iq);
             string sql = $"DELETE FROM {tableName} WHERE {whereSql.sql}";
 
             return (sql, whereSql.paramters);
@@ -110,13 +110,13 @@ namespace EFCore.Sharding
         private (string sql, List<(string paramterName, object paramterValue)> paramters) GetUpdateWhereSql(IQueryable iq, params (string field, UpdateType updateType, object value)[] values)
         {
             string tableName = GetFormatedSchemaAndTableName(iq.ElementType);
-            var whereSql = GetWhereSql(iq);
+            (string sql, List<(string paramterName, object paramterValue)> paramters) whereSql = GetWhereSql(iq);
 
-            List<string> propertySetStr = new List<string>();
+            List<string> propertySetStr = [];
 
             values.ToList().ForEach(aProperty =>
             {
-                var paramterName = FormatParamterName($"_p_{aProperty.field}");
+                string paramterName = FormatParamterName($"_p_{aProperty.field}");
                 string formatedField = FormatFieldName(aProperty.field);
                 whereSql.paramters.Add((paramterName, aProperty.value));
 
@@ -130,7 +130,7 @@ namespace EFCore.Sharding
                     case UpdateType.Divide: setValueBody = $" {formatedField} / {paramterName} "; break;
                     case UpdateType.Concat:
                         {
-                            var symbol = new DatabaseType[] { DatabaseType.PostgreSql, DatabaseType.Oracle, DatabaseType.SQLite }
+                            string symbol = new DatabaseType[] { DatabaseType.PostgreSql, DatabaseType.Oracle, DatabaseType.SQLite }
                                 .Contains(_db.Paramter.DbType) ? "||" : "+";
                             setValueBody = $" {formatedField} {symbol} {paramterName} ";
                         }; break;
@@ -146,10 +146,10 @@ namespace EFCore.Sharding
         }
         private List<DbParameter> CreateDbParamters((string paramterName, object paramterValue)[] paramters)
         {
-            List<DbParameter> dbParamters = new List<DbParameter>();
+            List<DbParameter> dbParamters = [];
             paramters?.ForEach(aParamter =>
             {
-                var newParamter = _provider.GetDbParameter();
+                DbParameter newParamter = _provider.GetDbParameter();
                 newParamter.ParameterName = aParamter.paramterName;
                 newParamter.Value = aParamter.paramterValue;
                 dbParamters.Add(newParamter);
@@ -218,8 +218,8 @@ namespace EFCore.Sharding
         }
         public override async Task<int> InsertAsync<T>(List<T> entities, bool tracking = false)
         {
-            await _db.Set<T>().AddRangeAsync(entities);
-            //await _db.AddRangeAsync(entities);
+            //await _db.Set<T>().AddRangeAsync(entities);
+            await _db.AddRangeAsync(entities);
 
             return await SaveChangesAsync(tracking);
         }
@@ -230,18 +230,18 @@ namespace EFCore.Sharding
 
         public override async Task<int> DeleteSqlAsync(IQueryable source)
         {
-            var sql = GetDeleteSql(source);
+            (string sql, List<(string paramterName, object paramterValue)> paramters) sql = GetDeleteSql(source);
 
             return await ExecuteSqlAsync(sql.sql, sql.paramters.ToArray());
         }
         public override async Task<int> DeleteAsync<T>(List<T> entities)
         {
-            //_db.RemoveRange(entities);
+            _db.RemoveRange(entities);
             //_db.Set<T>().RemoveRange(entities);
-            foreach (var entity in entities)
-            {
-                _db.Entry<T>(entity).State = EntityState.Deleted;
-            }
+            //entities.ForEach(aEntity =>
+            //{
+            //    _db.Entry<T>(aEntity).State = EntityState.Deleted;
+            //});
             return await SaveChangesAsync(false);
         }
 
@@ -272,7 +272,7 @@ namespace EFCore.Sharding
         }
         public override async Task<int> UpdateSqlAsync(IQueryable source, params (string field, UpdateType updateType, object value)[] values)
         {
-            var sql = GetUpdateWhereSql(source, values);
+            (string sql, List<(string paramterName, object paramterValue)> paramters) sql = GetUpdateWhereSql(source, values);
 
             return await ExecuteSqlAsync(sql.sql, sql.paramters.ToArray());
         }
@@ -283,18 +283,22 @@ namespace EFCore.Sharding
 
         public override async Task<T> GetEntityAsync<T>(params object[] keyValue)
         {
-            var obj = await _db.Set<T>().FindAsync(keyValue);
+            T obj = await _db.Set<T>().FindAsync(keyValue);
             if (!obj.IsNullOrEmpty())
+            {
                 _db.Entry(obj).State = EntityState.Detached;
+            }
 
             return obj;
         }
         public override IQueryable<T> GetIQueryable<T>(bool tracking = false)
         {
-            var q = _db.Set<T>() as IQueryable<T>;
+            IQueryable<T> q = _db.Set<T>();
 
             if (!tracking)
+            {
                 q = q.AsNoTracking();
+            }
 
             return q;
         }
@@ -316,7 +320,9 @@ namespace EFCore.Sharding
         public override void Dispose()
         {
             if (_disposed)
+            {
                 return;
+            }
 
             _disposed = true;
             DisposeTransaction();
