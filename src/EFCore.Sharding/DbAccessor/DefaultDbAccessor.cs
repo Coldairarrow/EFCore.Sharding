@@ -15,7 +15,7 @@ namespace EFCore.Sharding
     {
         protected static List<PropertyInfo> GetKeyPropertys(Type type)
         {
-            var properties = type
+            List<PropertyInfo> properties = type
                 .GetProperties()
                 .Where(x => x.GetCustomAttributes(true).Select(o => o.GetType().FullName).Contains(typeof(KeyAttribute).FullName))
                 .ToList();
@@ -24,16 +24,18 @@ namespace EFCore.Sharding
         }
         private List<object> GetDeleteList(Type type, List<string> keys)
         {
-            var theProperty = GetKeyPropertys(type).FirstOrDefault();
+            PropertyInfo theProperty = GetKeyPropertys(type).FirstOrDefault();
             if (theProperty == null)
+            {
                 throw new Exception("该实体没有主键标识！请使用[Key]标识主键！");
+            }
 
-            List<object> deleteList = new List<object>();
+            List<object> deleteList = [];
+            object newData = new object();
             keys.ForEach(aKey =>
             {
-                object newData = Activator.CreateInstance(type);
-                var value = Convert.ChangeType(aKey, theProperty.PropertyType);
-                theProperty.SetValue(newData, value);
+                 newData = Activator.CreateInstance(type);
+                theProperty.SetValue(newData, Convert.ChangeType(aKey, theProperty.PropertyType));
                 deleteList.Add(newData);
             });
 
@@ -44,7 +46,7 @@ namespace EFCore.Sharding
 
         public int Delete<T>(string key) where T : class
         {
-            return Delete<T>(new List<string> { key });
+            return Delete<T>([key]);
         }
         public int Delete<T>(List<string> keys) where T : class
         {
@@ -52,7 +54,7 @@ namespace EFCore.Sharding
         }
         public Task<int> DeleteAsync<T>(string key) where T : class
         {
-            return DeleteAsync<T>(new List<string> { key });
+            return DeleteAsync<T>([key]);
         }
         public int DeleteSql(IQueryable source)
         {
@@ -82,21 +84,21 @@ namespace EFCore.Sharding
         {
             return UpdateSqlAsync(GetIQueryable<T>().Where(where), values);
         }
-        public async override Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where)
+        public override async Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where)
         {
-            var iq = GetIQueryable<T>(false).Where(where);
+            IQueryable<T> iq = GetIQueryable<T>(false).Where(where);
 
             return await DeleteSqlAsync(iq);
         }
         public override async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition)
         {
-            var list = await GetIQueryable<T>().Where(condition).ToListAsync();
+            List<T> list = await GetIQueryable<T>().Where(condition).ToListAsync();
 
             return await DeleteAsync(list);
         }
         public override async Task<int> UpdateAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set, bool tracking = false)
         {
-            var list = await GetIQueryable<T>(false).Where(whereExpre).ToListAsync();
+            List<T> list = await GetIQueryable<T>(false).Where(whereExpre).ToListAsync();
 
             list.ForEach(aData =>
             {
