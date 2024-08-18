@@ -145,6 +145,16 @@ namespace EFCore.Sharding
 
             return FilterTable(allTables, source);
         }
+        public List<(string suffix, string conString, DatabaseType dbType)> GetReadTables<T>(IQueryable<T> source, DateTime s, DateTime e)
+        {
+            var allTables = GetTargetTables<T>(ReadWriteType.Read);
+            var ret = FilterTable(allTables, source);
+            var entityType = typeof(T);
+            var rule = _shardingRules.Where(x => x.EntityType == entityType).FirstOrDefault();
+            var sT = rule.GetTableSuffixByField(s);
+            var eT = rule.GetTableSuffixByField(e);
+            return ret.Where(t => t.suffix.CompareTo(sT) >= 0 && t.suffix.CompareTo(eT) <= 0).ToList();
+        }
         public DatabaseType FindADbType()
         {
             return _dataSources.FirstOrDefault().DbType;

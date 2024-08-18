@@ -152,7 +152,7 @@ namespace EFCore.Sharding
         {
             return AsyncHelper.RunSync(() => ToListAsync());
         }
-        public async Task<List<T>> ToListAsync()
+        public async Task<List<T>> ToListAsync((DateTime s, DateTime e)? range = null)
         {
             //去除分页,获取前Take+Skip数量
             int? take = _source.GetTakeCount();
@@ -164,7 +164,9 @@ namespace EFCore.Sharding
                 noPaginSource = noPaginSource.Take(take.Value + skip.Value);
 
             //从各个分表获取数据
-            var tables = _shardingConfig.GetReadTables(_source);
+            var tables = range == null ? _shardingConfig.GetReadTables(_source)
+            : _shardingConfig.GetReadTables(_source, range.Value.s, range.Value.e)
+            ;
             SynchronizedCollection<IDbAccessor> dbs = new SynchronizedCollection<IDbAccessor>();
             List<Task<List<T>>> tasks = tables.Select(aTable =>
             {
