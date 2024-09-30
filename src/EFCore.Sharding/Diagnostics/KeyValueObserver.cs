@@ -4,7 +4,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace EFCore.Sharding
 {
@@ -108,7 +110,19 @@ namespace EFCore.Sharding
                 result = result.Substring(0, 100 * 1024) + $"...剩余{result.Length - 100 * 1024}字符";
             }
 
-            return result;
+            //var sb = new StringBuilder();
+                //sb.AppendFormat("{0} {1}={2}\n",
+                //                parameter.DbType,
+                //                parameter.ParameterName,
+                //                parameter.Value);
+            //sb.ToString() + "\n" +
+
+            foreach (DbParameter parameter in cmd.Parameters)
+            {
+                result = result.Replace(parameter.ParameterName, parameter.Value.ToString());
+            }
+
+            return  result;
         }
     }
 }
