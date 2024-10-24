@@ -13,6 +13,7 @@ namespace EFCore.Sharding
         #region 构造函数
 
         private readonly IServiceCollection _services;
+        private Action _createShardingTableOnStartingFinishFun = null;
         public ShardingContainer(IServiceCollection services)
         {
             _services = services;
@@ -144,6 +145,16 @@ namespace EFCore.Sharding
             var allTables = GetTargetTables<T>(ReadWriteType.Read);
 
             return FilterTable(allTables, source);
+        }
+        public List<(string suffix, string conString, DatabaseType dbType)> GetReadTables<T>(IQueryable<T> source, DateTime s, DateTime e)
+        {
+            var allTables = GetTargetTables<T>(ReadWriteType.Read);
+            var ret = FilterTable(allTables, source);
+            var entityType = typeof(T);
+            var rule = _shardingRules.Where(x => x.EntityType == entityType).FirstOrDefault();
+            var sT = rule.GetTableSuffixByField(s);
+            var eT = rule.GetTableSuffixByField(e);
+            return ret.Where(t => t.suffix.CompareTo(sT) >= 0 && t.suffix.CompareTo(eT) <= 0).ToList();
         }
         public DatabaseType FindADbType()
         {
@@ -381,7 +392,10 @@ namespace EFCore.Sharding
 
                     theTime = paramter.nextTime(theTime);
                 }
-
+                if (sharingOption.CreateShardingTableOnStarting)
+                {
+                    _createShardingTableOnStartingFinishFun?.Invoke();
+                }
                 //定时自动建表
                 JobHelper.SetCronJob(() =>
                 {
@@ -445,6 +459,12 @@ namespace EFCore.Sharding
                 }
             };
 
+            return this;
+        }
+
+        public IShardingBuilder CreateShardingTableOnStartingFinish(Action callback)
+        {
+            _createShardingTableOnStartingFinishFun = callback;
             return this;
         }
 

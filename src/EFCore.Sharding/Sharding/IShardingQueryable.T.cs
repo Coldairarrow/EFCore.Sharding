@@ -86,7 +86,7 @@ namespace EFCore.Sharding
         /// 异步获取列表
         /// </summary>
         /// <returns></returns>
-        Task<List<T>> ToListAsync();
+        Task<List<T>> ToListAsync((DateTime s, DateTime e)? range = null);
 
         /// <summary>
         /// 获取第一个,若不存在则返回默认值
