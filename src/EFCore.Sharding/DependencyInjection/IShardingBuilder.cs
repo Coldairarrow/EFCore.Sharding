@@ -44,6 +44,13 @@ namespace EFCore.Sharding
         IShardingBuilder CreateShardingTableOnStarting(bool enable);
 
         /// <summary>
+        /// 启动时创建表完成
+        /// </summary>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        IShardingBuilder CreateShardingTableOnStartingFinish(Action callback);
+
+        /// <summary>
         /// 是否启用分表数据库迁移,默认false
         /// </summary>
         /// <param name="enable">是否启用</param>

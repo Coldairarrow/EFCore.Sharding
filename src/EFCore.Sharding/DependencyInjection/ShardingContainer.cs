@@ -13,6 +13,7 @@ namespace EFCore.Sharding
         #region 构造函数
 
         private readonly IServiceCollection _services;
+        private Action _createShardingTableOnStartingFinishFun = null;
         public ShardingContainer(IServiceCollection services)
         {
             _services = services;
@@ -391,7 +392,10 @@ namespace EFCore.Sharding
 
                     theTime = paramter.nextTime(theTime);
                 }
-
+                if (sharingOption.CreateShardingTableOnStarting)
+                {
+                    _createShardingTableOnStartingFinishFun?.Invoke();
+                }
                 //定时自动建表
                 JobHelper.SetCronJob(() =>
                 {
@@ -455,6 +459,12 @@ namespace EFCore.Sharding
                 }
             };
 
+            return this;
+        }
+
+        public IShardingBuilder CreateShardingTableOnStartingFinish(Action callback)
+        {
+            _createShardingTableOnStartingFinishFun = callback;
             return this;
         }
 
