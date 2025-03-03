@@ -18,12 +18,13 @@ namespace EFCore.Sharding
     [SuppressMessage("Usage", "EF1001:Internal EF Core API usage.", Justification = "<挂起>")]
     internal class ShardingMigration : MigrationsModelDiffer
     {
-#if NET8_0
-        public ShardingMigration(IRelationalTypeMappingSource typeMappingSource, IMigrationsAnnotationProvider migrationsAnnotationProvider, IRowIdentityMapFactory rowIdentityMapFactory, CommandBatchPreparerDependencies commandBatchPreparerDependencies) : base(typeMappingSource, migrationsAnnotationProvider, rowIdentityMapFactory, commandBatchPreparerDependencies)
+
+#if NET9_0
+        public ShardingMigration(IRelationalTypeMappingSource typeMappingSource, IMigrationsAnnotationProvider migrationsAnnotationProvider,IRelationalAnnotationProvider relationalAnnotationProvider, IRowIdentityMapFactory rowIdentityMapFactory, CommandBatchPreparerDependencies commandBatchPreparerDependencies) : base(typeMappingSource, migrationsAnnotationProvider, relationalAnnotationProvider,rowIdentityMapFactory, commandBatchPreparerDependencies)
         {
         }
 #endif
-#if NET7_0
+#if NET8_0|| NET7_0
         public ShardingMigration(IRelationalTypeMappingSource typeMappingSource, IMigrationsAnnotationProvider migrationsAnnotationProvider, IRowIdentityMapFactory rowIdentityMapFactory, CommandBatchPreparerDependencies commandBatchPreparerDependencies) : base(typeMappingSource, migrationsAnnotationProvider, rowIdentityMapFactory, commandBatchPreparerDependencies)
         {
         }
@@ -34,14 +35,7 @@ namespace EFCore.Sharding
         }
 #endif
 #if NETSTANDARD2_1
-        public ShardingMigration(
-            IRelationalTypeMappingSource typeMappingSource,
-            IMigrationsAnnotationProvider migrationsAnnotations,
-            IChangeDetector changeDetector,
-            IUpdateAdapterFactory updateAdapterFactory,
-            CommandBatchPreparerDependencies commandBatchPreparerDependencies
-            )
-        : base(typeMappingSource, migrationsAnnotations, changeDetector, updateAdapterFactory, commandBatchPreparerDependencies)
+        public ShardingMigration(IRelationalTypeMappingSource typeMappingSource,IMigrationsAnnotationProvider migrationsAnnotations,IChangeDetector changeDetector,IUpdateAdapterFactory updateAdapterFactory,CommandBatchPreparerDependencies commandBatchPreparerDependencies): base(typeMappingSource, migrationsAnnotations, changeDetector, updateAdapterFactory, commandBatchPreparerDependencies)
         {
 
         }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
     <!--打包-->
     <GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
   </PropertyGroup>
@@ -30,9 +30,9 @@
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="5.1.1" />
     <PackageReference Include="Dynamitey" Version="3.0.3" />
-    <PackageReference Include="Namotion.Reflection" Version="3.1.1" />
-    <PackageReference Include="Quartz" Version="3.13.0" />
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.5" />
+    <PackageReference Include="Namotion.Reflection" Version="3.2.0" />
+    <PackageReference Include="Quartz" Version="3.13.1" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.0.2" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.1'">
@@ -65,5 +65,12 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.*" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.*" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.*" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)'=='net9.0'">
+		<PackageReference Include="System.ServiceModel.Primitives" Version="8.*" />
+		<PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="9.*" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.*" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.*" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.*" />
 	</ItemGroup>
 </Project>

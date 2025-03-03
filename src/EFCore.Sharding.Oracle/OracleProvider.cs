@@ -17,7 +17,7 @@ namespace EFCore.Sharding.Oracle
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
 
-#if NET8_0
+#if NET9_0 || NET8_0 
 dbContextOptionsBuilder.UseOracle(dbConnection, x => x.UseOracleSQLCompatibility(OracleSQLCompatibility.DatabaseVersion19));
 
 #else   
