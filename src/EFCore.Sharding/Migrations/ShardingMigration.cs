@@ -42,14 +42,14 @@ namespace EFCore.Sharding
 #endif
         public override IReadOnlyList<MigrationOperation> GetDifferences(IRelationalModel source, IRelationalModel target)
         {
-            var shardingOption = Cache.RootServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
-            var sourceOperations = base.GetDifferences(source, target).ToList();
+            EFCoreShardingOptions shardingOption = Cache.RootServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+            List<MigrationOperation> sourceOperations = base.GetDifferences(source, target).ToList();
 
             //忽略外键
             if (shardingOption.MigrationsWithoutForeignKey)
             {
-                sourceOperations.RemoveAll(x => x is AddForeignKeyOperation || x is DropForeignKeyOperation);
-                foreach (var operation in sourceOperations.OfType<CreateTableOperation>())
+                _ = sourceOperations.RemoveAll(x => x is AddForeignKeyOperation or DropForeignKeyOperation);
+                foreach (CreateTableOperation operation in sourceOperations.OfType<CreateTableOperation>())
                 {
                     operation.ForeignKeys?.Clear();
                 }
