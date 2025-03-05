@@ -10,8 +10,7 @@ namespace EFCore.Sharding
     /// </summary>
     internal static class AsyncHelper
     {
-        private static readonly TaskFactory _myTaskFactory =
-            new TaskFactory(CancellationToken.None, TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
+        private static readonly TaskFactory _myTaskFactory =new(CancellationToken.None, TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
 
         /// <summary>
         /// 同步执行

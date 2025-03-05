@@ -15,17 +15,17 @@ namespace EFCore.Sharding.Tests
         /// 代理主键
         /// </summary>
         [Key]
-        public String Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// UserId
         /// </summary>
-        public String UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// UserName
         /// </summary>
-        public String UserName { get; set; }
+        public string UserName { get; set; }
 
         /// <summary>
         /// 创建时间
@@ -35,6 +35,6 @@ namespace EFCore.Sharding.Tests
         /// <summary>
         /// Age
         /// </summary>
-        public Int32? Age { get; set; }
+        public int? Age { get; set; }
     }
 }

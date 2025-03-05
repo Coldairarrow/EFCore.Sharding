@@ -17,12 +17,12 @@ namespace EFCore.Sharding
         public static Expression<Func<T, bool>> And<T>(this Expression<Func<T, bool>> one, Expression<Func<T, bool>> another)
         {
             //创建新参数
-            var newParameter = Expression.Parameter(typeof(T), "parameter");
+            ParameterExpression newParameter = Expression.Parameter(typeof(T), "parameter");
 
-            var parameterReplacer = new ParameterReplaceVisitor(newParameter);
-            var left = parameterReplacer.Visit(one.Body);
-            var right = parameterReplacer.Visit(another.Body);
-            var body = Expression.And(left, right);
+            ParameterReplaceVisitor parameterReplacer = new(newParameter);
+            Expression left = parameterReplacer.Visit(one.Body);
+            Expression right = parameterReplacer.Visit(another.Body);
+            BinaryExpression body = Expression.And(left, right);
 
             return Expression.Lambda<Func<T, bool>>(body, newParameter);
         }
@@ -37,12 +37,12 @@ namespace EFCore.Sharding
         public static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> one, Expression<Func<T, bool>> another)
         {
             //创建新参数
-            var newParameter = Expression.Parameter(typeof(T), "parameter");
+            ParameterExpression newParameter = Expression.Parameter(typeof(T), "parameter");
 
-            var parameterReplacer = new ParameterReplaceVisitor(newParameter);
-            var left = parameterReplacer.Visit(one.Body);
-            var right = parameterReplacer.Visit(another.Body);
-            var body = Expression.Or(left, right);
+            ParameterReplaceVisitor parameterReplacer = new(newParameter);
+            Expression left = parameterReplacer.Visit(one.Body);
+            Expression right = parameterReplacer.Visit(another.Body);
+            BinaryExpression body = Expression.Or(left, right);
 
             return Expression.Lambda<Func<T, bool>>(body, newParameter);
         }
@@ -53,7 +53,7 @@ namespace EFCore.Sharding
     /// <summary>
     /// 继承ExpressionVisitor类，实现参数替换统一
     /// </summary>
-    class ParameterReplaceVisitor : ExpressionVisitor
+    internal class ParameterReplaceVisitor : ExpressionVisitor
     {
         public ParameterReplaceVisitor(ParameterExpression paramExpr)
         {
@@ -65,10 +65,7 @@ namespace EFCore.Sharding
 
         protected override Expression VisitParameter(ParameterExpression p)
         {
-            if (p.Type == _parameter.Type)
-                return _parameter;
-            else
-                return p;
+            return p.Type == _parameter.Type ? _parameter : (Expression)p;
         }
     }
 }

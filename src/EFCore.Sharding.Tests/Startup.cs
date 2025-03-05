@@ -14,21 +14,21 @@ namespace EFCore.Sharding.Tests
         [AssemblyInitialize]
         public static void Begin(TestContext context)
         {
-            ServiceCollection services = new ServiceCollection();
-            services.AddEFCoreSharding(config =>
+            ServiceCollection services = new();
+            _ = services.AddEFCoreSharding(config =>
             {
-                config.SetEntityAssemblies(typeof(Startup).Assembly);
+                _ = config.SetEntityAssemblies(typeof(Startup).Assembly);
 
-                config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
-                config.UseDatabase<ISQLiteDb1>(Config.SQLITE1, DatabaseType.SQLite);
-                config.UseDatabase<ISQLiteDb2>(Config.SQLITE2, DatabaseType.SQLite);
-                config.UseDatabase<ICustomDbAccessor>(Config.CONSTRING1, DatabaseType.SqlServer);
+                _ = config.UseDatabase(Config.CONSTRING1, DatabaseType.SqlServer);
+                _ = config.UseDatabase<ISQLiteDb1>(Config.SQLITE1, DatabaseType.SQLite);
+                _ = config.UseDatabase<ISQLiteDb2>(Config.SQLITE2, DatabaseType.SQLite);
+                _ = config.UseDatabase<ICustomDbAccessor>(Config.CONSTRING1, DatabaseType.SqlServer);
 
                 //分表配置
                 //添加数据源
-                config.AddDataSource(Config.CONSTRING1, ReadWriteType.Read | ReadWriteType.Write, DatabaseType.SqlServer);
+                _ = config.AddDataSource(Config.CONSTRING1, ReadWriteType.Read | ReadWriteType.Write, DatabaseType.SqlServer);
                 //设置分表规则
-                config.SetHashModSharding<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
+                _ = config.SetHashModSharding<Base_UnitTest>(nameof(Base_UnitTest.Id), 3);
             });
 
             RootServiceProvider = services.BuildServiceProvider(true);

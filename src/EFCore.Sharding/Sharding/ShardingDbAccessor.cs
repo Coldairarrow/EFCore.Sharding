@@ -19,7 +19,7 @@ namespace EFCore.Sharding
         {
             _shardingConfig = shardingConfig;
             _dbFactory = dbFactory;
-            var dbType = shardingConfig.FindADbType();
+            DatabaseType dbType = shardingConfig.FindADbType();
             _db = _dbFactory.GetDbAccessor(new DbContextParamters { ConnectionString = dbType.GetDefaultString(), DbType = dbType });
         }
 
@@ -34,21 +34,23 @@ namespace EFCore.Sharding
         }
         private async Task<int> PackAccessDataAsync(Func<Task<int>> access)
         {
-            var dbs = _dbs.Values.ToArray();
+            IDbAccessor[] dbs = _dbs.Values.ToArray();
 
             int count = 0;
             if (!OpenedTransaction)
             {
-                using (var transaction = DistributedTransactionFactory.GetDistributedTransaction())
+                using (IDistributedTransaction transaction = DistributedTransactionFactory.GetDistributedTransaction())
                 {
                     transaction.AddDbAccessor(dbs);
 
-                    var (Success, ex) = await transaction.RunTransactionAsync(async () =>
+                    (bool Success, Exception ex) = await transaction.RunTransactionAsync(async () =>
                     {
                         count = await access();
                     });
                     if (!Success)
+                    {
                         throw ex;
+                    }
                 }
                 ClearDbs();
                 return count;
@@ -76,17 +78,17 @@ namespace EFCore.Sharding
             return await PackAccessDataAsync(async () =>
             {
                 //同一个IDbAccessor对象只能在一个线程中
-                List<Task<int>> tasks = new List<Task<int>>();
-                var dbs = targetDbs.Select(x => x.db).Distinct().ToList();
+                List<Task<int>> tasks = [];
+                List<IDbAccessor> dbs = targetDbs.Select(x => x.db).Distinct().ToList();
                 dbs.ForEach(aDb =>
                 {
                     tasks.Add(Task.Run(async () =>
                     {
                         int count = 0;
-                        var objs = targetDbs.Where(x => x.db == aDb).ToList();
-                        foreach (var aObj in objs)
+                        List<(T obj, IDbAccessor db)> objs = targetDbs.Where(x => x.db == aDb).ToList();
+                        foreach ((T obj, IDbAccessor db) in objs)
                         {
-                            count += await accessDataAsync(aObj.obj, aObj.db);
+                            count += await accessDataAsync(obj, db);
                         }
 
                         return count;
@@ -112,7 +114,7 @@ namespace EFCore.Sharding
         public bool OpenedTransaction { get; set; } = false;
         public IDbAccessor GetMapDbAccessor(string conString, DatabaseType dbType, string suffix)
         {
-            var dbId = GetDbId(conString, dbType, suffix);
+            string dbId = GetDbId(conString, dbType, suffix);
             IDbAccessor db = _dbs.GetOrAdd(dbId, key => _dbFactory.GetDbAccessor(new DbContextParamters
             {
                 ConnectionString = conString,
@@ -121,7 +123,9 @@ namespace EFCore.Sharding
             }));
 
             if (OpenedTransaction)
+            {
                 _transaction.AddDbAccessor(db);
+            }
 
             return db;
         }
@@ -131,10 +135,10 @@ namespace EFCore.Sharding
         }
         public override async Task<int> DeleteAllAsync<T>() where T : class
         {
-            var configs = _shardingConfig.GetWriteTables<T>();
+            List<(string suffix, string conString, DatabaseType dbType)> configs = _shardingConfig.GetWriteTables<T>();
             return await PackAccessDataAsync(async () =>
             {
-                var tasks = configs.Select(x => GetMapDbAccessor(x.conString, x.dbType, x.suffix).DeleteAllAsync<T>());
+                IEnumerable<Task<int>> tasks = configs.Select(x => GetMapDbAccessor(x.conString, x.dbType, x.suffix).DeleteAllAsync<T>());
                 return (await Task.WhenAll(tasks.ToArray())).Sum();
             });
         }
@@ -144,17 +148,17 @@ namespace EFCore.Sharding
         }
         public override async Task<int> DeleteAsync<T>(Expression<Func<T, bool>> condition) where T : class
         {
-            var deleteList = GetIShardingQueryable<T>().Where(condition).ToList();
+            List<T> deleteList = GetIShardingQueryable<T>().Where(condition).ToList();
 
             return await DeleteAsync(deleteList);
         }
         public override async Task<int> DeleteSqlAsync<T>(Expression<Func<T, bool>> where) where T : class
         {
-            var q = _db.GetIQueryable<T>().Where(where);
-            var configs = _shardingConfig.GetWriteTables<T>(q);
+            IQueryable<T> q = _db.GetIQueryable<T>().Where(where);
+            List<(string suffix, string conString, DatabaseType dbType)> configs = _shardingConfig.GetWriteTables<T>(q);
             return await PackAccessDataAsync(async () =>
             {
-                var tasks = configs.Select(x => GetMapDbAccessor(x.conString, x.dbType, x.suffix).DeleteSqlAsync<T>(where));
+                IEnumerable<Task<int>> tasks = configs.Select(x => GetMapDbAccessor(x.conString, x.dbType, x.suffix).DeleteSqlAsync<T>(where));
                 return (await Task.WhenAll(tasks.ToArray())).Sum();
             });
         }
@@ -168,7 +172,7 @@ namespace EFCore.Sharding
         }
         public override async Task<int> UpdateAsync<T>(Expression<Func<T, bool>> whereExpre, Action<T> set, bool tracking = false) where T : class
         {
-            var list = GetIShardingQueryable<T>().Where(whereExpre).ToList();
+            List<T> list = GetIShardingQueryable<T>().Where(whereExpre).ToList();
             list.ForEach(aData => set(aData));
             return await UpdateAsync(list);
         }
@@ -210,7 +214,9 @@ namespace EFCore.Sharding
         public override void Dispose()
         {
             if (_disposed)
+            {
                 return;
+            }
 
             _disposed = true;
             _transaction?.Dispose();

@@ -10,17 +10,23 @@ namespace EFCore.Sharding.SqlServer
     {
         public override DbProviderFactory DbProviderFactory => SqlClientFactory.Instance;
 
-        public override ModelBuilder GetModelBuilder() => new ModelBuilder(SqlServerConventionSetBuilder.Build());
+        public override ModelBuilder GetModelBuilder()
+        {
+            return new ModelBuilder(SqlServerConventionSetBuilder.Build());
+        }
 
-        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new SqlServerDbAccessor(baseDbContext);
+        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext)
+        {
+            return new SqlServerDbAccessor(baseDbContext);
+        }
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            dbContextOptionsBuilder.UseSqlServer(dbConnection, x =>
+            _ = dbContextOptionsBuilder.UseSqlServer(dbConnection, x =>
             {
-                x.UseNetTopologySuite();
+                _ = x.UseNetTopologySuite();
             });
-            dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingSqlServerMigrationsSqlGenerator>();
+            _ = dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingSqlServerMigrationsSqlGenerator>();
         }
     }
 }

@@ -11,7 +11,7 @@ namespace EFCore.Sharding.Tests
         {
             for (int i = 1; i <= 100; i++)
             {
-                Base_UnitTest newData = new Base_UnitTest
+                Base_UnitTest newData = new()
                 {
                     Id = Guid.NewGuid().ToString(),
                     Age = i,
@@ -42,8 +42,8 @@ namespace EFCore.Sharding.Tests
         }
 
         protected static List<Base_UnitTest> _insertList { get; }
-            = new List<Base_UnitTest>
-        {
+            =
+        [
             new Base_UnitTest
             {
                 Id = Guid.NewGuid().ToString(),
@@ -58,9 +58,9 @@ namespace EFCore.Sharding.Tests
                 UserName = "超级管理员2",
                 Age = 22
             }
-        };
+        ];
         protected static List<Base_UnitTest> _dataList { get; }
-            = new List<Base_UnitTest>();
+            = [];
         protected static Base_UnitTest _newData { get; } = new Base_UnitTest
         {
             Id = Guid.NewGuid().ToString(),

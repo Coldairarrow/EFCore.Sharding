@@ -15,7 +15,7 @@ namespace EFCore.Sharding
         #region 私有成员
 
         private static IScheduler __scheduler;
-        private static object _lock = new object();
+        private static readonly object _lock = new();
         private static IScheduler _scheduler
         {
             get
@@ -26,11 +26,11 @@ namespace EFCore.Sharding
                     {
                         if (__scheduler == null)
                         {
-                            var props = new NameValueCollection
+                            NameValueCollection props = new()
                             {
                                 { StdSchedulerFactory.PropertySchedulerInstanceName, typeof(JobHelper).FullName }
                             };
-                            var factory = new StdSchedulerFactory(props);
+                            StdSchedulerFactory factory = new(props);
                             __scheduler = AsyncHelper.RunSync(() => factory.GetScheduler());
                             AsyncHelper.RunSync(() => __scheduler.Start());
                         }
@@ -40,7 +40,7 @@ namespace EFCore.Sharding
                 return __scheduler;
             }
         }
-        static ConcurrentDictionary<string, Action> _jobs { get; }
+        private static ConcurrentDictionary<string, Action> _jobs { get; }
             = new ConcurrentDictionary<string, Action>();
 
         #endregion
@@ -65,7 +65,7 @@ namespace EFCore.Sharding
                 .StartNow()
                 .WithSimpleSchedule(x => x.WithInterval(timeSpan).RepeatForever())
                 .Build();
-            AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
+            _ = AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
 
             return key;
         }
@@ -90,7 +90,7 @@ namespace EFCore.Sharding
                 .StartNow()
                 .WithCronSchedule($"{s} {m} {h} * * ?")//每天定时
                 .Build();
-            AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
+            _ = AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
             return key;
         }
 
@@ -117,7 +117,7 @@ namespace EFCore.Sharding
                 .StartAt(delay)
                 .WithSimpleSchedule(x => x.WithRepeatCount(0).WithInterval(TimeSpan.FromSeconds(10)))
                 .Build();
-            AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
+            _ = AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
             return key;
         }
 
@@ -144,7 +144,7 @@ namespace EFCore.Sharding
                 .StartAt(DateTime.Now + delay)
                 .WithSimpleSchedule(x => x.WithRepeatCount(0).WithInterval(TimeSpan.FromSeconds(10)))
                 .Build();
-            AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
+            _ = AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
 
             return key;
         }
@@ -168,7 +168,7 @@ namespace EFCore.Sharding
                 .StartNow()
                 .WithCronSchedule(cronExpression)
                 .Build();
-            AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
+            _ = AsyncHelper.RunSync(() => _scheduler.ScheduleJob(job, trigger));
 
             return key;
         }
@@ -179,8 +179,8 @@ namespace EFCore.Sharding
         /// <param name="jobId">任务标识Id</param>
         public static void RemoveJob(string jobId)
         {
-            AsyncHelper.RunSync(() => _scheduler.DeleteJob(new JobKey(jobId)));
-            _jobs.TryRemove(jobId, out _);
+            _ = AsyncHelper.RunSync(() => _scheduler.DeleteJob(new JobKey(jobId)));
+            _ = _jobs.TryRemove(jobId, out _);
         }
 
         #endregion

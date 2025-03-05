@@ -18,7 +18,7 @@ namespace EFCore.Sharding
                 _ => throw new Exception("ShardingType无效")
             };
 
-            visitor.Visit(queryable.Expression);
+            _ = visitor.Visit(queryable.Expression);
 
             return visitor.GetResTables();
         }
@@ -35,16 +35,11 @@ namespace EFCore.Sharding
             protected bool IsParamter(Expression expression)
             {
                 //nullable类型转换
-                if (expression is UnaryExpression unaryExpression && unaryExpression.NodeType == ExpressionType.Convert)
-                {
-                    return IsParamter(unaryExpression.Operand);
-                }
-                else
-                {
-                    return expression is MemberExpression memberExpression
+                return expression is UnaryExpression unaryExpression && unaryExpression.NodeType == ExpressionType.Convert
+                    ? IsParamter(unaryExpression.Operand)
+                    : expression is MemberExpression memberExpression
                     && memberExpression.Expression.Type == _rule.EntityType
                     && memberExpression.Member.Name == _rule.ShardingField;
-                }
             }
             protected bool IsConstant(Expression expression)
             {
@@ -57,13 +52,11 @@ namespace EFCore.Sharding
                 {
                     return constant1.Value;
                 }
-                else if (expression is MemberExpression member && member.Expression is ConstantExpression constant2)
-                {
-                    return Dynamic.InvokeGet(constant2.Value, member.Member.Name);
-                }
                 else
                 {
-                    return null;
+                    return expression is MemberExpression member && member.Expression is ConstantExpression constant2
+                        ? (object)Dynamic.InvokeGet(constant2.Value, member.Member.Name)
+                        : null;
                 }
             }
             public abstract List<string> GetResTables();
@@ -87,7 +80,7 @@ namespace EFCore.Sharding
                     && lambdaExpression.Body is BinaryExpression binaryExpression
                     )
                 {
-                    var newWhere = GetWhere(binaryExpression);
+                    Expression<Func<int, bool>> newWhere = GetWhere(binaryExpression);
 
                     _where = _where.And(newWhere);
                 }
@@ -101,9 +94,14 @@ namespace EFCore.Sharding
 
                 //递归获取
                 if (binaryExpression.Left is BinaryExpression)
+                {
                     left = GetWhere(binaryExpression.Left as BinaryExpression);
+                }
+
                 if (binaryExpression.Right is BinaryExpression)
+                {
                     right = GetWhere(binaryExpression.Right as BinaryExpression);
+                }
 
                 //组合
                 if (binaryExpression.NodeType == ExpressionType.AndAlso)
@@ -131,7 +129,9 @@ namespace EFCore.Sharding
                         value = (DateTime?)GetFieldValue(binaryExpression.Left);
                     }
                     else
+                    {
                         return x => true;
+                    }
 
                     string op = binaryExpression.NodeType switch
                     {
@@ -145,7 +145,9 @@ namespace EFCore.Sharding
                     };
 
                     if (op == null || value == null)
+                    {
                         return x => true;
+                    }
 
                     string realSuffix = _rule.GetTableSuffixByField(value.Value);
                     int index = _allTableSuffixs.IndexOf(realSuffix);
@@ -154,18 +156,20 @@ namespace EFCore.Sharding
                     if (index == -1)
                     {
                         string fullSuffix = value.Value.ToString("yyyyMMddHHmmss");
-                        var newTableSuffixs = _allTableSuffixs.Concat(new string[] { fullSuffix }).OrderBy(x => x).ToList();
+                        List<string> newTableSuffixs = _allTableSuffixs.Concat(new string[] { fullSuffix }).OrderBy(x => x).ToList();
                         int fullIndex = newTableSuffixs.IndexOf(fullSuffix);
 
                         if (fullIndex == 0 && (op == ">=" || op == "!="))
+                        {
                             return x => true;
-                        else if (fullIndex == newTableSuffixs.Count - 1 && (op == "<=" || op == "!="))
-                            return x => true;
+                        }
                         else
-                            return x => false;
+                        {
+                            return fullIndex == newTableSuffixs.Count - 1 && (op == "<=" || op == "!=") ? (x => true) : (x => false);
+                        }
                     }
 
-                    var newWhere = DynamicExpressionParser.ParseLambda<int, bool>(
+                    Expression<Func<int, bool>> newWhere = DynamicExpressionParser.ParseLambda<int, bool>(
                         ParsingConfig.Default, false, $@"it {op} @0", index);
 
                     return newWhere;
@@ -192,7 +196,7 @@ namespace EFCore.Sharding
                     && lambdaExpression.Body is BinaryExpression binaryExpression
                     )
                 {
-                    var newWhere = GetWhere(binaryExpression);
+                    Expression<Func<string, bool>> newWhere = GetWhere(binaryExpression);
 
                     _where = _where.And(newWhere);
                 }
@@ -206,9 +210,14 @@ namespace EFCore.Sharding
 
                 //递归获取
                 if (binaryExpression.Left is BinaryExpression)
+                {
                     left = GetWhere(binaryExpression.Left as BinaryExpression);
+                }
+
                 if (binaryExpression.Right is BinaryExpression)
+                {
                     right = GetWhere(binaryExpression.Right as BinaryExpression);
+                }
 
                 //组合
                 if (binaryExpression.NodeType == ExpressionType.AndAlso)
@@ -233,20 +242,26 @@ namespace EFCore.Sharding
                         value = GetFieldValue(binaryExpression.Left);
                     }
                     else
+                    {
                         return x => true;
+                    }
 
                     if (value == null)
+                    {
                         return x => true;
+                    }
 
                     string suffix = _rule.GetTableSuffixByField(value);
 
-                    var newWhere = DynamicExpressionParser.ParseLambda<string, bool>(
+                    Expression<Func<string, bool>> newWhere = DynamicExpressionParser.ParseLambda<string, bool>(
                         ParsingConfig.Default, false, $@"it == @0", suffix);
 
                     return newWhere;
                 }
                 else
+                {
                     return x => true;
+                }
             }
         }
     }

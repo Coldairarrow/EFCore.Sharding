@@ -14,10 +14,7 @@
 
         protected override string GetSchema(string schema)
         {
-            if (schema.IsNullOrEmpty())
-                return "public";
-            else
-                return schema;
+            return schema.IsNullOrEmpty() ? "public" : schema;
         }
     }
 }

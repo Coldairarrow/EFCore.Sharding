@@ -13,17 +13,17 @@ namespace EFCore.Sharding
             else
             {
                 //var selfOption = optionsSnapshot.Get(optionName).DeepClone();
-                var selfOption = optionsSnapshot.Get(optionName);
-                var defaultOption = new EFCoreShardingOptions();
-                var globalOption = optionsSnapshot.CurrentValue;
+                EFCoreShardingOptions selfOption = optionsSnapshot.Get(optionName);
+                EFCoreShardingOptions defaultOption = new();
+                EFCoreShardingOptions globalOption = optionsSnapshot.CurrentValue;
 
-                foreach (var aProperty in typeof(EFCoreShardingOptions).GetProperties())
+                foreach (System.Reflection.PropertyInfo aProperty in typeof(EFCoreShardingOptions).GetProperties())
                 {
-                    var selfValue = aProperty.GetValue(selfOption);
-                    var defaultValue = aProperty.GetValue(defaultOption);
-                    var globalValue = aProperty.GetValue(globalOption);
+                    object selfValue = aProperty.GetValue(selfOption);
+                    object defaultValue = aProperty.GetValue(defaultOption);
+                    object globalValue = aProperty.GetValue(globalOption);
 
-                    var value = Equals(selfValue, defaultValue) ? globalValue : selfValue;
+                    object value = Equals(selfValue, defaultValue) ? globalValue : selfValue;
                     aProperty.SetValue(selfOption, value);
                 }
 

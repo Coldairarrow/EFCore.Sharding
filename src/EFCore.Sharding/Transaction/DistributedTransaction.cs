@@ -14,7 +14,7 @@ namespace EFCore.Sharding
 
         private IsolationLevel _isolationLevel { get; set; }
         private SynchronizedCollection<IDbAccessor> _repositories { get; set; }
-            = new SynchronizedCollection<IDbAccessor>();
+            = [];
 
         #endregion
 
@@ -29,7 +29,9 @@ namespace EFCore.Sharding
                 if (!_repositories.Contains(aRepositroy))
                 {
                     if (OpenTransaction)
+                    {
                         aRepositroy.BeginTransaction(_isolationLevel);
+                    }
 
                     _repositories.Add(aRepositroy);
                 }
@@ -47,7 +49,7 @@ namespace EFCore.Sharding
         {
             OpenTransaction = true;
             _isolationLevel = isolationLevel;
-            foreach (var aDbAccessor in _repositories)
+            foreach (IDbAccessor aDbAccessor in _repositories)
             {
                 await aDbAccessor.BeginTransactionAsync(isolationLevel);
             }
@@ -129,7 +131,9 @@ namespace EFCore.Sharding
         public virtual void Dispose()
         {
             if (_disposed)
+            {
                 return;
+            }
 
             _disposed = true;
             DisposeTransaction();

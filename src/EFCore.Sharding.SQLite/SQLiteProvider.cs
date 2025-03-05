@@ -10,14 +10,20 @@ namespace EFCore.Sharding.SQLite
     {
         public override DbProviderFactory DbProviderFactory => SqliteFactory.Instance;
 
-        public override ModelBuilder GetModelBuilder() => new ModelBuilder(SqliteConventionSetBuilder.Build());
+        public override ModelBuilder GetModelBuilder()
+        {
+            return new ModelBuilder(SqliteConventionSetBuilder.Build());
+        }
 
-        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new SQLiteDbAccessor(baseDbContext);
+        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext)
+        {
+            return new SQLiteDbAccessor(baseDbContext);
+        }
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            dbContextOptionsBuilder.UseSqlite(dbConnection, x => x.UseNetTopologySuite());
-            dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingSQLiteMigrationsSqlGenerator>();
+            _ = dbContextOptionsBuilder.UseSqlite(dbConnection, x => x.UseNetTopologySuite());
+            _ = dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingSQLiteMigrationsSqlGenerator>();
         }
     }
 }

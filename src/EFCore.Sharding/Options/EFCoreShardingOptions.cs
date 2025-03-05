@@ -72,7 +72,7 @@ namespace EFCore.Sharding
         /// </summary>
         internal static Assembly[] EntityAssemblies { get; set; } = Array.Empty<Assembly>();
 
-        private static readonly object _typeLock = new object();
+        private static readonly object _typeLock = new();
         private static Type[] _types;
         internal static Type[] Types
         {

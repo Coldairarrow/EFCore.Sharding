@@ -15,7 +15,7 @@ namespace EFCore.Sharding
         /// <param name="func">方法</param>
         public static void ForEach<T>(this IEnumerable<T> iEnumberable, Action<T> func)
         {
-            foreach (var item in iEnumberable)
+            foreach (T item in iEnumberable)
             {
                 func(item);
             }
@@ -30,14 +30,20 @@ namespace EFCore.Sharding
         public static DataTable ToDataTable<T>(this IEnumerable<T> iEnumberable)
         {
             PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(typeof(T));
-            DataTable table = new DataTable();
+            DataTable table = new();
             foreach (PropertyDescriptor prop in properties)
-                table.Columns.Add(prop.Name, Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType);
+            {
+                _ = table.Columns.Add(prop.Name, Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType);
+            }
+
             foreach (T item in iEnumberable)
             {
                 DataRow row = table.NewRow();
                 foreach (PropertyDescriptor prop in properties)
+                {
                     row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
+                }
+
                 table.Rows.Add(row);
             }
             return table;

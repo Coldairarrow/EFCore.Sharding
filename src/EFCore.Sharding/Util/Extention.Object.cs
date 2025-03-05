@@ -10,7 +10,7 @@ namespace EFCore.Sharding
     {
         private static readonly BindingFlags _bindingFlags
             = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static;
-        private static readonly ProxyGenerator Generator = new ProxyGenerator();
+        private static readonly ProxyGenerator Generator = new();
 
         /// <summary>
         /// 判断是否为Null或者空
@@ -20,7 +20,9 @@ namespace EFCore.Sharding
         public static bool IsNullOrEmpty(this object obj)
         {
             if (obj == null)
+            {
                 return true;
+            }
             else
             {
                 string objStr = obj.ToString();
@@ -36,15 +38,8 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static object GetPropertyValue(this object obj, string propertyName)
         {
-            var property = obj.GetType().GetProperty(propertyName, _bindingFlags);
-            if (property != null)
-            {
-                return obj.GetType().GetProperty(propertyName, _bindingFlags).GetValue(obj);
-            }
-            else
-            {
-                return null;
-            }
+            PropertyInfo property = obj.GetType().GetProperty(propertyName, _bindingFlags);
+            return property != null ? obj.GetType().GetProperty(propertyName, _bindingFlags).GetValue(obj) : null;
         }
 
         /// <summary>
@@ -93,7 +88,7 @@ namespace EFCore.Sharding
             object resObj;
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
             {
-                NullableConverter newNullableConverter = new NullableConverter(targetType);
+                NullableConverter newNullableConverter = new(targetType);
                 resObj = newNullableConverter.ConvertFrom(obj);
             }
             else
@@ -121,27 +116,27 @@ namespace EFCore.Sharding
             {
                 _obj = obj;
             }
-            private object _obj;
+            private readonly object _obj;
             public void Intercept(IInvocation invocation)
             {
-                var method = invocation.Method;
+                MethodInfo method = invocation.Method;
 
                 //属性处理
                 if (method.Name.StartsWith("get_"))
                 {
-                    invocation.ReturnValue = Dynamic.InvokeGet(_obj, method.Name.Substring(4));
+                    invocation.ReturnValue = Dynamic.InvokeGet(_obj, method.Name[4..]);
 
                     return;
                 }
                 else if (method.Name.StartsWith("set_"))
                 {
-                    Dynamic.InvokeSet(_obj, method.Name.Substring(4), invocation.Arguments[0]);
+                    _ = Dynamic.InvokeSet(_obj, method.Name[4..], invocation.Arguments[0]);
 
                     return;
                 }
 
                 //方法处理
-                var name = new InvokeMemberName(method.Name, method.GetGenericArguments());
+                InvokeMemberName name = new(method.Name, method.GetGenericArguments());
                 if (invocation.Method.ReturnType != typeof(void))
                 {
                     invocation.ReturnValue = Dynamic.InvokeMember(_obj, name, invocation.Arguments);
