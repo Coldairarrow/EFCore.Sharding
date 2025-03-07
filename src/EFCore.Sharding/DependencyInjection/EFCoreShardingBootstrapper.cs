@@ -55,7 +55,7 @@ namespace EFCore.Sharding
                     logger?.LogWarning("DbContext长时间({ElapsedMinutes}m)未释放 CreateStackTrace:{CreateStackTrace} FirstCallStackTrace:{FirstCallStackTrace}",
                         (long)(DateTimeOffset.Now - x.CreateTime).TotalMinutes, x.CreateStackTrace, x.FirstCallStackTrace);
                 });
-            }, TimeSpan.FromMinutes(5));
+            }, TimeSpan.FromMinutes(5), "DbContext_CreateStackTrace");
 
             return Task.CompletedTask;
         }
