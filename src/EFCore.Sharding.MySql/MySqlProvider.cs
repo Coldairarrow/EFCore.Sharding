@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Migrations;
 using MySqlConnector;
-using System;
 using System.Data.Common;
 
 namespace EFCore.Sharding.MySql
@@ -12,16 +11,25 @@ namespace EFCore.Sharding.MySql
     {
         public override DbProviderFactory DbProviderFactory
             => MySqlConnectorFactory.Instance;
-        public override ModelBuilder GetModelBuilder() => new ModelBuilder(MySqlConventionSetBuilder.Build());
+        public override ModelBuilder GetModelBuilder()
+        {
+            return new ModelBuilder(MySqlConventionSetBuilder.Build());
+        }
 
-        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new MySqlDbAccessor(baseDbContext);
+        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext)
+        {
+            return new MySqlDbAccessor(baseDbContext);
+        }
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            Action<MySqlDbContextOptionsBuilder> mySqlOptionsAction = x => x.UseNetTopologySuite();
+            static void mySqlOptionsAction(MySqlDbContextOptionsBuilder x)
+            {
+                _ = x.UseNetTopologySuite();
+            }
 
-            dbContextOptionsBuilder.UseMySql(dbConnection, MySqlServerVersion.LatestSupportedServerVersion, mySqlOptionsAction);
-            dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
+            _ = dbContextOptionsBuilder.UseMySql(dbConnection, MySqlServerVersion.LatestSupportedServerVersion, mySqlOptionsAction);
+            _ = dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingMySqlMigrationsSqlGenerator>();
         }
     }
 }

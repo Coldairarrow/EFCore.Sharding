@@ -12,7 +12,7 @@ namespace EFCore.Sharding.Tests
         /// </summary>
         static Extention()
         {
-            JsonSerializerSettings setting = new JsonSerializerSettings();
+            JsonSerializerSettings setting = new();
             JsonConvert.DefaultSettings = new Func<JsonSerializerSettings>(() =>
             {
                 //日期类型默认格式化处理
@@ -33,7 +33,9 @@ namespace EFCore.Sharding.Tests
         public static bool IsNullOrEmpty(this object obj)
         {
             if (obj == null)
+            {
                 return true;
+            }
             else
             {
                 string objStr = obj.ToString();
@@ -59,7 +61,10 @@ namespace EFCore.Sharding.Tests
         public static string EntityToJson(this object t)
         {
             if (t == null)
+            {
                 return null;
+            }
+
             string jsonStr = "";
             jsonStr += "{";
             PropertyInfo[] infos = t.GetType().GetProperties();
@@ -67,7 +72,9 @@ namespace EFCore.Sharding.Tests
             {
                 jsonStr = jsonStr + "\"" + infos[i].Name + "\":\"" + infos[i].GetValue(t).ToString() + "\"";
                 if (i != infos.Length - 1)
+                {
                     jsonStr += ",";
+                }
             }
             jsonStr += "}";
             return jsonStr;
@@ -81,8 +88,8 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static string ToXmlStr<T>(this T obj)
         {
-            var jsonStr = obj.ToJson();
-            var xmlDoc = JsonConvert.DeserializeXmlNode(jsonStr);
+            string jsonStr = obj.ToJson();
+            System.Xml.XmlDocument xmlDoc = JsonConvert.DeserializeXmlNode(jsonStr);
             string xmlDocStr = xmlDoc.InnerXml;
 
             return xmlDocStr;
@@ -97,8 +104,8 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static string ToXmlStr<T>(this T obj, string rootNodeName)
         {
-            var jsonStr = obj.ToJson();
-            var xmlDoc = JsonConvert.DeserializeXmlNode(jsonStr, rootNodeName);
+            string jsonStr = obj.ToJson();
+            System.Xml.XmlDocument xmlDoc = JsonConvert.DeserializeXmlNode(jsonStr, rootNodeName);
             string xmlDocStr = xmlDoc.InnerXml;
 
             return xmlDocStr;
@@ -205,7 +212,7 @@ namespace EFCore.Sharding.Tests
             object resObj;
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
             {
-                NullableConverter newNullableConverter = new NullableConverter(targetType);
+                NullableConverter newNullableConverter = new(targetType);
                 resObj = newNullableConverter.ConvertFrom(obj);
             }
             else

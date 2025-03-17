@@ -22,22 +22,22 @@ namespace EFCore.Sharding.Migrations
             List<MigrationCommand> addCmds
             )
         {
-            var shardingOption = Cache.RootServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
-            if(!shardingOption.EnableShardingMigration)
+            EFCoreShardingOptions shardingOption = Cache.RootServiceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+            if (!shardingOption.EnableShardingMigration)
             {
                 return;
             }
 
-            var migrationCommands = (List<MigrationCommand>)builder.GetGetFieldValue("_commands");
+            List<MigrationCommand> migrationCommands = (List<MigrationCommand>)builder.GetGetFieldValue("_commands");
             addCmds.ForEach(aAddCmd =>
             {
-                var shardingCmds = BuildShardingCmds(operation, aAddCmd.CommandText, sqlGenerationHelper);
+                List<string> shardingCmds = BuildShardingCmds(operation, aAddCmd.CommandText, sqlGenerationHelper);
                 if (shardingCmds.Any())
                 {
-                    migrationCommands.Remove(aAddCmd);
+                    _ = migrationCommands.Remove(aAddCmd);
                     shardingCmds.ForEach(aShardingCmd =>
                     {
-                        builder.Append(aShardingCmd)
+                        _ = builder.Append(aShardingCmd)
                             .EndCommand();
                     });
                 }
@@ -53,13 +53,13 @@ namespace EFCore.Sharding.Migrations
             Dictionary<string, List<string>> _existsShardingTables
                 = Cache.RootServiceProvider.GetService<ShardingContainer>().ExistsShardingTables;
 
-            List<string> resList = new List<string>();
+            List<string> resList = [];
             string absTableName = string.Empty;
 
             string name = operation.GetPropertyValue("Name") as string;
             string tableName = operation.GetPropertyValue("Table") as string;
             string pattern = string.Format("^({0})$|^({0}_.*?)$|^(.*?_{0}_.*?)$|^(.*?_{0})$", absTableName);
-            Func<KeyValuePair<string, List<string>>, bool> where = x =>
+            bool where(KeyValuePair<string, List<string>> x) =>
                 _existsShardingTables.Any(x => Regex.IsMatch(name, BuildPattern(x.Key)));
 
             if (!tableName.IsNullOrEmpty())
@@ -74,7 +74,7 @@ namespace EFCore.Sharding.Migrations
             //分表
             if (!absTableName.IsNullOrEmpty() && _existsShardingTables.ContainsKey(absTableName))
             {
-                var shardings = _existsShardingTables[absTableName];
+                List<string> shardings = _existsShardingTables[absTableName];
                 shardings.ForEach(aShardingTable =>
                 {
                     string newCmd = sourceCmd;
@@ -90,7 +90,7 @@ namespace EFCore.Sharding.Migrations
 
             return resList;
 
-            string BuildPattern(string absTableName)
+            static string BuildPattern(string absTableName)
             {
                 return string.Format("^({0})$|^({0}_.*?)$|^(.*?_{0}_.*?)$|^(.*?_{0})$", absTableName);
             }
@@ -99,26 +99,25 @@ namespace EFCore.Sharding.Migrations
             MigrationOperation operation, string sourceTableName, string targetTableName)
         {
             List<(string sourceName, string targetName)> resList =
-                new List<(string sourceName, string targetName)>
-                {
+                [
                     (sourceTableName, targetTableName)
-                };
+                ];
 
             string name = operation.GetPropertyValue("Name") as string;
-            if (!name.IsNullOrEmpty() && !(operation is ColumnOperation))
+            if (!name.IsNullOrEmpty() && operation is not ColumnOperation)
             {
                 string[] patterns = new string[] { $"^()({sourceTableName})()$", $"^()({sourceTableName})(_.*?)$", $"^(.*?_)({sourceTableName})(_.*?)$", $"^(.*?_)({sourceTableName})()$" };
-                foreach (var aPattern in patterns)
+                foreach (string aPattern in patterns)
                 {
                     if (Regex.IsMatch(name, aPattern))
                     {
-                        var newName = new Regex(aPattern).Replace(name, "${1}" + targetTableName + "$3");
+                        string newName = new Regex(aPattern).Replace(name, "${1}" + targetTableName + "$3");
                         resList.Add((name, newName));
                         break;
                     }
                 }
             }
-            Func<PropertyInfo, bool> listPropertyWhere = x =>
+            bool listPropertyWhere(PropertyInfo x) =>
                 x.PropertyType.IsGenericType
                 && x.PropertyType.GetGenericTypeDefinition() == typeof(List<>)
                 && typeof(MigrationOperation).IsAssignableFrom(x.PropertyType.GetGenericArguments()[0]);
@@ -132,14 +131,14 @@ namespace EFCore.Sharding.Migrations
                 .ToList()
                 .ForEach(aProperty =>
                 {
-                    var propertyValue = aProperty.GetValue(operation);
+                    object propertyValue = aProperty.GetValue(operation);
                     if (propertyValue is MigrationOperation propertyOperation)
                     {
                         resList.AddRange(GetReplaceGroups(propertyOperation, sourceTableName, targetTableName));
                     }
                     else if (listPropertyWhere(aProperty))
                     {
-                        foreach (var aValue in (IEnumerable)propertyValue)
+                        foreach (object aValue in (IEnumerable)propertyValue)
                         {
                             resList.AddRange(GetReplaceGroups((MigrationOperation)aValue, sourceTableName, targetTableName));
                         }

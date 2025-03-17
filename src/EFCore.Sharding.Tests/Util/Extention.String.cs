@@ -37,10 +37,10 @@ namespace EFCore.Sharding.Tests
             byte[] inputBytes = Encoding.UTF8.GetBytes(str);
             byte[] hashBytes = md5.ComputeHash(inputBytes);
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             for (int i = 0; i < hashBytes.Length; i++)
             {
-                sb.Append(hashBytes[i].ToString("x2"));
+                _ = sb.Append(hashBytes[i].ToString("x2"));
             }
             md5.Dispose();
 
@@ -76,8 +76,8 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static string Base64Encode(this string source, Encoding encoding)
         {
-            string encode = string.Empty;
             byte[] bytes = encoding.GetBytes(source);
+            string encode;
             try
             {
                 encode = Convert.ToBase64String(bytes);
@@ -108,8 +108,8 @@ namespace EFCore.Sharding.Tests
         /// <returns>解密后的字符串</returns>
         public static string Base64Decode(this string result, Encoding encoding)
         {
-            string decode = string.Empty;
             byte[] bytes = Convert.FromBase64String(result);
+            string decode;
             try
             {
                 decode = encoding.GetString(bytes);
@@ -128,8 +128,8 @@ namespace EFCore.Sharding.Tests
         /// <returns>编码的文本字符串</returns>
         public static string Base64UrlEncode(this string text)
         {
-            var plainTextBytes = Encoding.UTF8.GetBytes(text);
-            var base64 = Convert.ToBase64String(plainTextBytes).Replace('+', '-').Replace('/', '_').TrimEnd('=');
+            byte[] plainTextBytes = Encoding.UTF8.GetBytes(text);
+            string base64 = Convert.ToBase64String(plainTextBytes).Replace('+', '-').Replace('/', '_').TrimEnd('=');
 
             return base64;
         }
@@ -151,7 +151,7 @@ namespace EFCore.Sharding.Tests
                     base64UrlStr += "=";
                     break;
             }
-            var bytes = Convert.FromBase64String(base64UrlStr);
+            byte[] bytes = Convert.FromBase64String(base64UrlStr);
 
             return Encoding.UTF8.GetString(bytes);
         }
@@ -216,10 +216,10 @@ namespace EFCore.Sharding.Tests
             byte[] bytes = Encoding.UTF8.GetBytes(str);
             byte[] hash = SHA256.Create().ComputeHash(bytes);
 
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new();
             for (int i = 0; i < hash.Length; i++)
             {
-                builder.Append(hash[i].ToString("x2"));
+                _ = builder.Append(hash[i].ToString("x2"));
             }
 
             return builder.ToString();
@@ -233,14 +233,12 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static string ToHMACSHA256String(this string text, string secret)
         {
-            secret = secret ?? "";
+            secret ??= "";
             byte[] keyByte = Encoding.UTF8.GetBytes(secret);
             byte[] messageBytes = Encoding.UTF8.GetBytes(text);
-            using (var hmacsha256 = new HMACSHA256(keyByte))
-            {
-                byte[] hashmessage = hmacsha256.ComputeHash(messageBytes);
-                return Convert.ToBase64String(hashmessage).Replace('+', '-').Replace('/', '_').TrimEnd('=');
-            }
+            using HMACSHA256 hmacsha256 = new(keyByte);
+            byte[] hashmessage = hmacsha256.ComputeHash(messageBytes);
+            return Convert.ToBase64String(hashmessage).Replace('+', '-').Replace('/', '_').TrimEnd('=');
         }
 
         /// <summary>
@@ -251,9 +249,7 @@ namespace EFCore.Sharding.Tests
         public static int ToInt(this string str)
         {
             str = str.Replace("\0", "");
-            if (string.IsNullOrEmpty(str))
-                return 0;
-            return Convert.ToInt32(str);
+            return string.IsNullOrEmpty(str) ? 0 : Convert.ToInt32(str);
         }
 
         /// <summary>
@@ -264,10 +260,7 @@ namespace EFCore.Sharding.Tests
         public static long ToLong(this string str)
         {
             str = str.Replace("\0", "");
-            if (string.IsNullOrEmpty(str))
-                return 0;
-
-            return Convert.ToInt64(str);
+            return string.IsNullOrEmpty(str) ? 0 : Convert.ToInt64(str);
         }
 
         /// <summary>
@@ -287,7 +280,7 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static int ToInt0X(this string str)
         {
-            int num = Int32.Parse(str, NumberStyles.HexNumber);
+            int num = int.Parse(str, NumberStyles.HexNumber);
             return num;
         }
 
@@ -329,8 +322,8 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static byte[] To0XBytes(this string str)
         {
-            List<byte> resBytes = new List<byte>();
-            for (int i = 0; i < str.Length; i = i + 2)
+            List<byte> resBytes = [];
+            for (int i = 0; i < str.Length; i += 2)
             {
                 string numStr = $@"{str[i]}{str[i + 1]}";
                 resBytes.Add((byte)numStr.ToInt0X());
@@ -378,7 +371,7 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static string RemoveAt(this string jsonStr)
         {
-            Regex reg = new Regex("\"@([^ \"]*)\"\\s*:\\s*\"(([^ \"]+\\s*)*)\"");
+            Regex reg = new("\"@([^ \"]*)\"\\s*:\\s*\"(([^ \"]+\\s*)*)\"");
             string strPatten = "\"$1\":\"$2\"";
             return reg.Replace(jsonStr, strPatten);
         }
@@ -402,7 +395,7 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static T XmlStrToObject<T>(this string xmlStr)
         {
-            XmlDocument doc = new XmlDocument();
+            XmlDocument doc = new();
             doc.LoadXml(xmlStr);
             string jsonJsonStr = JsonConvert.SerializeXmlNode(doc);
 
@@ -416,7 +409,7 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static JObject XmlStrToJObject(this string xmlStr)
         {
-            XmlDocument doc = new XmlDocument();
+            XmlDocument doc = new();
             doc.LoadXml(xmlStr);
             string jsonJsonStr = JsonConvert.SerializeXmlNode(doc);
 
@@ -472,13 +465,15 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static T ToEntity<T>(this string json)
         {
-            if (json == null || json == "")
-                return default(T);
+            if (json is null or "")
+            {
+                return default;
+            }
 
             Type type = typeof(T);
             object obj = Activator.CreateInstance(type, null);
 
-            foreach (var item in type.GetProperties())
+            foreach (PropertyInfo item in type.GetProperties())
             {
                 PropertyInfo info = obj.GetType().GetProperty(item.Name);
                 string pattern;
@@ -504,7 +499,7 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static string ToFirstUpperStr(this string str)
         {
-            return str.Substring(0, 1).ToUpper() + str.Substring(1);
+            return str[..1].ToUpper() + str[1..];
         }
 
         /// <summary>
@@ -514,7 +509,7 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static string ToFirstLowerStr(this string str)
         {
-            return str.Substring(0, 1).ToLower() + str.Substring(1);
+            return str[..1].ToLower() + str[1..];
         }
 
         /// <summary>
@@ -524,7 +519,7 @@ namespace EFCore.Sharding.Tests
         /// <returns></returns>
         public static IPEndPoint ToIPEndPoint(this string str)
         {
-            IPEndPoint iPEndPoint = null;
+            IPEndPoint iPEndPoint;
             try
             {
                 string[] strArray = str.Split(':').ToArray();
@@ -549,13 +544,12 @@ namespace EFCore.Sharding.Tests
         public static bool IsWeakPwd(this string pwd)
         {
             if (pwd.IsNullOrEmpty())
+            {
                 throw new Exception("pwd不能为空");
+            }
 
             string pattern = "(^[0-9]+$)|(^[a-z]+$)|(^[A-Z]+$)|(^.{0,8}$)";
-            if (Regex.IsMatch(pwd, pattern))
-                return true;
-            else
-                return false;
+            return Regex.IsMatch(pwd, pattern);
         }
     }
 }

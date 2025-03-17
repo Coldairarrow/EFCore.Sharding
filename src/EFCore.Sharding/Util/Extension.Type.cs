@@ -6,7 +6,7 @@ namespace EFCore.Sharding
     {
         public static bool IsNullable(this Type theType)
         {
-            return (theType.IsGenericType && theType.GetGenericTypeDefinition() == (typeof(Nullable<>)));
+            return theType.IsGenericType && theType.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
     }
 }

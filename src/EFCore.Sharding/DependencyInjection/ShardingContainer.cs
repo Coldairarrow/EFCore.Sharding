@@ -23,19 +23,19 @@ namespace EFCore.Sharding
         #region 私有成员
 
         private readonly SynchronizedCollection<DataSource> _dataSources
-            = new SynchronizedCollection<DataSource>();
+            = [];
         private readonly SynchronizedCollection<ShardingRule> _shardingRules
-            = new SynchronizedCollection<ShardingRule>();
+            = [];
         private readonly SynchronizedCollection<PhysicTable> _physicTables
-            = new SynchronizedCollection<PhysicTable>();
+            = [];
         private List<(string suffix, string conString, DatabaseType dbType)>
             GetTargetTables<TEntity>(ReadWriteType opType, object obj = null)
         {
-            var entityType = typeof(TEntity);
-            var rule = _shardingRules.Where(x => x.EntityType == entityType).FirstOrDefault();
+            Type entityType = typeof(TEntity);
+            ShardingRule rule = _shardingRules.Where(x => x.EntityType == entityType).FirstOrDefault();
 
             //获取数据库组
-            var tables = _physicTables.Where(x => x.EntityType == entityType).ToList();
+            List<PhysicTable> tables = _physicTables.Where(x => x.EntityType == entityType).ToList();
 
             //若为写操作则只获取特定表
             if (obj != null)
@@ -45,14 +45,14 @@ namespace EFCore.Sharding
             }
 
             //数据库组中数据库负载均衡
-            var resList = tables.Select(x =>
+            List<(string Suffix, string connectionString, DatabaseType DbType)> resList = tables.Select(x =>
             {
-                var theSource = _dataSources.Where(y => y.Name == x.DataSourceName).FirstOrDefault();
+                DataSource theSource = _dataSources.Where(y => y.Name == x.DataSourceName).FirstOrDefault();
 
-                var dbs = theSource.Dbs.Where(y => y.readWriteType.HasFlag(opType)).ToList();
-                var theDb = RandomHelper.Next(dbs);
+                List<(string connectionString, ReadWriteType readWriteType)> dbs = theSource.Dbs.Where(y => y.readWriteType.HasFlag(opType)).ToList();
+                (string connectionString, ReadWriteType readWriteType) = RandomHelper.Next(dbs);
 
-                return (x.Suffix, theDb.connectionString, theSource.DbType);
+                return (x.Suffix, connectionString, theSource.DbType);
             }).ToList();
 
             return resList;
@@ -60,13 +60,20 @@ namespace EFCore.Sharding
         private void CheckRule<TEntity>(ShardingType shardingType, string shardingField)
         {
             if (_shardingRules.Any(x => x.EntityType == typeof(TEntity)))
+            {
                 throw new Exception($"{typeof(TEntity).Name}已存在分表规则!");
+            }
 
             Type fieldType = typeof(TEntity).GetProperty(shardingField)?.PropertyType;
             if (fieldType == null)
+            {
                 throw new Exception($"不存在分表字段:{shardingField}");
+            }
+
             if (fieldType.IsNullable())
+            {
                 throw new Exception($"分表字段:{shardingField}不能为可空类型");
+            }
 
             if (shardingType == ShardingType.Date)
             {
@@ -78,7 +85,7 @@ namespace EFCore.Sharding
         }
         private void AddPhysicTable<TEntity>(string suffix, string sourceName)
         {
-            var entityType = typeof(TEntity);
+            Type entityType = typeof(TEntity);
 
             if (!_physicTables.Any(x => x.EntityType == entityType && x.Suffix == suffix && x.DataSourceName == sourceName))
             {
@@ -92,7 +99,7 @@ namespace EFCore.Sharding
         }
         private void CreateTable<TEntity>(IServiceProvider serviceProvider, string sourceName, string suffix)
         {
-            var theSource = _dataSources.Where(x => x.Name == sourceName).FirstOrDefault();
+            DataSource theSource = _dataSources.Where(x => x.Name == sourceName).FirstOrDefault();
             theSource.Dbs.ForEach(aDb =>
             {
                 serviceProvider.GetService<DbFactory>().CreateTable(aDb.connectionString, theSource.DbType, typeof(TEntity), suffix);
@@ -101,11 +108,11 @@ namespace EFCore.Sharding
         private List<(string suffix, string conString, DatabaseType dbType)> FilterTable<T>(
             List<(string suffix, string conString, DatabaseType dbType)> allTables, IQueryable<T> source)
         {
-            var entityType = typeof(T);
+            Type entityType = typeof(T);
             string absTable = AnnotationHelper.GetDbTableName(source.ElementType);
-            var rule = _shardingRules.Where(x => x.EntityType == entityType).Single();
-            var allTableSuffixs = allTables.Select(x => x.suffix).ToList();
-            var findSuffixs = ShardingHelper.FilterTable(source, allTableSuffixs, rule);
+            ShardingRule rule = _shardingRules.Where(x => x.EntityType == entityType).Single();
+            List<string> allTableSuffixs = allTables.Select(x => x.suffix).ToList();
+            List<string> findSuffixs = ShardingHelper.FilterTable(source, allTableSuffixs, rule);
             allTables = allTables.Where(x => findSuffixs.Contains(x.suffix)).ToList();
 #if DEBUG
             Console.WriteLine($"访问分表:{string.Join(",", findSuffixs.Select(x => $"{absTable}_{x}"))}");
@@ -116,7 +123,7 @@ namespace EFCore.Sharding
         {
             if (!ExistsShardingTables.ContainsKey(absTableName))
             {
-                ExistsShardingTables.Add(absTableName, new List<string>());
+                ExistsShardingTables.Add(absTableName, []);
             }
             ExistsShardingTables[absTableName].Add(fullTableName);
         }
@@ -127,7 +134,7 @@ namespace EFCore.Sharding
 
         public List<(string suffix, string conString, DatabaseType dbType)> GetWriteTables<T>(IQueryable<T> source = null)
         {
-            var tables = GetTargetTables<T>(ReadWriteType.Write, null);
+            List<(string suffix, string conString, DatabaseType dbType)> tables = GetTargetTables<T>(ReadWriteType.Write, null);
             if (source != null)
             {
                 tables = FilterTable(tables, source);
@@ -141,7 +148,7 @@ namespace EFCore.Sharding
         }
         public List<(string suffix, string conString, DatabaseType dbType)> GetReadTables<T>(IQueryable<T> source)
         {
-            var allTables = GetTargetTables<T>(ReadWriteType.Read);
+            List<(string suffix, string conString, DatabaseType dbType)> allTables = GetTargetTables<T>(ReadWriteType.Read);
 
             return FilterTable(allTables, source);
         }
@@ -150,7 +157,7 @@ namespace EFCore.Sharding
             return _dataSources.FirstOrDefault().DbType;
         }
         public readonly Dictionary<string, List<string>> ExistsShardingTables
-            = new Dictionary<string, List<string>>();
+            = [];
 
         #endregion
 
@@ -164,7 +171,7 @@ namespace EFCore.Sharding
         }
         public IShardingBuilder SetCommandTimeout(int timeout)
         {
-            _services.Configure<EFCoreShardingOptions>(x =>
+            _ = _services.Configure<EFCoreShardingOptions>(x =>
             {
                 x.CommandTimeout = timeout;
             });
@@ -173,7 +180,7 @@ namespace EFCore.Sharding
         }
         public IShardingBuilder AddEntityTypeBuilderFilter(Action<EntityTypeBuilder> filter)
         {
-            _services.Configure<EFCoreShardingOptions>(x =>
+            _ = _services.Configure<EFCoreShardingOptions>(x =>
             {
                 x.EntityTypeBuilderFilter += filter;
             });
@@ -182,7 +189,7 @@ namespace EFCore.Sharding
         }
         public IShardingBuilder MigrationsWithoutForeignKey()
         {
-            _services.Configure<EFCoreShardingOptions>(x =>
+            _ = _services.Configure<EFCoreShardingOptions>(x =>
             {
                 x.MigrationsWithoutForeignKey = true;
             });
@@ -191,7 +198,7 @@ namespace EFCore.Sharding
         }
         public IShardingBuilder CreateShardingTableOnStarting(bool enable)
         {
-            _services.Configure<EFCoreShardingOptions>(x =>
+            _ = _services.Configure<EFCoreShardingOptions>(x =>
             {
                 x.CreateShardingTableOnStarting = enable;
             });
@@ -200,7 +207,7 @@ namespace EFCore.Sharding
         }
         public IShardingBuilder EnableShardingMigration(bool enable)
         {
-            _services.Configure<EFCoreShardingOptions>(x =>
+            _ = _services.Configure<EFCoreShardingOptions>(x =>
             {
                 x.EnableShardingMigration = enable;
             });
@@ -209,7 +216,7 @@ namespace EFCore.Sharding
         }
         public IShardingBuilder EnableComments(bool enable)
         {
-            _services.Configure<EFCoreShardingOptions>(x =>
+            _ = _services.Configure<EFCoreShardingOptions>(x =>
             {
                 x.EnableComments = enable;
             });
@@ -218,7 +225,7 @@ namespace EFCore.Sharding
         }
         public IShardingBuilder UseLogicDelete(string keyField = "Id", string deletedField = "Deleted")
         {
-            _services.Configure<EFCoreShardingOptions>(x =>
+            _ = _services.Configure<EFCoreShardingOptions>(x =>
             {
                 x.LogicDelete = true;
                 x.KeyField = keyField;
@@ -229,7 +236,7 @@ namespace EFCore.Sharding
         }
         public IShardingBuilder SetMinCommandElapsedMilliseconds(int minCommandElapsedMilliseconds)
         {
-            _services.Configure<EFCoreShardingOptions>(x =>
+            _ = _services.Configure<EFCoreShardingOptions>(x =>
             {
                 x.MinCommandElapsedMilliseconds = minCommandElapsedMilliseconds;
             });
@@ -242,18 +249,18 @@ namespace EFCore.Sharding
         }
         public IShardingBuilder UseDatabase<TDbAccessor>(string conString, DatabaseType dbType, string entityNamespace, Action<EFCoreShardingOptions> optionsBuilder = null) where TDbAccessor : class, IDbAccessor
         {
-            var optionName = typeof(TDbAccessor).FullName;
-            _services.AddOptions<EFCoreShardingOptions>(optionName);
+            string optionName = typeof(TDbAccessor).FullName;
+            _ = _services.AddOptions<EFCoreShardingOptions>(optionName);
 
             if (optionsBuilder != null)
             {
-                _services.Configure(optionName, optionsBuilder);
+                _ = _services.Configure(optionName, optionsBuilder);
             }
 
-            _services.AddScoped(serviceProvider =>
+            _ = _services.AddScoped(serviceProvider =>
             {
-                var dbFactory = serviceProvider.GetService<IDbFactory>();
-                var options = serviceProvider.GetService<IOptionsMonitor<EFCoreShardingOptions>>().BuildOption(optionName);
+                IDbFactory dbFactory = serviceProvider.GetService<IDbFactory>();
+                EFCoreShardingOptions options = serviceProvider.GetService<IOptionsMonitor<EFCoreShardingOptions>>().BuildOption(optionName);
                 IDbAccessor db = dbFactory.GetDbAccessor(new DbContextParamters
                 {
                     ConnectionString = conString,
@@ -261,12 +268,11 @@ namespace EFCore.Sharding
                     EntityNamespace = entityNamespace
                 }, optionName);
                 if (options.LogicDelete)
+                {
                     db = new LogicDeleteDbAccessor(db, options);
+                }
 
-                if (typeof(TDbAccessor) == typeof(IDbAccessor))
-                    return (TDbAccessor)db;
-                else
-                    return db.ActLike<TDbAccessor>();
+                return typeof(TDbAccessor) == typeof(IDbAccessor) ? (TDbAccessor)db : db.ActLike<TDbAccessor>();
             });
 
             return this;
@@ -277,21 +283,23 @@ namespace EFCore.Sharding
         }
         public IShardingBuilder UseDatabase<TDbAccessor>((string connectionString, ReadWriteType readWriteType)[] dbs, DatabaseType dbType, string entityNamespace, Action<EFCoreShardingOptions> optionsBuilder = null) where TDbAccessor : class, IDbAccessor
         {
-            var optionName = typeof(TDbAccessor).FullName;
-            _services.AddOptions<EFCoreShardingOptions>(optionName);
+            string optionName = typeof(TDbAccessor).FullName;
+            _ = _services.AddOptions<EFCoreShardingOptions>(optionName);
 
             if (optionsBuilder != null)
             {
-                _services.Configure(optionName, optionsBuilder);
+                _ = _services.Configure(optionName, optionsBuilder);
             }
 
             if (!(dbs.Any(x => x.readWriteType.HasFlag(ReadWriteType.Read))
                 && dbs.Any(x => x.readWriteType.HasFlag(ReadWriteType.Write))))
-                throw new Exception("dbs必须包含写库与读库");
-
-            _services.AddScoped(serviceProvider =>
             {
-                var options = serviceProvider.GetService<IOptionsMonitor<EFCoreShardingOptions>>().BuildOption(optionName);
+                throw new Exception("dbs必须包含写库与读库");
+            }
+
+            _ = _services.AddScoped(serviceProvider =>
+            {
+                EFCoreShardingOptions options = serviceProvider.GetService<IOptionsMonitor<EFCoreShardingOptions>>().BuildOption(optionName);
 
                 IDbAccessor db = new ReadWriteDbAccessor(
                     dbs,
@@ -301,10 +309,7 @@ namespace EFCore.Sharding
                     options
                     );
 
-                if (typeof(TDbAccessor) == typeof(IDbAccessor))
-                    return (TDbAccessor)db;
-                else
-                    return db.ActLike<TDbAccessor>();
+                return typeof(TDbAccessor) == typeof(IDbAccessor) ? (TDbAccessor)db : db.ActLike<TDbAccessor>();
             });
 
             return this;
@@ -332,7 +337,7 @@ namespace EFCore.Sharding
         {
             CheckRule<TEntity>(ShardingType.Date, shardingField);
 
-            var shardingRule = new ShardingRule
+            ShardingRule shardingRule = new()
             {
                 EntityType = typeof(TEntity),
                 ExpandByDateMode = expandByDateMode,
@@ -343,7 +348,7 @@ namespace EFCore.Sharding
 
             EFCoreShardingOptions.Bootstrapper += serviceProvider =>
             {
-                var sharingOption = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+                EFCoreShardingOptions sharingOption = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
 
                 (string conExpression, string startTimeFormat, Func<DateTime, DateTime> nextTime) paramter =
                     expandByDateMode switch
@@ -357,14 +362,14 @@ namespace EFCore.Sharding
                     };
 
                 //确保之前的表已存在
-                var theTime = ranges.Min(x => x.startTime);
+                DateTime theTime = ranges.Min(x => x.startTime);
                 theTime = DateTime.Parse(theTime.ToString(paramter.startTimeFormat));
 
                 DateTime endTime = paramter.nextTime(DateTime.Parse(DateTime.Now.ToString(paramter.startTimeFormat)));
 
                 while (theTime <= endTime)
                 {
-                    var theSourceName = GetSourceName(theTime);
+                    string theSourceName = GetSourceName(theTime);
                     string suffix = shardingRule.GetTableSuffixByField(theTime);
 
                     string absTableName = AnnotationHelper.GetDbTableName(typeof(TEntity));
@@ -383,15 +388,15 @@ namespace EFCore.Sharding
                 }
 
                 //定时自动建表
-                JobHelper.SetCronJob(() =>
+                _ = JobHelper.SetCronJob(() =>
                 {
                     DateTime trueDate = paramter.nextTime(DateTime.Parse(DateTime.Now.ToString(paramter.startTimeFormat)));
-                    var theSourceName = GetSourceName(trueDate);
+                    string theSourceName = GetSourceName(trueDate);
                     string suffix = shardingRule.GetTableSuffixByField(trueDate);
                     //添加物理表
                     CreateTable<TEntity>(serviceProvider, theSourceName, suffix);
                     AddPhysicTable<TEntity>(suffix, theSourceName);
-                }, paramter.conExpression);
+                }, paramter.conExpression, "Create_Table");
 
                 string GetSourceName(DateTime time)
                 {
@@ -413,7 +418,7 @@ namespace EFCore.Sharding
         {
             CheckRule<TEntity>(ShardingType.HashMod, shardingField);
 
-            ShardingRule rule = new ShardingRule
+            ShardingRule rule = new()
             {
                 EntityType = typeof(TEntity),
                 ShardingField = shardingField,
@@ -424,12 +429,12 @@ namespace EFCore.Sharding
 
             EFCoreShardingOptions.Bootstrapper += serviceProvider =>
             {
-                var sharingOption = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
+                EFCoreShardingOptions sharingOption = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
 
                 //建表
                 for (int i = 0; i < mod; i++)
                 {
-                    var sourceName = ranges.Where(x => i >= x.start && i < x.end).FirstOrDefault().sourceName;
+                    string sourceName = ranges.Where(x => i >= x.start && i < x.end).FirstOrDefault().sourceName;
 
                     string absTableName = AnnotationHelper.GetDbTableName(typeof(TEntity));
                     string fullTableName = $"{absTableName}_{i}";

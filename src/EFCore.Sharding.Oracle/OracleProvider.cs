@@ -10,14 +10,20 @@ namespace EFCore.Sharding.Oracle
     {
         public override DbProviderFactory DbProviderFactory => OracleClientFactory.Instance;
 
-        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new OracleDbAccessor(baseDbContext);
+        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext)
+        {
+            return new OracleDbAccessor(baseDbContext);
+        }
 
-        public override ModelBuilder GetModelBuilder() => new ModelBuilder(OracleConventionSetBuilder.Build());
+        public override ModelBuilder GetModelBuilder()
+        {
+            return new ModelBuilder(OracleConventionSetBuilder.Build());
+        }
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
 
-#if NET8_0
+#if NET9_0 || NET8_0 
 dbContextOptionsBuilder.UseOracle(dbConnection, x => x.UseOracleSQLCompatibility(OracleSQLCompatibility.DatabaseVersion19));
 
 #else   

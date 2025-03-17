@@ -18,7 +18,10 @@
                 {
                     hash1 = ((hash1 << 5) + hash1) ^ str[i];
                     if (i == str.Length - 1 || str[i + 1] == '\0')
+                    {
                         break;
+                    }
+
                     hash2 = ((hash2 << 5) + hash2) ^ str[i + 1];
                 }
 

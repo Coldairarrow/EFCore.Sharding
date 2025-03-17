@@ -10,29 +10,29 @@ namespace EFCore.Sharding.Tests.Sharding
     [TestClass]
     public class ShardingHelperTest
     {
-        private readonly static string _table1 = new string[] { "202001" }.ToJson();
-        private readonly static string _table2 = new string[] { "202002" }.ToJson();
-        private readonly static string _table3 = new string[] { "202003" }.ToJson();
-        private readonly static string _table123 = new string[] { "202001", "202002", "202003" }.ToJson();
-        private readonly static string _table12 = new string[] { "202001", "202002" }.ToJson();
-        private readonly static string _table23 = new string[] { "202002", "202003" }.ToJson();
+        private static readonly string _table1 = new string[] { "202001" }.ToJson();
+        private static readonly string _table2 = new string[] { "202002" }.ToJson();
+        private static readonly string _table3 = new string[] { "202003" }.ToJson();
+        private static readonly string _table123 = new string[] { "202001", "202002", "202003" }.ToJson();
+        private static readonly string _table12 = new string[] { "202001", "202002" }.ToJson();
+        private static readonly string _table23 = new string[] { "202002", "202003" }.ToJson();
 
         [TestMethod]
         public void FilterTable()
         {
-            using var scop = Startup.ServiceScopeFactory.CreateScope();
+            using IServiceScope scop = Startup.ServiceScopeFactory.CreateScope();
 
-            var db = scop.ServiceProvider.GetService<IDbAccessor>();
+            IDbAccessor db = scop.ServiceProvider.GetService<IDbAccessor>();
 
-            var q = db.GetIQueryable<Base_UnitTest>();
-            ShardingRule rule = new ShardingRule
+            System.Linq.IQueryable<Base_UnitTest> q = db.GetIQueryable<Base_UnitTest>();
+            ShardingRule rule = new()
             {
                 EntityType = typeof(Base_UnitTest),
                 ExpandByDateMode = ExpandByDateMode.PerMonth,
                 ShardingField = nameof(Base_UnitTest.CreateTime),
                 ShardingType = ShardingType.Date
             };
-            List<string> tableSuffixs = new List<string>() { "202001", "202002", "202003" };
+            List<string> tableSuffixs = ["202001", "202002", "202003"];
             DateTime time0 = DateTime.Parse("2019-12-01");
             DateTime time1 = DateTime.Parse("2020-01-01");
             DateTime time2 = DateTime.Parse("2020-02-01");

@@ -12,12 +12,7 @@ namespace EFCore.Sharding.MySql
 {
     internal class ShardingMySqlMigrationsSqlGenerator : MySqlMigrationsSqlGenerator
     {
-#if NET8_0
-        public ShardingMySqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, ICommandBatchPreparer commandBatchPreparer, IMySqlOptions options) : base(dependencies, commandBatchPreparer, options)
-        {
-        }
-#endif
-#if NET7_0
+#if NET9_0 || NET8_0 || NET7_0
         public ShardingMySqlMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, ICommandBatchPreparer commandBatchPreparer, IMySqlOptions options) : base(dependencies, commandBatchPreparer, options)
         {
         }
@@ -37,10 +32,10 @@ namespace EFCore.Sharding.MySql
             IModel model,
             MigrationCommandListBuilder builder)
         {
-            var oldCmds = builder.GetCommandList().ToList();
+            System.Collections.Generic.List<MigrationCommand> oldCmds = builder.GetCommandList().ToList();
             base.Generate(operation, model, builder);
-            var newCmds = builder.GetCommandList().ToList();
-            var addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
+            System.Collections.Generic.List<MigrationCommand> newCmds = builder.GetCommandList().ToList();
+            System.Collections.Generic.List<MigrationCommand> addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
 
             MigrationHelper.Generate(operation, builder, Dependencies.SqlGenerationHelper, addCmds);
         }

@@ -37,24 +37,36 @@ namespace EFCore.Sharding
         /// 
         /// </summary>
         /// <returns></returns>
-        public DbConnection GetDbConnection() => DbProviderFactory.CreateConnection();
+        public DbConnection GetDbConnection()
+        {
+            return DbProviderFactory.CreateConnection();
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public DbCommand GetDbCommand() => DbProviderFactory.CreateCommand();
+        public DbCommand GetDbCommand()
+        {
+            return DbProviderFactory.CreateCommand();
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public DbParameter GetDbParameter() => DbProviderFactory.CreateParameter();
+        public DbParameter GetDbParameter()
+        {
+            return DbProviderFactory.CreateParameter();
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public DataAdapter GetDataAdapter() => DbProviderFactory.CreateDataAdapter();
+        public DataAdapter GetDataAdapter()
+        {
+            return DbProviderFactory.CreateDataAdapter();
+        }
     }
 }

@@ -24,7 +24,7 @@ namespace EFCore.Sharding
 
         public void CreateTable(string conString, DatabaseType dbType, Type entityType, string suffix)
         {
-            DbContextParamters options = new DbContextParamters
+            DbContextParamters options = new()
             {
                 ConnectionString = conString,
                 DbType = dbType,
@@ -33,7 +33,7 @@ namespace EFCore.Sharding
             };
 
             using DbContext dbContext = GetDbContext(options, _optionsMonitor.BuildOption(null));
-            var databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
+            RelationalDatabaseCreator databaseCreator = dbContext.Database.GetService<IDatabaseCreator>() as RelationalDatabaseCreator;
             try
             {
                 databaseCreator.CreateTables();
@@ -48,29 +48,26 @@ namespace EFCore.Sharding
         {
             EFCoreShardingOptions eFCoreShardingOptions = _optionsMonitor.BuildOption(optionName);
 
-            var dbContext = GetDbContext(dbContextParamters, eFCoreShardingOptions);
+            GenericDbContext dbContext = GetDbContext(dbContextParamters, eFCoreShardingOptions);
 
             return GetProvider(dbContextParamters.DbType).GetDbAccessor(dbContext);
         }
 
         public GenericDbContext GetDbContext(DbContextParamters dbContextParamters, EFCoreShardingOptions eFCoreShardingOptions)
         {
-            if (eFCoreShardingOptions == null)
-            {
-                eFCoreShardingOptions = _optionsMonitor.BuildOption(null);
-            }
+            eFCoreShardingOptions ??= _optionsMonitor.BuildOption(null);
 
             AbstractProvider provider = GetProvider(dbContextParamters.DbType);
 
             DbConnection dbConnection = provider.GetDbConnection();
             dbConnection.ConnectionString = dbContextParamters.ConnectionString;
 
-            DbContextOptionsBuilder builder = new DbContextOptionsBuilder();
-            builder.UseLoggerFactory(_loggerFactory);
+            DbContextOptionsBuilder builder = new();
+            _ = builder.UseLoggerFactory(_loggerFactory);
 
             provider.UseDatabase(builder, dbConnection);
-            builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();
-            builder.ReplaceService<IMigrationsModelDiffer, ShardingMigration>();
+            _ = builder.ReplaceService<IModelCacheKeyFactory, GenericModelCacheKeyFactory>();
+            _ = builder.ReplaceService<IMigrationsModelDiffer, ShardingMigration>();
 
             return new GenericDbContext(builder.Options, dbContextParamters, eFCoreShardingOptions, _serviceProvider);
         }
@@ -82,7 +79,7 @@ namespace EFCore.Sharding
             {
                 Assembly assembly = Assembly.Load(assemblyName);
 
-                var type = assembly.GetType($"{assemblyName}.{databaseType}Provider");
+                Type type = assembly.GetType($"{assemblyName}.{databaseType}Provider");
 
                 return Activator.CreateInstance(type) as AbstractProvider;
             }

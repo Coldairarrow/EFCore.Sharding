@@ -10,9 +10,7 @@ namespace EFCore.Sharding.Oracle
 {
     internal class ShardingOracleMigrationsSqlGenerator : OracleMigrationsSqlGenerator
     {
-#pragma warning disable EF1001 // Internal EF Core API usage.
         public ShardingOracleMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, IOracleOptions options) : base(dependencies, options)
-#pragma warning restore EF1001 // Internal EF Core API usage.
         {
         }
 
@@ -21,10 +19,10 @@ namespace EFCore.Sharding.Oracle
             IModel model,
             MigrationCommandListBuilder builder)
         {
-            var oldCmds = builder.GetCommandList().ToList();
+            System.Collections.Generic.List<MigrationCommand> oldCmds = builder.GetCommandList().ToList();
             base.Generate(operation, model, builder);
-            var newCmds = builder.GetCommandList().ToList();
-            var addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
+            System.Collections.Generic.List<MigrationCommand> newCmds = builder.GetCommandList().ToList();
+            System.Collections.Generic.List<MigrationCommand> addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
 
             MigrationHelper.Generate(operation, builder, Dependencies.SqlGenerationHelper, addCmds);
         }

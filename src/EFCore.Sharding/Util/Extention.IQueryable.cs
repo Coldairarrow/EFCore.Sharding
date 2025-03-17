@@ -61,8 +61,8 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static int? GetSkipCount(this IQueryable source)
         {
-            var visitor = new SkipVisitor();
-            visitor.Visit(source.Expression);
+            SkipVisitor visitor = new();
+            _ = visitor.Visit(source.Expression);
 
             return visitor.SkipCount;
         }
@@ -74,8 +74,8 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static int? GetTakeCount(this IQueryable source)
         {
-            var visitor = new TakeVisitor();
-            visitor.Visit(source.Expression);
+            TakeVisitor visitor = new();
+            _ = visitor.Visit(source.Expression);
 
             return visitor.TakeCount;
         }
@@ -87,8 +87,8 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static (string sortColumn, string sortType) GetOrderBy(this IQueryable source)
         {
-            var visitor = new GetOrderByVisitor();
-            visitor.Visit(source.Expression);
+            GetOrderByVisitor visitor = new();
+            _ = visitor.Visit(source.Expression);
 
             return visitor.OrderParam;
         }
@@ -101,8 +101,8 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static IQueryable ReplaceQueryable(this IQueryable source, IQueryable newSource)
         {
-            ReplaceQueryableVisitor replaceQueryableVisitor = new ReplaceQueryableVisitor(newSource);
-            var newExpre = replaceQueryableVisitor.Visit(source.Expression);
+            ReplaceQueryableVisitor replaceQueryableVisitor = new(newSource);
+            Expression newExpre = replaceQueryableVisitor.Visit(source.Expression);
 
             return newSource.Provider.CreateQuery(newExpre);
         }
@@ -114,8 +114,8 @@ namespace EFCore.Sharding
         /// <returns></returns>
         public static (string sql, IReadOnlyDictionary<string, object> parameters) ToSql(this IQueryable query)
         {
-            var cmd = query.CreateDbCommand();
-            Dictionary<string, object> paramters = new Dictionary<string, object>();
+            DbCommand cmd = query.CreateDbCommand();
+            Dictionary<string, object> paramters = [];
             foreach (DbParameter aCmd in cmd.Parameters)
             {
                 paramters.Add(aCmd.ParameterName, aCmd.Value);
@@ -125,27 +125,22 @@ namespace EFCore.Sharding
         }
 
         #region 自定义类
-        class ReplaceQueryableVisitor : ExpressionVisitor
+        private class ReplaceQueryableVisitor : ExpressionVisitor
         {
             private readonly QueryRootExpression _queryRootExpression;
             public ReplaceQueryableVisitor(IQueryable newQuery)
             {
-                var visitor = new GetQueryRootVisitor();
-                visitor.Visit(newQuery.Expression);
+                GetQueryRootVisitor visitor = new();
+                _ = visitor.Visit(newQuery.Expression);
                 _queryRootExpression = visitor.QueryRootExpression;
             }
 
             protected override Expression VisitExtension(Expression node)
             {
-                if (node is QueryRootExpression)
-                {
-                    return _queryRootExpression;
-                }
-
-                return base.VisitExtension(node);
+                return node is QueryRootExpression ? _queryRootExpression : base.VisitExtension(node);
             }
         }
-        class GetQueryRootVisitor : ExpressionVisitor
+        private class GetQueryRootVisitor : ExpressionVisitor
         {
             public QueryRootExpression QueryRootExpression { get; set; }
             protected override Expression VisitExtension(Expression node)
@@ -158,12 +153,12 @@ namespace EFCore.Sharding
                 return base.VisitExtension(node);
             }
         }
-        class GetOrderByVisitor : ExpressionVisitor
+        private class GetOrderByVisitor : ExpressionVisitor
         {
             public (string sortColumn, string sortType) OrderParam { get; set; }
             protected override Expression VisitMethodCall(MethodCallExpression node)
             {
-                if (node.Method.Name == "OrderBy" || node.Method.Name == "OrderByDescending")
+                if (node.Method.Name is "OrderBy" or "OrderByDescending")
                 {
                     string sortColumn = (((node.Arguments[1] as UnaryExpression).Operand as LambdaExpression).Body as MemberExpression).Member.Name;
                     string sortType = node.Method.Name == "OrderBy" ? "asc" : "desc";
@@ -173,7 +168,7 @@ namespace EFCore.Sharding
             }
         }
 
-        class SkipVisitor : ExpressionVisitor
+        private class SkipVisitor : ExpressionVisitor
         {
             public int? SkipCount { get; set; }
             protected override Expression VisitMethodCall(MethodCallExpression node)
@@ -186,7 +181,7 @@ namespace EFCore.Sharding
             }
         }
 
-        class TakeVisitor : ExpressionVisitor
+        private class TakeVisitor : ExpressionVisitor
         {
             public int? TakeCount { get; set; }
             protected override Expression VisitMethodCall(MethodCallExpression node)
@@ -206,10 +201,7 @@ namespace EFCore.Sharding
         {
             protected override Expression VisitMethodCall(MethodCallExpression node)
             {
-                if (node.Method.Name == "Skip")
-                    return base.Visit(node.Arguments[0]);
-
-                return node;
+                return node.Method.Name == "Skip" ? base.Visit(node.Arguments[0]) : node;
             }
         }
 
@@ -220,10 +212,7 @@ namespace EFCore.Sharding
         {
             protected override Expression VisitMethodCall(MethodCallExpression node)
             {
-                if (node.Method.Name == "Take")
-                    return base.Visit(node.Arguments[0]);
-
-                return node;
+                return node.Method.Name == "Take" ? base.Visit(node.Arguments[0]) : node;
             }
         }
 

@@ -17,10 +17,10 @@ namespace EFCore.Sharding.SQLite
             IModel model,
             MigrationCommandListBuilder builder)
         {
-            var oldCmds = builder.GetCommandList().ToList();
+            System.Collections.Generic.List<MigrationCommand> oldCmds = builder.GetCommandList().ToList();
             base.Generate(operation, model, builder);
-            var newCmds = builder.GetCommandList().ToList();
-            var addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
+            System.Collections.Generic.List<MigrationCommand> newCmds = builder.GetCommandList().ToList();
+            System.Collections.Generic.List<MigrationCommand> addCmds = newCmds.Where(x => !oldCmds.Contains(x)).ToList();
 
             MigrationHelper.Generate(operation, builder, Dependencies.SqlGenerationHelper, addCmds);
         }

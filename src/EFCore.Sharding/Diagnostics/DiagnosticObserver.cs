@@ -15,16 +15,20 @@ namespace EFCore.Sharding
             _minCommandElapsedMilliseconds = minCommandElapsedMilliseconds;
         }
         public void OnCompleted()
-            => throw new NotImplementedException();
+        {
+            throw new NotImplementedException();
+        }
 
         public void OnError(Exception error)
-            => throw new NotImplementedException();
+        {
+            throw new NotImplementedException();
+        }
 
         public void OnNext(DiagnosticListener value)
         {
             if (value.Name == DbLoggerCategory.Name) // "Microsoft.EntityFrameworkCore"
             {
-                value.Subscribe(new KeyValueObserver(_loggerFactory, _minCommandElapsedMilliseconds));
+                _ = value.Subscribe(new KeyValueObserver(_loggerFactory, _minCommandElapsedMilliseconds));
             }
         }
     }

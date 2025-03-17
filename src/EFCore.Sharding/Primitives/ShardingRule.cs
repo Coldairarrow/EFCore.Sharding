@@ -20,7 +20,9 @@ namespace EFCore.Sharding
                         {
                             long longValue = (long)fieldValue;
                             if (longValue < 0)
+                            {
                                 throw new Exception($"字段{ShardingField}不能小于0");
+                            }
 
                             suffix = longValue % Mod;
                         }
@@ -30,7 +32,8 @@ namespace EFCore.Sharding
                         }
 
                         return suffix.ToString();
-                    };
+                    }
+                    ;
                 case ShardingType.Date:
                     {
                         string format = ExpandByDateMode switch
@@ -44,13 +47,14 @@ namespace EFCore.Sharding
                         };
 
                         return ((DateTime)fieldValue).ToString(format);
-                    };
+                    }
+                    ;
                 default: throw new Exception("ShardingType无效");
             }
         }
         public string GetTableSuffixByEntity(object entity)
         {
-            var property = entity.GetPropertyValue(ShardingField);
+            object property = entity.GetPropertyValue(ShardingField);
 
             return GetTableSuffixByField(property);
         }

@@ -10,16 +10,20 @@ namespace EFCore.Sharding.PostgreSql
     {
         public override DbProviderFactory DbProviderFactory => NpgsqlFactory.Instance;
 
-#pragma warning disable EF1001 // Internal EF Core API usage.
-        public override ModelBuilder GetModelBuilder() => new ModelBuilder(NpgsqlConventionSetBuilder.Build());
-#pragma warning restore EF1001 // Internal EF Core API usage.
+        public override ModelBuilder GetModelBuilder()
+        {
+            return new ModelBuilder(NpgsqlConventionSetBuilder.Build());
+        }
 
-        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext) => new PostgreSqlDbAccessor(baseDbContext);
+        public override IDbAccessor GetDbAccessor(GenericDbContext baseDbContext)
+        {
+            return new PostgreSqlDbAccessor(baseDbContext);
+        }
 
         public override void UseDatabase(DbContextOptionsBuilder dbContextOptionsBuilder, DbConnection dbConnection)
         {
-            dbContextOptionsBuilder.UseNpgsql(dbConnection, x => x.UseNetTopologySuite());
-            dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingPostgreSqlMigrationsSqlGenerator>();
+            _ = dbContextOptionsBuilder.UseNpgsql(dbConnection, x => x.UseNetTopologySuite());
+            _ = dbContextOptionsBuilder.ReplaceService<IMigrationsSqlGenerator, ShardingPostgreSqlMigrationsSqlGenerator>();
         }
     }
 }

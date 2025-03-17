@@ -28,7 +28,7 @@ namespace EFCore.Sharding
             _serviceProvider = serviceProvider;
             _shardingOptions = serviceProvider.GetService<IOptions<EFCoreShardingOptions>>().Value;
 
-            DiagnosticListener.AllListeners.Subscribe(
+            _ = DiagnosticListener.AllListeners.Subscribe(
                 new DiagnosticObserver(serviceProvider.GetService<ILoggerFactory>(),
                 _shardingOptions.MinCommandElapsedMilliseconds));
 
@@ -42,20 +42,20 @@ namespace EFCore.Sharding
         /// <returns></returns>
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var scope = _serviceProvider.CreateScope();
+            IServiceScope scope = _serviceProvider.CreateScope();
             EFCoreShardingOptions.Bootstrapper?.Invoke(scope.ServiceProvider);
 
             //长时间未释放监控,5分钟
-            JobHelper.SetIntervalJob(() =>
+            _ = JobHelper.SetIntervalJob(() =>
             {
-                var list = Cache.DbContexts.Where(x => (DateTimeOffset.Now - x.CreateTime).TotalMinutes > 5).ToList();
+                System.Collections.Generic.List<GenericDbContext> list = Cache.DbContexts.Where(x => (DateTimeOffset.Now - x.CreateTime).TotalMinutes > 5).ToList();
                 list.ForEach(x =>
                 {
-                    var logger = x.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
+                    ILogger logger = x.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
                     logger?.LogWarning("DbContext长时间({ElapsedMinutes}m)未释放 CreateStackTrace:{CreateStackTrace} FirstCallStackTrace:{FirstCallStackTrace}",
                         (long)(DateTimeOffset.Now - x.CreateTime).TotalMinutes, x.CreateStackTrace, x.FirstCallStackTrace);
                 });
-            }, TimeSpan.FromMinutes(5));
+            }, TimeSpan.FromMinutes(5), "DbContext_CreateStackTrace");
 
             return Task.CompletedTask;
         }

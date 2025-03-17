@@ -22,73 +22,74 @@ namespace EFCore.Sharding.SqlServer
 
         public override void BulkInsert<T>(List<T> entities, string tableName = null)
         {
-            using (var bulkCopy = GetSqlBulkCopy())
+            using SqlBulkCopy bulkCopy = GetSqlBulkCopy();
+            bulkCopy.BulkCopyTimeout = 0;
+
+            bulkCopy.BatchSize = entities.Count;
+            if (tableName.IsNullOrEmpty())
             {
-                bulkCopy.BulkCopyTimeout = 0;
-
-                bulkCopy.BatchSize = entities.Count;
-                if (tableName.IsNullOrEmpty())
-                {
-                    var tableAttribute = (TableAttribute)typeof(T).GetCustomAttributes(typeof(TableAttribute), false).First();
-                    tableName = tableAttribute.Name;
-                }
-                bulkCopy.DestinationTableName = tableName;
-
-                var table = new DataTable();
-                var props = typeof(T).GetProperties().Where(x => x.GetSetMethod() != null).ToList();
-
-                foreach (var propertyInfo in props)
-                {
-                    var destinationColumn = string.Empty;
-
-                    var attributes = propertyInfo.GetCustomAttributes(false);
-                    foreach (var attribute in attributes)
-                    {
-                        if (!(attribute is ColumnAttribute columnAttribute)) continue;
-
-                        destinationColumn = columnAttribute.Name;
-
-                        break;
-                    }
-
-                    bulkCopy.ColumnMappings.Add(propertyInfo.Name,
-                        string.IsNullOrEmpty(destinationColumn) ? propertyInfo.Name : destinationColumn);
-
-                    table.Columns.Add(propertyInfo.Name, Nullable.GetUnderlyingType(propertyInfo.PropertyType) ?? propertyInfo.PropertyType);
-                }
-
-                var values = new object[props.Count];
-
-                foreach (var item in entities)
-                {
-                    for (var i = 0; i < values.Length; i++)
-                    {
-                        if (props[i].GetSetMethod() == null) continue;
-
-                        values[i] = props[i].GetValue(item);
-                    }
-                    table.Rows.Add(values);
-                }
-
-                bulkCopy.WriteToServer(table);
+                TableAttribute tableAttribute = (TableAttribute)typeof(T).GetCustomAttributes(typeof(TableAttribute), false).First();
+                tableName = tableAttribute.Name;
             }
+            bulkCopy.DestinationTableName = tableName;
+
+            DataTable table = new();
+            List<System.Reflection.PropertyInfo> props = typeof(T).GetProperties().Where(x => x.GetSetMethod() != null).ToList();
+
+            foreach (System.Reflection.PropertyInfo propertyInfo in props)
+            {
+                string destinationColumn = string.Empty;
+
+                object[] attributes = propertyInfo.GetCustomAttributes(false);
+                foreach (object attribute in attributes)
+                {
+                    if (attribute is not ColumnAttribute columnAttribute)
+                    {
+                        continue;
+                    }
+
+                    destinationColumn = columnAttribute.Name;
+
+                    break;
+                }
+
+                _ = bulkCopy.ColumnMappings.Add(propertyInfo.Name,
+                    string.IsNullOrEmpty(destinationColumn) ? propertyInfo.Name : destinationColumn);
+
+                _ = table.Columns.Add(propertyInfo.Name, Nullable.GetUnderlyingType(propertyInfo.PropertyType) ?? propertyInfo.PropertyType);
+            }
+
+            object[] values = new object[props.Count];
+
+            foreach (T item in entities)
+            {
+                for (int i = 0; i < values.Length; i++)
+                {
+                    if (props[i].GetSetMethod() == null)
+                    {
+                        continue;
+                    }
+
+                    values[i] = props[i].GetValue(item);
+                }
+                _ = table.Rows.Add(values);
+            }
+
+            bulkCopy.WriteToServer(table);
         }
 
         protected override string GetSchema(string schema)
         {
-            if (schema.IsNullOrEmpty())
-                return "dbo";
-            else
-                return schema;
+            return schema.IsNullOrEmpty() ? "dbo" : schema;
         }
 
         private SqlBulkCopy GetSqlBulkCopy()
         {
-            var defaultSqlCopy = new SqlBulkCopy(ConnectionString);
+            SqlBulkCopy defaultSqlCopy = new(ConnectionString);
 
-            if (!_openedTransaction) return defaultSqlCopy;
-
-            return !(_db.Database.CurrentTransaction.GetDbTransaction() is SqlTransaction sqlTransaction) ?
+            return !_openedTransaction
+                ? defaultSqlCopy
+                : _db.Database.CurrentTransaction.GetDbTransaction() is not SqlTransaction sqlTransaction ?
                 defaultSqlCopy :
                 new SqlBulkCopy(sqlTransaction.Connection, SqlBulkCopyOptions.Default, sqlTransaction);
         }

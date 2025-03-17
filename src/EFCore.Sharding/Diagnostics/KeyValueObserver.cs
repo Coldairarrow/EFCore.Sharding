@@ -12,12 +12,10 @@ namespace EFCore.Sharding
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly int _minCommandElapsedMilliseconds;
-        private readonly ConcurrentDictionary<Guid, string> _commandStackTraceDic
-            = new ConcurrentDictionary<Guid, string>();
-        private BlockingCollection<KeyValuePair<string, object>> _eventsQueue
-            = new BlockingCollection<KeyValuePair<string, object>>();
+        private readonly ConcurrentDictionary<Guid, string> _commandStackTraceDic= new();
+        private readonly BlockingCollection<KeyValuePair<string, object>> _eventsQueue= [];
         private Task _task;
-        private readonly object _taskLock = new object();
+        private readonly object _taskLock = new();
 
         public KeyValueObserver(ILoggerFactory loggerFactory, int minCommandElapsedMilliseconds)
         {
@@ -25,10 +23,14 @@ namespace EFCore.Sharding
             _minCommandElapsedMilliseconds = minCommandElapsedMilliseconds;
         }
         public void OnCompleted()
-            => throw new NotImplementedException();
+        {
+            throw new NotImplementedException();
+        }
 
         public void OnError(Exception error)
-            => throw new NotImplementedException();
+        {
+            throw new NotImplementedException();
+        }
 
         public void OnNext(KeyValuePair<string, object> value)
         {
@@ -37,13 +39,11 @@ namespace EFCore.Sharding
             {
                 lock (_taskLock)
                 {
-                    if (_task == null)
-                    {
-                        _task = Task.Factory.StartNew(() =>
+                    _task ??= Task.Factory.StartNew(() =>
                         {
-                            foreach (var value in _eventsQueue.GetConsumingEnumerable())
+                            foreach (KeyValuePair<string, object> value in _eventsQueue.GetConsumingEnumerable())
                             {
-                                var logger = _loggerFactory?.CreateLogger(GetType());
+                                ILogger logger = _loggerFactory?.CreateLogger(GetType());
                                 try
                                 {
                                     LogLevel logLevel = LogLevel.Information;
@@ -65,16 +65,16 @@ namespace EFCore.Sharding
                                     }
                                     if (value.Key == RelationalEventId.CommandExecuted.Name || value.Key == RelationalEventId.CommandError.Name)
                                     {
-                                        var commandEndEventData = value.Value as CommandEndEventData;
+                                        CommandEndEventData commandEndEventData = value.Value as CommandEndEventData;
 
                                         if (logLevel == LogLevel.Error || commandEndEventData.Duration.TotalMilliseconds > _minCommandElapsedMilliseconds)
                                         {
-                                            using var scop = logger.BeginScope(new Dictionary<string, object>
+                                            using IDisposable scop = logger.BeginScope(new Dictionary<string, object>
                                             {
                                                 { "StackTrace",_commandStackTraceDic[commandEndEventData.CommandId]}
                                             });
 
-                                            var message = @"执行SQL耗时({ElapsedMilliseconds}ms)
+                                            string message = @"执行SQL耗时({ElapsedMilliseconds}ms)
 {SQL}";
                                             logger?.Log(
                                                 logLevel,
@@ -83,7 +83,7 @@ namespace EFCore.Sharding
                                                 GetGeneratedSql(commandEndEventData.Command));
                                         }
 
-                                        _commandStackTraceDic.TryRemove(commandEndEventData.CommandId, out _);
+                                        _ = _commandStackTraceDic.TryRemove(commandEndEventData.CommandId, out _);
                                     }
                                 }
                                 catch (Exception ex)
@@ -92,7 +92,6 @@ namespace EFCore.Sharding
                                 }
                             }
                         });
-                    }
                 }
             }
 
@@ -105,7 +104,19 @@ namespace EFCore.Sharding
 
             if (result.Length > 100 * 1024)
             {
-                result = result.Substring(0, 100 * 1024) + $"...剩余{result.Length - 100 * 1024}字符";
+                result = result[..(100 * 1024)] + $"...剩余{result.Length - (100 * 1024)}字符";
+            }
+
+            //var sb = new StringBuilder();
+            //sb.AppendFormat("{0} {1}={2}\n",
+            //                parameter.DbType,
+            //                parameter.ParameterName,
+            //                parameter.Value);
+            //sb.ToString() + "\n" +
+
+            foreach (DbParameter parameter in cmd.Parameters)
+            {
+                result = result.Replace(parameter.ParameterName, parameter.Value.ToString());
             }
 
             return result;

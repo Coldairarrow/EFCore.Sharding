@@ -13,8 +13,7 @@ namespace EFCore.Sharding.Tests
         private static readonly MethodInfo CloneMethod = typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
         private static bool IsPrimitive(this Type type)
         {
-            if (type == typeof(string)) return true;
-            return (type.IsValueType & type.IsPrimitive);
+            return type == typeof(string) || type.IsValueType & type.IsPrimitive;
         }
         private static object DeepClone(this object originalObject)
         {
@@ -22,15 +21,31 @@ namespace EFCore.Sharding.Tests
         }
         private static object InternalCopy(object originalObject, IDictionary<object, object> visited)
         {
-            if (originalObject == null) return null;
-            var typeToReflect = originalObject.GetType();
-            if (IsPrimitive(typeToReflect)) return originalObject;
-            if (visited.ContainsKey(originalObject)) return visited[originalObject];
-            if (typeof(Delegate).IsAssignableFrom(typeToReflect)) return null;
-            var cloneObject = CloneMethod.Invoke(originalObject, null);
+            if (originalObject == null)
+            {
+                return null;
+            }
+
+            Type typeToReflect = originalObject.GetType();
+            if (IsPrimitive(typeToReflect))
+            {
+                return originalObject;
+            }
+
+            if (visited.ContainsKey(originalObject))
+            {
+                return visited[originalObject];
+            }
+
+            if (typeof(Delegate).IsAssignableFrom(typeToReflect))
+            {
+                return null;
+            }
+
+            object cloneObject = CloneMethod.Invoke(originalObject, null);
             if (typeToReflect.IsArray)
             {
-                var arrayType = typeToReflect.GetElementType();
+                Type arrayType = typeToReflect.GetElementType();
                 if (IsPrimitive(arrayType) == false)
                 {
                     Array clonedArray = (Array)cloneObject;
@@ -54,10 +69,18 @@ namespace EFCore.Sharding.Tests
         {
             foreach (FieldInfo fieldInfo in typeToReflect.GetFields(bindingFlags))
             {
-                if (filter != null && filter(fieldInfo) == false) continue;
-                if (IsPrimitive(fieldInfo.FieldType)) continue;
-                var originalFieldValue = fieldInfo.GetValue(originalObject);
-                var clonedFieldValue = InternalCopy(originalFieldValue, visited);
+                if (filter != null && filter(fieldInfo) == false)
+                {
+                    continue;
+                }
+
+                if (IsPrimitive(fieldInfo.FieldType))
+                {
+                    continue;
+                }
+
+                object originalFieldValue = fieldInfo.GetValue(originalObject);
+                object clonedFieldValue = InternalCopy(originalFieldValue, visited);
                 fieldInfo.SetValue(cloneObject, clonedFieldValue);
             }
         }
@@ -69,17 +92,23 @@ namespace EFCore.Sharding.Tests
             }
             public override int GetHashCode(object obj)
             {
-                if (obj == null) return 0;
-                return obj.GetHashCode();
+                return obj == null ? 0 : obj.GetHashCode();
             }
         }
         private static class ArrayExtensions
         {
             public static void ForEach(Array array, Action<Array, int[]> action)
             {
-                if (array.LongLength == 0) return;
-                ArrayTraverse walker = new ArrayTraverse(array);
-                do action(array, walker.Position);
+                if (array.LongLength == 0)
+                {
+                    return;
+                }
+
+                ArrayTraverse walker = new(array);
+                do
+                {
+                    action(array, walker.Position);
+                }
                 while (walker.Step());
             }
         }
@@ -87,7 +116,7 @@ namespace EFCore.Sharding.Tests
         internal class ArrayTraverse
         {
             public int[] Position;
-            private int[] maxLengths;
+            private readonly int[] maxLengths;
 
             public ArrayTraverse(Array array)
             {

@@ -28,70 +28,66 @@ namespace EFCore.Sharding
 
         #region 私有成员
 
-        ShardingDbAccessor _shardingDb { get; }
+        private ShardingDbAccessor _shardingDb { get; }
         private string _absDbName { get; }
         private string _absTableName { get; }
         private IQueryable<T> _source { get; set; }
         private async Task<List<TResult>> GetStatisDataAsync<TResult>(Func<IQueryable, Task<TResult>> access, IQueryable newSource = null)
         {
-            newSource = newSource ?? _source;
-            var tables = _shardingConfig.GetReadTables(_source);
+            newSource ??= _source;
+            List<(string suffix, string conString, DatabaseType dbType)> tables = _shardingConfig.GetReadTables(_source);
 
-            List<Task<TResult>> tasks = new List<Task<TResult>>();
-            SynchronizedCollection<IDbAccessor> dbs = new SynchronizedCollection<IDbAccessor>();
+            List<Task<TResult>> tasks = [];
+            SynchronizedCollection<IDbAccessor> dbs = [];
             tasks = tables.Select(aTable =>
             {
-                IDbAccessor db;
-                if (_shardingDb.OpenedTransaction)
-                    db = _shardingDb.GetMapDbAccessor(aTable.conString, aTable.dbType, aTable.suffix);
-                else
-                    db = _dbFactory.GetDbAccessor(new DbContextParamters
+                IDbAccessor db = _shardingDb.OpenedTransaction
+                    ? _shardingDb.GetMapDbAccessor(aTable.conString, aTable.dbType, aTable.suffix)
+                    : _dbFactory.GetDbAccessor(new DbContextParamters
                     {
                         ConnectionString = aTable.conString,
                         DbType = aTable.dbType,
                         Suffix = aTable.suffix
                     });
-
                 dbs.Add(db);
-                var targetIQ = db.GetIQueryable<T>();
-                var newQ = newSource.ReplaceQueryable(targetIQ);
+                IQueryable<T> targetIQ = db.GetIQueryable<T>();
+                IQueryable newQ = newSource.ReplaceQueryable(targetIQ);
 
                 return access(newQ);
             }).ToList();
-            var res = (await Task.WhenAll(tasks)).ToList();
+            List<TResult> res = (await Task.WhenAll(tasks)).ToList();
 
             if (!_shardingDb.OpenedTransaction)
+            {
                 dbs.ForEach(x => x.Dispose());
+            }
 
             return res;
         }
         private async Task<int> GetCountAsync(IQueryable newSource)
         {
-            var results = await GetStatisDataAsync<int>(x => EntityFrameworkQueryableExtensions.CountAsync((dynamic)x), newSource);
+            List<int> results = await GetStatisDataAsync<int>(x => EntityFrameworkQueryableExtensions.CountAsync((dynamic)x), newSource);
             return results.Sum();
         }
         private async Task<TResult> GetSumAsync<TResult>(IQueryable<TResult> newSource)
         {
-            var results = await GetStatisDataAsync<TResult>(x => EntityFrameworkQueryableExtensions.SumAsync((dynamic)x), newSource);
+            List<TResult> results = await GetStatisDataAsync<TResult>(x => EntityFrameworkQueryableExtensions.SumAsync((dynamic)x), newSource);
             return Enumerable.Sum((dynamic)results);
         }
         private async Task<TResult> GetSumAsync<TResult>(Expression<Func<T, TResult>> selector)
         {
-            var newSource = _source.Select(selector);
+            IQueryable<TResult> newSource = _source.Select(selector);
             return await GetSumAsync(newSource);
         }
         private async Task<dynamic> GetDynamicAverageAsync<TResult>(Expression<Func<T, TResult>> selector)
         {
-            var newSource = _source.Select(selector);
+            IQueryable<TResult> newSource = _source.Select(selector);
             //总数量
-            var allCount = await GetCountAsync(newSource);
+            int allCount = await GetCountAsync(newSource);
 
             //总合
-            var sum = await GetSumAsync(newSource);
-            if (sum is int || sum is int? || sum is long || sum is long?)
-                return ((double?)(dynamic)sum) / allCount;
-            else
-                return (dynamic)sum / allCount;
+            TResult sum = await GetSumAsync(newSource);
+            return sum is int || sum is int? || sum is long || sum is long? ? ((double?)(dynamic)sum) / allCount : (dynamic)sum / allCount;
         }
 
         #endregion
@@ -142,7 +138,7 @@ namespace EFCore.Sharding
         }
         public int Count()
         {
-            return AsyncHelper.RunSync(() => CountAsync());
+            return AsyncHelper.RunSync(CountAsync);
         }
         public async Task<int> CountAsync()
         {
@@ -150,7 +146,7 @@ namespace EFCore.Sharding
         }
         public List<T> ToList()
         {
-            return AsyncHelper.RunSync(() => ToListAsync());
+            return AsyncHelper.RunSync(ToListAsync);
         }
         public async Task<List<T>> ToListAsync()
         {
@@ -158,21 +154,21 @@ namespace EFCore.Sharding
             int? take = _source.GetTakeCount();
             int? skip = _source.GetSkipCount();
             skip = skip == null ? 0 : skip;
-            var (sortColumn, sortType) = _source.GetOrderBy();
-            var noPaginSource = _source.RemoveTake().RemoveSkip();
+            (string sortColumn, string sortType) = _source.GetOrderBy();
+            IQueryable<T> noPaginSource = _source.RemoveTake().RemoveSkip();
             if (!take.IsNullOrEmpty())
+            {
                 noPaginSource = noPaginSource.Take(take.Value + skip.Value);
+            }
 
             //从各个分表获取数据
-            var tables = _shardingConfig.GetReadTables(_source);
-            SynchronizedCollection<IDbAccessor> dbs = new SynchronizedCollection<IDbAccessor>();
+            List<(string suffix, string conString, DatabaseType dbType)> tables = _shardingConfig.GetReadTables(_source);
+            SynchronizedCollection<IDbAccessor> dbs = [];
             List<Task<List<T>>> tasks = tables.Select(aTable =>
             {
-                IDbAccessor db;
-                if (_shardingDb.OpenedTransaction)
-                    db = _shardingDb.GetMapDbAccessor(aTable.conString, aTable.dbType, aTable.suffix);
-                else
-                    db = _dbFactory.GetDbAccessor(new DbContextParamters
+                IDbAccessor db = _shardingDb.OpenedTransaction
+                    ? _shardingDb.GetMapDbAccessor(aTable.conString, aTable.dbType, aTable.suffix)
+                    : _dbFactory.GetDbAccessor(new DbContextParamters
                     {
                         ConnectionString = aTable.conString,
                         DbType = aTable.dbType,
@@ -180,45 +176,57 @@ namespace EFCore.Sharding
                     });
                 dbs.Add(db);
 
-                var targetIQ = db.GetIQueryable<T>();
-                var newQ = noPaginSource.ReplaceQueryable(targetIQ);
+                IQueryable<T> targetIQ = db.GetIQueryable<T>();
+                IQueryable newQ = noPaginSource.ReplaceQueryable(targetIQ);
                 return newQ
                     .Cast<object>()
                     .Select(x => (T)x)
                     .ToListAsync();
             }).ToList();
-            List<T> all = new List<T>();
-            (await Task.WhenAll(tasks.ToArray())).ToList().ForEach(x => all.AddRange(x));
+            List<T> all = [];
+            (await Task.WhenAll(tasks.ToArray())).ToList().ForEach(all.AddRange);
 
             if (!_shardingDb.OpenedTransaction)
+            {
                 dbs.ForEach(x => x.Dispose());
+            }
             //合并数据
-            var resList = all;
+            List<T> resList = all;
             if (!sortColumn.IsNullOrEmpty() && !sortType.IsNullOrEmpty())
+            {
                 resList = resList.AsQueryable().OrderBy($"{sortColumn} {sortType}").ToList();
+            }
+
             if (!skip.IsNullOrEmpty())
+            {
                 resList = resList.Skip(skip.Value).ToList();
+            }
+
             if (!take.IsNullOrEmpty())
+            {
                 resList = resList.Take(take.Value).ToList();
+            }
 
             return resList;
         }
         public T FirstOrDefault()
         {
-            return AsyncHelper.RunSync(() => FirstOrDefaultAsync());
+            return AsyncHelper.RunSync(FirstOrDefaultAsync);
         }
         public async Task<T> FirstOrDefaultAsync()
         {
-            var list = await GetStatisDataAsync(async x =>
+            List<T> list = await GetStatisDataAsync(async x =>
             {
-                var data = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync((dynamic)x);
+                dynamic data = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync((dynamic)x);
                 return (T)data;
             });
-            list.RemoveAll(x => x == null);
-            var q = list.AsQueryable();
-            var (sortColumn, sortType) = _source.GetOrderBy();
+            _ = list.RemoveAll(x => x == null);
+            IQueryable<T> q = list.AsQueryable();
+            (string sortColumn, string sortType) = _source.GetOrderBy();
             if (!sortColumn.IsNullOrEmpty())
+            {
                 q = q.OrderBy($"{sortColumn} {sortType}");
+            }
 
             return q.FirstOrDefault();
         }
@@ -228,11 +236,11 @@ namespace EFCore.Sharding
         }
         public async Task<List<TResult>> DistinctAsync<TResult>(Expression<Func<T, TResult>> selector)
         {
-            var newSource = _source.Select(selector);
+            IQueryable<TResult> newSource = _source.Select(selector);
 
-            var results = await GetStatisDataAsync<List<TResult>>(x =>
+            List<List<TResult>> results = await GetStatisDataAsync<List<TResult>>(x =>
             {
-                var q = Queryable.Distinct((dynamic)x);
+                dynamic q = Queryable.Distinct((dynamic)x);
                 return EntityFrameworkQueryableExtensions.ToListAsync(q);
             }, newSource);
 
@@ -244,8 +252,8 @@ namespace EFCore.Sharding
         }
         public async Task<TResult> MaxAsync<TResult>(Expression<Func<T, TResult>> selector)
         {
-            var newSource = _source.Select(selector);
-            var results = await GetStatisDataAsync<TResult>(x => EntityFrameworkQueryableExtensions.MaxAsync((dynamic)x), newSource);
+            IQueryable<TResult> newSource = _source.Select(selector);
+            List<TResult> results = await GetStatisDataAsync<TResult>(x => EntityFrameworkQueryableExtensions.MaxAsync((dynamic)x), newSource);
 
             return results.Max();
         }
@@ -255,8 +263,8 @@ namespace EFCore.Sharding
         }
         public async Task<TResult> MinAsync<TResult>(Expression<Func<T, TResult>> selector)
         {
-            var newSource = _source.Select(selector);
-            var results = await GetStatisDataAsync<TResult>(x => EntityFrameworkQueryableExtensions.MinAsync((dynamic)x), newSource);
+            IQueryable<TResult> newSource = _source.Select(selector);
+            List<TResult> results = await GetStatisDataAsync<TResult>(x => EntityFrameworkQueryableExtensions.MinAsync((dynamic)x), newSource);
 
             return results.Min();
         }
@@ -426,7 +434,7 @@ namespace EFCore.Sharding
         }
         public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
         {
-            var newSource = _source.Where(predicate);
+            IQueryable<T> newSource = _source.Where(predicate);
             return (await GetStatisDataAsync<bool>(x => EntityFrameworkQueryableExtensions.AnyAsync((dynamic)x), newSource))
                 .Any(x => x == true);
         }
