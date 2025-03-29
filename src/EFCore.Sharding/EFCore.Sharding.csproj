@@ -28,10 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Castle.Core" Version="5.1.1" />
+    <PackageReference Include="Castle.Core" Version="5.2.1" />
     <PackageReference Include="Dynamitey" Version="3.0.3" />
-    <PackageReference Include="Namotion.Reflection" Version="3.2.0" />
-    <PackageReference Include="Quartz" Version="3.13.1" />
+    <PackageReference Include="Namotion.Reflection" Version="3.3.0" />
+    <PackageReference Include="Quartz" Version="3.14.0" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.0.2" />
   </ItemGroup>
 
