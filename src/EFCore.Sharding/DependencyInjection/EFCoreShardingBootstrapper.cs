@@ -48,12 +48,16 @@ namespace EFCore.Sharding
             //长时间未释放监控,5分钟
             _ = JobHelper.SetIntervalJob(() =>
             {
+                ILogger logger = null;
                 System.Collections.Generic.List<GenericDbContext> list = Cache.DbContexts.Where(x => (DateTimeOffset.Now - x.CreateTime).TotalMinutes > 5).ToList();
                 list.ForEach(x =>
                 {
-                    ILogger logger = x.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
-                    logger?.LogWarning("DbContext长时间({ElapsedMinutes}m)未释放 CreateStackTrace:{CreateStackTrace} FirstCallStackTrace:{FirstCallStackTrace}",
-                        (long)(DateTimeOffset.Now - x.CreateTime).TotalMinutes, x.CreateStackTrace, x.FirstCallStackTrace);
+                    if (x != null)
+                    {
+                        logger = x.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
+                        logger?.LogWarning("DbContext长时间({ElapsedMinutes}m)未释放 CreateStackTrace:{CreateStackTrace} FirstCallStackTrace:{FirstCallStackTrace}",
+                            (long)(DateTimeOffset.Now - x.CreateTime).TotalMinutes, x.CreateStackTrace, x.FirstCallStackTrace);
+                    }
                 });
             }, TimeSpan.FromMinutes(5), "DbContext_CreateStackTrace");
 
