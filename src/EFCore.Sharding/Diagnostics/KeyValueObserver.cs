@@ -107,17 +107,10 @@ namespace EFCore.Sharding
                 result = result[..(100 * 1024)] + $"...剩余{result.Length - (100 * 1024)}字符";
             }
 
-            //var sb = new StringBuilder();
-            //sb.AppendFormat("{0} {1}={2}\n",
-            //                parameter.DbType,
-            //                parameter.ParameterName,
-            //                parameter.Value);
-            //sb.ToString() + "\n" +
-
-            foreach (DbParameter parameter in cmd.Parameters)
-            {
-                result = result.Replace(parameter.ParameterName, parameter.Value.ToString());
-            }
+            //foreach (DbParameter parameter in cmd.Parameters)
+            //{
+            //    result = result.Replace(parameter.ParameterName, parameter.Value.ToString());
+            //}
 
             return result;
         }
