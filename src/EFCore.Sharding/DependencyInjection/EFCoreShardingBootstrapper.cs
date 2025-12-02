@@ -45,16 +45,23 @@ namespace EFCore.Sharding
             IServiceScope scope = _serviceProvider.CreateScope();
             EFCoreShardingOptions.Bootstrapper?.Invoke(scope.ServiceProvider);
 
+
             //长时间未释放监控,5分钟
             _ = JobHelper.SetIntervalJob(() =>
             {
                 ILogger logger = null;
-                System.Collections.Generic.List<GenericDbContext> list = Cache.DbContexts.Where(x => (DateTimeOffset.Now - x.CreateTime).TotalMinutes > 5).ToList();
+                // 修复：先生成 Cache.DbContexts 的副本（ToList()），再筛选
+                // 避免遍历原集合时被其他线程修改
+                System.Collections.Generic.List<GenericDbContext> list = Cache.DbContexts.Values
+                    .ToList() // 关键：生成原集合的副本，遍历副本不会受原集合修改影响
+                    .Where(x => (DateTimeOffset.Now - x.CreateTime).TotalMinutes > 5)
+                    .ToList();
+
                 list.ForEach(x =>
                 {
                     if (x != null)
                     {
-                        logger = x.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType());
+                        logger = x.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger(GetType()) ?? null;
                         logger?.LogWarning("DbContext长时间({ElapsedMinutes}m)未释放 CreateStackTrace:{CreateStackTrace} FirstCallStackTrace:{FirstCallStackTrace}",
                             (long)(DateTimeOffset.Now - x.CreateTime).TotalMinutes, x.CreateStackTrace, x.FirstCallStackTrace);
                     }

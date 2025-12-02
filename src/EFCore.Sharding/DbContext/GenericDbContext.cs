@@ -56,7 +56,8 @@ namespace EFCore.Sharding
 
             CreateTime = DateTimeOffset.Now;
             CreateStackTrace = Environment.StackTrace;
-            Cache.DbContexts.Add(this);
+            //Cache.DbContexts.Add(this);
+            Cache.DbContexts.TryAdd(this, this);
 
             DbContextOption = contextOptions;
             Paramter = paramter;
@@ -247,8 +248,9 @@ namespace EFCore.Sharding
         /// </summary>
         public override void Dispose()
         {
-            _ = Cache.DbContexts.Remove(this);
-
+           // _ = Cache.DbContexts.Remove(this);
+            // 关键：线程安全移除（TryRemove 根据 Key 移除，返回 bool 表示是否移除成功）
+            Cache.DbContexts.TryRemove(this, out _);
             base.Dispose();
         }
     }
