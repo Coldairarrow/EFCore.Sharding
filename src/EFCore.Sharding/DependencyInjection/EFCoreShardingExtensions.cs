@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using EFCore.Sharding.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 
 namespace EFCore.Sharding
